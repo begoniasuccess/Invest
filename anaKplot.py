@@ -4,11 +4,11 @@ from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0wOC0yOSAxNTozNjo1MCIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIxNDAuMTEzLjAuMjI5IiwiZXhwIjoxNzU3MDU3ODEwfQ.NF4Ok2t0ah1czrKpBHk8MvfxCFMPbks8MIcW8eD0Z5c"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0wOS0wNiAyMDoxNDoxOSIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIxNDAuMTEzLjAuMjI5In0.XVj5fu5kxMeoL7gFaDpspBfmm4j8Wp3oEGPwkKo9jww"
 api = DataLoader()
 api.login_by_token(api_token=token)
 
-anaMonths = 1 # 近N個月的調整後價格
+anaMonths = 2 # 近N個月的調整後價格
 
 eDt = datetime.today() # 今天
 sDt = eDt - relativedelta(months=anaMonths)  # 當前月份的1日
@@ -22,7 +22,7 @@ else:
         start_date=sDt.strftime("%Y-%m-%d"),
         end_date=eDt.strftime("%Y-%m-%d")
     )
-    df.to_csv(srcFilePath, index=False)
+    df.to_csv(srcFilePath, index=False, encoding="utf-8-sig")
 df["date"] = pd.to_datetime(df["date"])
 df = df.sort_values("date").reset_index(drop=True)
 
@@ -44,6 +44,7 @@ def calc_oc_gap(row):
     return pd.Series([f"{gap_start:.2f}~{gap_end:.2f}", round(gap_size,2)])
 
 # 計算跳空缺口
+
 def cal_gaps(df: pd.DataFrame):
     # 1. 鄰近日組合
     df_shift = df.shift(-1)
@@ -76,4 +77,4 @@ def cal_gaps(df: pd.DataFrame):
 # 存檔
 gaps_df = cal_gaps(df)
 outputFile = f'Data/taiwan_stock_daily_adj/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
-gaps_df.to_csv(outputFile, index=False)
+gaps_df.to_csv(outputFile, index=False, encoding="utf-8-sig")

@@ -30,7 +30,7 @@ df.set_index("Date", inplace=True)
 outputFile = f'Data/twStockDailyAdj_{sDt}_{eDt}.csv'
 df.to_csv(outputFile)
 
-# # 畫 K 線
-# mpf.plot(df, type="candle", mav=(5, 10, 20), volume=True,
-#         title="TAIEX Plot", style="yahoo")
+# 畫 K 線
+mpf.plot(df, type="candle", mav=(5, 10, 20), volume=True,
+        title="TAIEX Plot", style="yahoo")
 
