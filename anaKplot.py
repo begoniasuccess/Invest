@@ -8,13 +8,14 @@ token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0wOS0xOCAxMTozMj
 api = DataLoader()
 api.login_by_token(api_token=token)
 
-anaMonths = 2 # 近N個月的調整後價格
+anaMonths = 2 # 近N個月的資料
 
 stockId = 'TAIEX' # 加權指數
 eDt = datetime.today() # 今天
 sDt = eDt - relativedelta(months=anaMonths)  # 當前月份的1日
 
-outputRootDir = 'Data/taiwan_stock_daily_adj/TAIEX'
+outputRootDir = f'Data/finMind/taiwan_stock_daily_adj/{stockId}/{sDt.strftime("%Y%m")}'
+os.makedirs(outputRootDir, exist_ok=True)
 outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}.csv'
 if os.path.exists(outputFile):
     print(f"每日價量資料已存在：{outputFile}")
@@ -46,8 +47,9 @@ def calc_oc_gap(row):
 
     return pd.Series([f"{gap_start:.2f}~{gap_end:.2f}", round(gap_size,2)])
 
-# 計算跳空缺口
-
+### 計算跳空缺口
+outputRootDir = f'Data/ana/gaps/{stockId}/{sDt.strftime("%Y%m")}'
+os.makedirs(outputRootDir, exist_ok=True)
 def cal_gaps(df: pd.DataFrame):
     # 1. 鄰近日組合
     df_shift = df.shift(-1)
@@ -78,16 +80,18 @@ def cal_gaps(df: pd.DataFrame):
     return final_df
 
 # 存檔
-gaps_df = cal_gaps(df)
+df_gaps = cal_gaps(df)
 outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
 if os.path.exists(outputFile):
     print(f"跳空缺口資料已存在：{outputFile}")
 else:
-    gaps_df.to_csv(outputFile, index=False, encoding="utf-8-sig")
+    df_gaps.to_csv(outputFile, index=False, encoding="utf-8-sig")
+del df_gaps
 
-del gaps_df
 
 ### 三大法人 (Three Major Institutional Investors)
+outputRootDir = f'Data/finMind/taiwan_stock_institutional_investors/{stockId}/{sDt.strftime("%Y%m")}'
+os.makedirs(outputRootDir, exist_ok=True)
 outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-3mii.csv'
 if os.path.exists(outputFile):
     print(f"三大法人資料已存在：{outputFile}")
@@ -104,3 +108,5 @@ else:
             end_date=eDt.strftime("%Y-%m-%d"),
         )
     df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
+
+### 合併三大法人的資料到價量那邊
