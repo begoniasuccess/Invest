@@ -95,6 +95,7 @@ os.makedirs(outputRootDir, exist_ok=True)
 outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-3mii.csv'
 if os.path.exists(outputFile):
     print(f"三大法人資料已存在：{outputFile}")
+    df_3mii = pd.read_csv(outputFile)
 else:
     if stockId == 'TAIEX':
         df_3mii = api.taiwan_stock_institutional_investors_total(
@@ -110,3 +111,35 @@ else:
     df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
 
 ### 合併三大法人的資料到價量那邊
+outputRootDir = f'Data/ana/mii/{stockId}/{sDt.strftime("%Y%m")}'
+os.makedirs(outputRootDir, exist_ok=True)
+outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-net_buys.csv'
+if os.path.exists(outputFile):
+    print(f"三大法人買超資料已合併：{outputFile}")
+    df_merged = pd.read_csv(outputFile)
+else:
+    df_3mii['net_buy'] = df_3mii['buy'] - df_3mii['sell']
+
+    # 確保兩邊的 date 型態一致
+    df['date'] = pd.to_datetime(df['date'])
+    df_3mii['date'] = pd.to_datetime(df_3mii['date'])
+
+    # 建立 name → 欄位名稱的對應表（加上 total）
+    name_to_col = {
+        "Foreign_Investor": "net_buy_foreign_investor",
+        "Investment_Trust": "net_buy_investment_trust",
+        "Dealer_self": "net_buy_dealer_self",
+        "Dealer_Hedging": "net_buy_dealer_hedging",
+        "Foreign_Dealer_Self": "net_buy_foreign_dealer_self",
+        "total": "total_net_buy"
+    }
+
+    # 把 name 換成對應的欄位名稱
+    df_3mii['col_name'] = df_3mii['name'].map(name_to_col)
+
+    # 轉寬表：date 當索引，col_name 變欄位
+    df_3mii_wide = df_3mii.pivot(index='date', columns='col_name', values='net_buy').reset_index()
+
+    # merge 回 df
+    df_merged = df.merge(df_3mii_wide, on='date', how='left')
+    df_merged.to_csv(outputFile, index=False, encoding="utf-8-sig")
