@@ -4,25 +4,28 @@ from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0wOS0wNiAyMDoxNDoxOSIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIxNDAuMTEzLjAuMjI5In0.XVj5fu5kxMeoL7gFaDpspBfmm4j8Wp3oEGPwkKo9jww"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0wOS0xOCAxMTozMjoyOCIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43My4xMDMuMjQ4In0.vidiMk4_ZU0shUvXklPfTe3MjmERnrIL4JvPiHJWtDQ"
 api = DataLoader()
 api.login_by_token(api_token=token)
 
 anaMonths = 2 # 近N個月的調整後價格
 
+stockId = 'TAIEX' # 加權指數
 eDt = datetime.today() # 今天
 sDt = eDt - relativedelta(months=anaMonths)  # 當前月份的1日
 
-srcFilePath = f'Data/taiwan_stock_daily_adj/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}.csv'
-if os.path.exists(srcFilePath):
-    df = pd.read_csv(srcFilePath)
+outputRootDir = 'Data/taiwan_stock_daily_adj/TAIEX'
+outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}.csv'
+if os.path.exists(outputFile):
+    print(f"每日價量資料已存在：{outputFile}")
+    df = pd.read_csv(outputFile)
 else:
     df = api.taiwan_stock_daily_adj(
-        stock_id='TAIEX',
+        stock_id=stockId,
         start_date=sDt.strftime("%Y-%m-%d"),
         end_date=eDt.strftime("%Y-%m-%d")
     )
-    df.to_csv(srcFilePath, index=False, encoding="utf-8-sig")
+    df.to_csv(outputFile, index=False, encoding="utf-8-sig")
 df["date"] = pd.to_datetime(df["date"])
 df = df.sort_values("date").reset_index(drop=True)
 
@@ -76,5 +79,28 @@ def cal_gaps(df: pd.DataFrame):
 
 # 存檔
 gaps_df = cal_gaps(df)
-outputFile = f'Data/taiwan_stock_daily_adj/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
-gaps_df.to_csv(outputFile, index=False, encoding="utf-8-sig")
+outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
+if os.path.exists(outputFile):
+    print(f"跳空缺口資料已存在：{outputFile}")
+else:
+    gaps_df.to_csv(outputFile, index=False, encoding="utf-8-sig")
+
+del gaps_df
+
+### 三大法人 (Three Major Institutional Investors)
+outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-3mii.csv'
+if os.path.exists(outputFile):
+    print(f"三大法人資料已存在：{outputFile}")
+else:
+    if stockId == 'TAIEX':
+        df_3mii = api.taiwan_stock_institutional_investors_total(
+            start_date=sDt.strftime("%Y-%m-%d"),
+            end_date=eDt.strftime("%Y-%m-%d"),
+        )
+    else:
+        df_3mii = api.taiwan_stock_institutional_investors(
+            stock_id=stockId,
+            start_date=sDt.strftime("%Y-%m-%d"),
+            end_date=eDt.strftime("%Y-%m-%d"),
+        )
+    df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
