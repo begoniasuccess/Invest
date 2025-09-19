@@ -12,7 +12,11 @@ anaMonths = 2 # 近N個月的資料
 
 stockId = 'TAIEX' # 加權指數
 eDt = datetime.today() # 今天
-sDt = eDt - relativedelta(months=anaMonths)  # 當前月份的1日
+# sDt = eDt - relativedelta(months=anaMonths)  # 當前月份的1日
+sDt = datetime(2025, 7, 4)
+
+anaRootDir = f'Data/ana/anaKplot/{stockId}/{sDt.strftime("%Y%m")}'
+os.makedirs(anaRootDir, exist_ok=True)
 
 outputRootDir = f'Data/finMind/taiwan_stock_daily_adj/{stockId}/{sDt.strftime("%Y%m")}'
 os.makedirs(outputRootDir, exist_ok=True)
@@ -48,8 +52,6 @@ def calc_oc_gap(row):
     return pd.Series([f"{gap_start:.2f}~{gap_end:.2f}", round(gap_size,2)])
 
 ### 計算跳空缺口
-outputRootDir = f'Data/ana/gaps/{stockId}/{sDt.strftime("%Y%m")}'
-os.makedirs(outputRootDir, exist_ok=True)
 def cal_gaps(df: pd.DataFrame):
     # 1. 鄰近日組合
     df_shift = df.shift(-1)
@@ -81,7 +83,7 @@ def cal_gaps(df: pd.DataFrame):
 
 # 存檔
 df_gaps = cal_gaps(df)
-outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
+outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
 if os.path.exists(outputFile):
     print(f"跳空缺口資料已存在：{outputFile}")
 else:
@@ -110,14 +112,34 @@ else:
         )
     df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
 
-### 合併三大法人的資料到價量那邊
-outputRootDir = f'Data/ana/mii/{stockId}/{sDt.strftime("%Y%m")}'
-os.makedirs(outputRootDir, exist_ok=True)
-outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-net_buys.csv'
+### 開始製作合併資料
+outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-daily_report.csv'
 if os.path.exists(outputFile):
-    print(f"三大法人買超資料已合併：{outputFile}")
+    print(f"每日資料已存在：{outputFile}")
     df_merged = pd.read_csv(outputFile)
 else:
+    ### 刪掉目前不需要的欄位
+    df = df.drop(columns=["spread", "Trading_turnover"])
+
+    ### 計算衍生欄位
+    df['close-open'] = df['close'] - df['open']
+    
+    # 近5/10/20日均量 (Trading_Volume 的 rolling mean)
+    df["近5日均量"] = df["Trading_Volume"].rolling(window=5).mean()
+    df["近10日均量"] = df["Trading_Volume"].rolling(window=10).mean()
+    df["近20日均量"] = df["Trading_Volume"].rolling(window=20).mean()
+
+    # 5/10/20 MA (收盤價 close 的 rolling mean)
+    df["5MA"] = df["close"].rolling(window=5).mean()
+    df["10MA"] = df["close"].rolling(window=10).mean()
+    df["20MA"] = df["close"].rolling(window=20).mean()
+
+    # 乖離率 (Devi) = (收盤價 - MA) / MA
+    df["5_Devi"] = (df["close"] - df["5MA"]) / df["5MA"]
+    df["10_Devi"] = (df["close"] - df["10MA"]) / df["10MA"]
+    df["20_Devi"] = (df["close"] - df["20MA"]) / df["20MA"]
+
+    ### 合併三大法人的資料到價量那邊
     df_3mii['net_buy'] = df_3mii['buy'] - df_3mii['sell']
 
     # 確保兩邊的 date 型態一致
@@ -126,12 +148,12 @@ else:
 
     # 建立 name → 欄位名稱的對應表（加上 total）
     name_to_col = {
-        "Foreign_Investor": "net_buy_foreign_investor",
-        "Investment_Trust": "net_buy_investment_trust",
-        "Dealer_self": "net_buy_dealer_self",
-        "Dealer_Hedging": "net_buy_dealer_hedging",
-        "Foreign_Dealer_Self": "net_buy_foreign_dealer_self",
-        "total": "total_net_buy"
+        "Foreign_Investor": "買超-外資", # 外資及陸資(不含外資自營)
+        "Investment_Trust": "買超-投信", # 投信
+        "Dealer_self": "買超-自營商(自行買賣)", # 自營商(自行買賣)
+        "Dealer_Hedging": "買超-自營商(避險)", # 自營商(避險)
+        "Foreign_Dealer_Self": "買超-外資自營商", # 外資自營商
+        "total": "法人總買超" 
     }
 
     # 把 name 換成對應的欄位名稱
@@ -143,3 +165,4 @@ else:
     # merge 回 df
     df_merged = df.merge(df_3mii_wide, on='date', how='left')
     df_merged.to_csv(outputFile, index=False, encoding="utf-8-sig")
+
