@@ -8,6 +8,7 @@ import calendar
 
 twseUrl = "https://www.twse.com.tw/rwd/zh"
 data_center = "../data/TwStockExchange"
+common_params = "response=json"
 
 # ======== 共用工具 ========
 def _date_to_str(date: datetime = None, formate: str = None) -> str:
@@ -33,7 +34,7 @@ def _save_to_csv(df: pd.DataFrame, apiEndpoint: str, filename: str):
     df.to_csv(path, index=False, encoding="utf-8-sig")
     print(f"✅ 已儲存：{path}")
 
-def _resd_from_csv(apiEndpoint: str, filename: str) -> pd.DataFrame:
+def _read_from_csv(apiEndpoint: str, filename: str) -> pd.DataFrame:
     # 1. 檢查 data 是否存在
     dir_path = os.path.join(data_center, apiEndpoint)    
     path = os.path.join(dir_path, f"{filename}.csv")
@@ -56,6 +57,7 @@ def _cleanup_old_files(dir_path: str, stock_no: str, date_str: str, keep: str):
                 print(f"⚠️ 無法刪除 {f}: {e}")
 
 # ======== 1. 個股成交日資訊 (含快取、合併、清理機制) ========
+# 日期,成交股數,成交金額,開盤價,最高價,最低價,收盤價,漲跌價差,成交筆數
 def get_stock_day(stock_no: str, date: datetime | None = None) -> pd.DataFrame:
     today = datetime.today()
     date = (date or today).replace(day=1)
@@ -65,13 +67,13 @@ def get_stock_day(stock_no: str, date: datetime | None = None) -> pd.DataFrame:
     os.makedirs(dir_path, exist_ok=True)
 
     # 嘗試完整檔
-    df = _resd_from_csv(apiEndpoint, f"{stock_no}_{date_str}")
+    df = _read_from_csv(apiEndpoint, f"{stock_no}_{date_str}")
     if df is not None:
         print(f"📂 檔案已存在：{stock_no}_{date_str}.csv")
         return df
 
     # 呼叫 API
-    apiUrl = f"{twseUrl}/{apiEndpoint}?date={date.strftime('%Y%m%d')}&stockNo={stock_no}&response=json"
+    apiUrl = f"{twseUrl}/{apiEndpoint}?date={date.strftime('%Y%m%d')}&stockNo={stock_no}&{common_params}"
     res = requests.get(apiUrl).json()
     df = pd.DataFrame(res.get("data", []), columns=res.get("fields", []))
 
@@ -104,24 +106,68 @@ def get_stock_day(stock_no: str, date: datetime | None = None) -> pd.DataFrame:
     return df
 
 # ======== 2. 個股收盤價 ========
+# 日期,收盤價
 def get_stock_day_avg(stock_no: str, date: datetime | None = None) -> pd.DataFrame:
-    date_str = _date_to_str(date)
+    today = datetime.today()
+    date = (date or today).replace(day=1)
+    date_str = date.strftime("%Y%m")
     apiEndpoint = "afterTrading/STOCK_DAY_AVG"
-    apiParams = f"date={date_str}&stockNo={stock_no}&response=json"
-    apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
+    dir_path = os.path.join(data_center, apiEndpoint)
+    os.makedirs(dir_path, exist_ok=True)
 
-    res = requests.get(apiUrl)
-    data = res.json()
+    # 嘗試完整檔
+    df = _read_from_csv(apiEndpoint, f"{stock_no}_{date_str}")
+    if df is not None:
+        print(f"📂 檔案已存在：{stock_no}_{date_str}.csv")
+        return df
 
-    df = pd.DataFrame(data.get("data", []), columns=data.get("fields", []))
-    _save_to_csv(df, apiEndpoint, f"{stock_no}_{date_str}")
+    # 呼叫 API
+    apiUrl = f"{twseUrl}/{apiEndpoint}?date={date.strftime('%Y%m%d')}&stockNo={stock_no}&{common_params}"
+    res = requests.get(apiUrl).json()
+    df = pd.DataFrame(res.get("data", []), columns=res.get("fields", []))
+
+    if df.empty:
+        print("⚠️ API 回傳空資料")
+        return df
+
+    # 找最後一個合法日期（排除非日期列，例如月平均收盤價）
+    date_col = df.columns[0]  # 假設第一欄是日期
+    for d in reversed(df[date_col]):
+        raw = str(d).replace("/", "")
+        if raw.isdigit() and (len(raw) == 7 or len(raw) == 8):
+            # 處理民國年格式
+            if len(raw) == 7:
+                raw = str(int(raw[:3]) + 1911) + raw[3:]
+            last_date = datetime.strptime(raw, "%Y%m%d")
+            break
+    else:
+        raise ValueError("找不到有效日期欄位")
+
+    # 判斷是否為當月（尚未結束的月）
+    is_current_month = date.year == today.year and date.month == today.month
+    if not is_current_month:
+        # 過去月份直接存完整月檔
+        filename = f"{stock_no}_{date_str}"
+    else:
+        # 本月尚未結束
+        days_in_month = calendar.monthrange(date.year, date.month)[1]
+        if last_date.day == days_in_month:
+            filename = f"{stock_no}_{date_str}"
+        else:
+            filename = f"{stock_no}_{date.strftime('%Y%m%d')}_{last_date.strftime('%Y%m%d')}"
+
+    # 儲存 CSV 並清理舊檔
+    _save_to_csv(df, apiEndpoint, filename)
+    _cleanup_old_files(dir_path, stock_no, date_str, keep=f"{filename}.csv")
+
     return df
 
 # ======== 3. 三大法人 ========
+# 單位名稱,買進金額,賣出金額,買賣差額
 def get_institutional_investors(date: datetime | None = None) -> pd.DataFrame:
     date_str = _date_to_str(date)
     apiEndpoint = "fund/BFI82U"
-    apiParams = f"type=day&dayDate={date_str}&weekDate={date_str}&monthDate={date_str}&response=json"
+    apiParams = f"type=day&dayDate={date_str}&weekDate={date_str}&monthDate={date_str}&{common_params}"
     apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
     res = requests.get(apiUrl)
@@ -132,14 +178,14 @@ def get_institutional_investors(date: datetime | None = None) -> pd.DataFrame:
     return df
 
 # ======== 3.2 三大法人 區間版 ========
+# 單位名稱,買進金額,賣出金額,買賣差額
 def get_institutional_investors_range(startDate: datetime, endDate: datetime) -> pd.DataFrame:
     apiEndpoint = "fund/BFI82U"
     all_data = []
-
     current = startDate
     while current <= endDate:
         date_str = _date_to_str(current)
-        apiParams = f"type=day&dayDate={date_str}&weekDate={date_str}&monthDate={date_str}&response=json"
+        apiParams = f"type=day&dayDate={date_str}&weekDate={date_str}&monthDate={date_str}&{common_params}"
         apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
         res = requests.get(apiUrl)
@@ -170,10 +216,11 @@ def get_institutional_investors_range(startDate: datetime, endDate: datetime) ->
     return df_all
 
 # ======== 4. 融資融券餘額 ========
+# 日期,項目,買進,賣出,現金(券)償還,前日餘額,今日餘額
 def get_margin_trading(date: datetime | None = None) -> pd.DataFrame:
     date_str = _date_to_str(date)
     apiEndpoint = "marginTrading/MI_MARGN"
-    apiParams = f"date={date_str}&selectType=MS&response=json"
+    apiParams = f"date={date_str}&selectType=MS&{common_params}"
     apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
     res = requests.get(apiUrl)
@@ -193,6 +240,7 @@ def get_margin_trading(date: datetime | None = None) -> pd.DataFrame:
     return df
 
 # ======== 4.2 融資融券餘額 區間版 ========
+# 日期,項目,買進,賣出,現金(券)償還,前日餘額,今日餘額
 def get_margin_trading_range(startDate: datetime, endDate: datetime) -> pd.DataFrame:
     apiEndpoint = "marginTrading/MI_MARGN"
     all_data = []
@@ -200,7 +248,7 @@ def get_margin_trading_range(startDate: datetime, endDate: datetime) -> pd.DataF
     current = startDate
     while current <= endDate:
         date_str = _date_to_str(current)
-        apiParams = f"date={date_str}&selectType=MS&response=json"
+        apiParams = f"date={date_str}&selectType=MS&{common_params}"
         apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
         res = requests.get(apiUrl)
@@ -241,8 +289,10 @@ def get_margin_trading_range(startDate: datetime, endDate: datetime) -> pd.DataF
 def get_notice(start_date: datetime | None = None, end_date: datetime | None = None) -> pd.DataFrame:
     start_str = _date_to_str(start_date)
     end_str = _date_to_str(end_date)
+    
+
     apiEndpoint = "announcement/notice"
-    apiParams = f"querytype=1&stockNo=&selectType=&startDate={start_str}&endDate={end_str}&sortKind=STKNO&response=json"
+    apiParams = f"querytype=1&stockNo=&selectType=&startDate={start_str}&endDate={end_str}&sortKind=STKNO&{common_params}"
     apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
     res = requests.get(apiUrl)
@@ -256,10 +306,10 @@ def get_notice(start_date: datetime | None = None, end_date: datetime | None = N
 # ======== 範例測試 ========
 if __name__ == "__main__":
     test = datetime.today()
-    test = test - relativedelta(months=2)
+    # test = test - relativedelta(months=1)
 
     # # 測試下載各項資料
-    get_stock_day("2330", test)
+    # get_stock_day("2330", test)
     # get_stock_day_avg("0050", test)
     # get_institutional_investors(test)
     # get_margin_trading(test)
