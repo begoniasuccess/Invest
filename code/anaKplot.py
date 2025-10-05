@@ -5,28 +5,24 @@ from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from common import twse
+import sqlite3
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMC0wNCAxMzoxMjo1NyIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43My41NS4xMDYifQ.YMhmYo6sx7_Z0WZwPbNcjDi8gPvt-a6bIx6XHeax4LM"
 api = DataLoader()
 api.login_by_token(api_token=token)
 
 anaMonths = 2 # 近N個月的資料
-stockIdList = ["TAIEX", "TPEx", "0050", "00687B", "006201"]
+# stockIdList = ["TAIEX", "TPEx", "0050", "00687B", "006201"]
+stockIdList = ["TAIEX"]
 #'TAIEX' # 加權指數
 #'TPEx' # 櫃買指數
-
-forceRerun = False # 是否呈重跑所有資料?
-forceReAna = False # 是否重跑分析?
-
-# 重跑所有資料包含了分析也要重跑
-if forceRerun:
-    forceReAna = True
 
 ### 開始產出報告
 for stockId in stockIdList:
     eDt = datetime.today() # 今天
     sDt = eDt - relativedelta(months=anaMonths)  # 當前月份的1日
     # sDt = datetime(2025, 7, 4)
+    print(sDt.strftime("%Y%m%d"), eDt.strftime("%Y%m%d"))
 
     anaRootDir = f'../Data/ana/anaKplot/{stockId}/{sDt.strftime("%Y%m")}'
     os.makedirs(anaRootDir, exist_ok=True)
@@ -34,7 +30,7 @@ for stockId in stockIdList:
     outputRootDir = f'../Data/finMind/taiwan_stock_daily_adj/{stockId}/{sDt.strftime("%Y%m")}'
     os.makedirs(outputRootDir, exist_ok=True)
     outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}.csv'
-    if not forceRerun and os.path.exists(outputFile):
+    if os.path.exists(outputFile):
         print(f"每日價量資料已存在：{outputFile}")
         df = pd.read_csv(outputFile)
     else:
@@ -97,7 +93,7 @@ for stockId in stockIdList:
     # 存檔
     df_gaps = cal_gaps(df)
     outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
-    if not forceReAna and os.path.exists(outputFile):
+    if os.path.exists(outputFile):
         print(f"跳空缺口資料已存在：{outputFile}")
     else:
         df_gaps.to_csv(outputFile, index=False, encoding="utf-8-sig")
@@ -111,7 +107,7 @@ for stockId in stockIdList:
         outputRootDir = f'../Data/finMind/taiwan_stock_institutional_investors/{stockId}/{sDt.strftime("%Y%m")}'
     os.makedirs(outputRootDir, exist_ok=True)
     outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-3mii.csv'
-    if not forceRerun and os.path.exists(outputFile):
+    if os.path.exists(outputFile):
         print(f"三大法人資料已存在：{outputFile}")
         df_3mii = pd.read_csv(outputFile)
     else:
@@ -129,14 +125,24 @@ for stockId in stockIdList:
         df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
 
     ### 融資餘額
-    df_margin = twse.get_margin_trading_range(sDt, eDt)
+    # time,item,today_balance
+    conn = sqlite3.connect("../data_center/data_center.db")
+    sql = "SELECT time, item, today_balance FROM twse_marginTrading_miMargn"
+    sql += f" WHERE time BETWEEN '{sDt.strftime("%Y%m%d")}' AND '{eDt.strftime("%Y%m%d")}'"
+    sql += " AND item = '融資金額(仟元)'"
+    sql += " ORDER BY time ASC"
+    # 讀取成 DataFrame
+    df_margin = pd.read_sql(sql, conn)
+    df_margin["time"] = pd.to_datetime(df_margin["time"], format="%Y%m%d")
+    conn.close()
 
     ### 開始製作合併資料
     # date,stock_id,Trading_Volume,Volume_Change,Trading_money,open,max,min,close,close-open,近5日均量,近10日均量,近20日均量,5MA,10MA,20MA,5_Devi,10_Devi,20_Devi,法人總買超,買超-外資,買超-外資自營商,買超-投信,買超-自營商(自行買賣),買超-自營商(避險)
     outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-daily_report.csv'
-    if not forceReAna and os.path.exists(outputFile):
+    if os.path.exists(outputFile):
         print(f"每日資料已存在：{outputFile}")
         df_merged = pd.read_csv(outputFile)
+        print(df_merged.head())
     else:
         ### 刪掉目前不需要的欄位
         df = df.drop(columns=["spread", "Trading_turnover"])
@@ -194,6 +200,20 @@ for stockId in stockIdList:
         df_merged = df.merge(df_3mii_wide, on='date', how='left')
 
         ### 合併融資餘額的資料
-        
+        # 先確保日期欄位型別一致
+        df_margin["time"] = pd.to_datetime(df_margin["time"], format="%Y%m%d")
+        df_merged["date"] = pd.to_datetime(df_merged["date"], format="%Y-%m-%d")
+
+        # 合併兩張表（左邊為 df_merged，右邊為 df_margin）
+        df_merged = pd.merge(
+            df_merged,
+            df_margin[["time", "today_balance"]],
+            how="left",              # 保留 df_merged 的全部列
+            left_on="date",          # df_merged 的對應欄位
+            right_on="time"          # df_margin 的對應欄位
+        )
+        # 移除重複欄位 time，並重新命名
+        df_merged = df_merged.drop(columns=["time"])
+        df_merged = df_merged.rename(columns={"today_balance": "融資餘額(仟元)"})
         
         df_merged.to_csv(outputFile, index=False, encoding="utf-8-sig")

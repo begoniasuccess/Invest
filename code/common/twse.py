@@ -321,4 +321,4 @@ if __name__ == "__main__":
     # get_institutional_investors(test)
     # get_margin_trading(test)
     # get_notice(datetime(2025, 10, 1), datetime(2025, 10, 4))
-    # get_margin_trading_range(datetime(2025, 10, 1), datetime(2025, 10, 4))
+    get_margin_trading_range(datetime(2025, 8, 1), datetime(2025, 8, 31))
