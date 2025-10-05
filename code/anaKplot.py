@@ -4,6 +4,7 @@ import pandas as pd
 from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from common import twse
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMC0wNCAxMzoxMjo1NyIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43My41NS4xMDYifQ.YMhmYo6sx7_Z0WZwPbNcjDi8gPvt-a6bIx6XHeax4LM"
 api = DataLoader()
@@ -103,6 +104,7 @@ for stockId in stockIdList:
     del df_gaps
 
     ### 三大法人 (Three Major Institutional Investors)
+    # buy,date,name,sell
     if stockId == 'TAIEX' or stockId == 'TPEx' :
         outputRootDir = f'../Data/finMind/taiwan_stock_institutional_investors/all/{sDt.strftime("%Y%m")}'
     else:
@@ -126,7 +128,11 @@ for stockId in stockIdList:
             )
         df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
 
+    ### 融資餘額
+    df_margin = twse.get_margin_trading_range(sDt, eDt)
+
     ### 開始製作合併資料
+    # date,stock_id,Trading_Volume,Volume_Change,Trading_money,open,max,min,close,close-open,近5日均量,近10日均量,近20日均量,5MA,10MA,20MA,5_Devi,10_Devi,20_Devi,法人總買超,買超-外資,買超-外資自營商,買超-投信,買超-自營商(自行買賣),買超-自營商(避險)
     outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-daily_report.csv'
     if not forceReAna and os.path.exists(outputFile):
         print(f"每日資料已存在：{outputFile}")
@@ -137,6 +143,10 @@ for stockId in stockIdList:
 
         ### 計算衍生欄位
         df['close-open'] = df['close'] - df['open']
+
+        volume_change_data = (df["Trading_Volume"] - df["Trading_Volume"].shift(1)) / df["Trading_Volume"].shift(1)
+        pos = df.columns.get_loc("Trading_Volume") + 1
+        df.insert(pos, "Volume_Change", volume_change_data)
         
         # 近5/10/20日均量 (Trading_Volume 的 rolling mean)
         df["近5日均量"] = df["Trading_Volume"].rolling(window=5).mean()
@@ -182,5 +192,8 @@ for stockId in stockIdList:
 
         # merge 回 df
         df_merged = df.merge(df_3mii_wide, on='date', how='left')
+
+        ### 合併融資餘額的資料
+        
         
         df_merged.to_csv(outputFile, index=False, encoding="utf-8-sig")

@@ -252,7 +252,13 @@ def get_margin_trading_range(startDate: datetime, endDate: datetime) -> pd.DataF
         apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
         res = requests.get(apiUrl)
-        data = res.json()
+        try:
+            data = res.json()
+        except ValueError:
+            print("⚠️ API 回傳不是 JSON！")
+            print(res.text)
+            current += timedelta(days=1)
+            continue
 
         # 如果回傳只有 "stat" 且不是 "OK"，表示沒資料
         if data.get("stat") != "OK":
@@ -286,6 +292,7 @@ def get_margin_trading_range(startDate: datetime, endDate: datetime) -> pd.DataF
     return df_all
 
 # ======== 5. 注意股公告 ========
+# 編號,證券代號,證券名稱,累計次數,注意交易資訊,日期,收盤價,本益比
 def get_notice(start_date: datetime | None = None, end_date: datetime | None = None) -> pd.DataFrame:
     start_str = _date_to_str(start_date)
     end_str = _date_to_str(end_date)
