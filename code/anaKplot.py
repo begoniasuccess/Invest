@@ -4,7 +4,7 @@ import pandas as pd
 from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from common import twse
+from common import twse_api
 import sqlite3
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMC0wNCAxMzoxMjo1NyIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43My41NS4xMDYifQ.YMhmYo6sx7_Z0WZwPbNcjDi8gPvt-a6bIx6XHeax4LM"
@@ -23,6 +23,15 @@ forceReAna = True # 是否重跑分析?
 # 重跑所有資料包含了分析也要重跑
 if forceRerun:
     forceReAna = True
+
+def reorder_df(df: pd.DataFrame, target_order: list[str]) -> pd.DataFrame:
+    new_df = pd.DataFrame()
+    for col in target_order:
+        if col in df.columns:
+            new_df[col] = df[col]
+        else:
+            new_df[col] = None  # 若欄位不存在，填 None
+    return new_df
 
 ### 開始產出報告
 for stockId in stockIdList:
@@ -152,6 +161,7 @@ for stockId in stockIdList:
         print(df_merged.head())
     else:
         df['date'] = pd.to_datetime(df['date'])
+        df = df.sort_values(by="date")
 
         ### 刪掉目前不需要的欄位
         df = df.drop(columns=["spread", "Trading_turnover"])
@@ -224,12 +234,11 @@ for stockId in stockIdList:
         # 原本的融資餘額是千元，這邊轉成億
         df_merged["today_balance"] = df_merged["today_balance"] * 1000/100000000
         df_merged = df_merged.rename(columns={"today_balance": "融資餘額(億)"})
-
-        df_merged["融資增減率"] = (df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1)) / df_merged["融資餘額(億)"].shift(1)
+        df_merged["融資增減(億)"] = (df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1))
 
         ### 資金走向
-        df_merged["資金走向"] = df_merged["close-open"] - (df_merged["法人總買超"]/100000000 + df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1))
-        df_merged["資金走向判定"] = df_merged["資金走向"].apply(
+        df_merged["資金走向"] = df_merged["close-open"] - (df_merged["法人總買超"]/100000000 + df_merged["融資增減(億)"])
+        df_merged["資金走向判讀"] = df_merged["資金走向"].apply(
             lambda x: "偏重大型股(多)" if x > 0 else ("偏重小型股(空)" if x < 0 else None)
         )
         
