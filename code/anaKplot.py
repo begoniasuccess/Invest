@@ -17,6 +17,13 @@ stockIdList = ["TAIEX"]
 #'TAIEX' # 加權指數
 #'TPEx' # 櫃買指數
 
+forceRerun = False # 是否呈重跑所有資料?
+forceReAna = True # 是否重跑分析?
+
+# 重跑所有資料包含了分析也要重跑
+if forceRerun:
+    forceReAna = True
+
 ### 開始產出報告
 for stockId in stockIdList:
     eDt = datetime.today() # 今天
@@ -30,7 +37,7 @@ for stockId in stockIdList:
     outputRootDir = f'../Data/finMind/taiwan_stock_daily_adj/{stockId}/{sDt.strftime("%Y%m")}'
     os.makedirs(outputRootDir, exist_ok=True)
     outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}.csv'
-    if os.path.exists(outputFile):
+    if not forceRerun and os.path.exists(outputFile):
         print(f"每日價量資料已存在：{outputFile}")
         df = pd.read_csv(outputFile)
     else:
@@ -93,7 +100,7 @@ for stockId in stockIdList:
     # 存檔
     df_gaps = cal_gaps(df)
     outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-gaps.csv'
-    if os.path.exists(outputFile):
+    if not forceReAna and os.path.exists(outputFile):
         print(f"跳空缺口資料已存在：{outputFile}")
     else:
         df_gaps.to_csv(outputFile, index=False, encoding="utf-8-sig")
@@ -107,7 +114,7 @@ for stockId in stockIdList:
         outputRootDir = f'../Data/finMind/taiwan_stock_institutional_investors/{stockId}/{sDt.strftime("%Y%m")}'
     os.makedirs(outputRootDir, exist_ok=True)
     outputFile = f'{outputRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-3mii.csv'
-    if os.path.exists(outputFile):
+    if not forceRerun and os.path.exists(outputFile):
         print(f"三大法人資料已存在：{outputFile}")
         df_3mii = pd.read_csv(outputFile)
     else:
@@ -139,16 +146,19 @@ for stockId in stockIdList:
     ### 開始製作合併資料
     # date,stock_id,Trading_Volume,Volume_Change,Trading_money,open,max,min,close,close-open,近5日均量,近10日均量,近20日均量,5MA,10MA,20MA,5_Devi,10_Devi,20_Devi,法人總買超,買超-外資,買超-外資自營商,買超-投信,買超-自營商(自行買賣),買超-自營商(避險)
     outputFile = f'{anaRootDir}/{sDt.strftime("%Y%m%d")}_{eDt.strftime("%Y%m%d")}-daily_report.csv'
-    if os.path.exists(outputFile):
+    if not forceReAna and os.path.exists(outputFile):
         print(f"每日資料已存在：{outputFile}")
         df_merged = pd.read_csv(outputFile)
         print(df_merged.head())
     else:
+        df['date'] = pd.to_datetime(df['date'])
+
         ### 刪掉目前不需要的欄位
         df = df.drop(columns=["spread", "Trading_turnover"])
 
         ### 計算衍生欄位
         df['close-open'] = df['close'] - df['open']
+        df['max-min'] = df['max'] - df['min']
 
         volume_change_data = (df["Trading_Volume"] - df["Trading_Volume"].shift(1)) / df["Trading_Volume"].shift(1)
         pos = df.columns.get_loc("Trading_Volume") + 1
@@ -169,7 +179,7 @@ for stockId in stockIdList:
         df["10_Devi"] = (df["close"] - df["10MA"]) / df["10MA"]
         df["20_Devi"] = (df["close"] - df["20MA"]) / df["20MA"]
 
-        df['date'] = pd.to_datetime(df['date'])
+        df['date2'] = df['date']
         
         ### 合併三大法人的資料到價量那邊
         if df_3mii.empty:
@@ -203,8 +213,6 @@ for stockId in stockIdList:
         # 先確保日期欄位型別一致
         df_margin["time"] = pd.to_datetime(df_margin["time"], format="%Y%m%d")
         df_merged["date"] = pd.to_datetime(df_merged["date"], format="%Y-%m-%d")
-
-        # 合併兩張表（左邊為 df_merged，右邊為 df_margin）
         df_merged = pd.merge(
             df_merged,
             df_margin[["time", "today_balance"]],
@@ -212,8 +220,17 @@ for stockId in stockIdList:
             left_on="date",          # df_merged 的對應欄位
             right_on="time"          # df_margin 的對應欄位
         )
-        # 移除重複欄位 time，並重新命名
         df_merged = df_merged.drop(columns=["time"])
-        df_merged = df_merged.rename(columns={"today_balance": "融資餘額(仟元)"})
+        # 原本的融資餘額是千元，這邊轉成億
+        df_merged["today_balance"] = df_merged["today_balance"] * 1000/100000000
+        df_merged = df_merged.rename(columns={"today_balance": "融資餘額(億)"})
+
+        df_merged["融資增減率"] = (df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1)) / df_merged["融資餘額(億)"].shift(1)
+
+        ### 資金走向
+        df_merged["資金走向"] = df_merged["close-open"] - (df_merged["法人總買超"]/100000000 + df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1))
+        df_merged["資金走向判定"] = df_merged["資金走向"].apply(
+            lambda x: "偏重大型股(多)" if x > 0 else ("偏重小型股(空)" if x < 0 else None)
+        )
         
         df_merged.to_csv(outputFile, index=False, encoding="utf-8-sig")
