@@ -94,6 +94,30 @@ def _is_no_overlap(sDt: datetime, eDt: datetime, minDt: datetime, maxDt: datetim
     """
     return eDt < minDt or sDt > maxDt
 
+def _overlap_period(sDt: datetime, eDt: datetime, minDt: datetime, maxDt: datetime):
+    """
+    判斷兩個時間區間是否重疊，並回傳重疊區間。
+
+    參數：
+        sDt, eDt : datetime
+        minDt, maxDt : datetime
+
+    回傳：
+        若有重疊，回傳 (overlap_start, overlap_end)
+        若無重疊，回傳 None
+    """
+    # 先確保時間順序正確
+    if sDt > eDt or minDt > maxDt:
+        raise ValueError("起訖時間錯誤：start 必須早於 end")
+
+    # 計算重疊區間
+    overlap_start = max(sDt, minDt)
+    overlap_end = min(eDt, maxDt)
+
+    if overlap_start <= overlap_end:
+        return overlap_start, overlap_end
+    else:
+        return None
 
 # ======== 1. 個股成交日資訊 (含快取、合併、清理機制) ========
 # 日期,成交股數,成交金額,開盤價,最高價,最低價,收盤價,漲跌價差,成交筆數
@@ -333,6 +357,10 @@ def get_margin_trading_range(sDt: datetime, eDt: datetime) -> pd.DataFrame:
 # ======== 5. 注意股公告 ========
 # 編號,證券代號,證券名稱,累計次數,注意交易資訊,日期,收盤價,本益比
 def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
+    print("sDt=" , sDt, "eDt=", eDt)
+    if (sDt > eDt):
+        return None
+
     if eDt > datetime.today():
         eDt = datetime.today()
 
@@ -346,6 +374,7 @@ def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
     maxDt = _roc_to_datetime(df_check["MAX(日期)"].iloc[0])
     print(minDt, maxDt)
 
+    ### 1.資料完全落在庫的範圍，直接搜庫
     if (_is_fully_in_range(sDt, eDt, minDt, maxDt)):
         print("*** 直接從庫提取資料")
         sql = "SELECT * FROM twse_announcement_notice"
@@ -354,18 +383,19 @@ def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
         df = query_to_df(sql)
         return df
     
-    print("*** 從API提取資料")
-    apiEndpoint = "announcement/notice"
-    apiParams = f"querytype=1&stockNo=&selectType=&sortKind=STKNO&{common_params}"
-    apiParams += f"&startDate={start_str}&endDate={end_str}"
-    apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
-
-    res = requests.get(apiUrl)
-    raw_data = res.json()
-    data = raw_data["data"]
-
-    ### 存到db裡
+    ### 2.資料完全落在庫的範圍之外，fetch API
     if (_is_no_overlap(sDt, eDt, minDt, maxDt)):
+        print("*** 從API提取資料")
+        apiEndpoint = "announcement/notice"
+        apiParams = f"querytype=1&stockNo=&selectType=&sortKind=STKNO&{common_params}"
+        apiParams += f"&startDate={start_str}&endDate={end_str}"
+        apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
+
+        res = requests.get(apiUrl)
+        raw_data = res.json()
+        data = raw_data["data"]
+
+        ### 存到db裡
         values = []
         for r in data:
             try:
@@ -392,25 +422,46 @@ def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
         """
         execute_sql(sql, values)
 
-    df = pd.DataFrame(raw_data.get("data", []), columns=raw_data.get("fields", []))
-    _save_to_csv(df, apiEndpoint, f"{start_str}_{end_str}")
+        df = pd.DataFrame(raw_data.get("data", []), columns=raw_data.get("fields", []))
+        _save_to_csv(df, apiEndpoint, f"{start_str}_{end_str}")
+        return df
+    
+    ### 3.重疊的部分取庫，超出的部分用API，最後merge
+    ## 找出重疊部分(From 庫)
+    overlap_star, overlap_end = _overlap_period(sDt, eDt, minDt, maxDt)
+    if overlap_star is not None:
+        df_exist = get_notice(overlap_star, overlap_end)
+
+    ## 找出需要獲取的部分
+    if (sDt < minDt):
+        df_new_left = get_notice(sDt, minDt - relativedelta(days=1))
+    
+    if (maxDt < eDt):
+        df_new_right = get_notice(maxDt + relativedelta(days=1), eDt)
+    
+    ## 合併 DataFrames
+    dfs = []
+    if 'df_exist' in locals() and isinstance(df_exist, pd.DataFrame):
+        dfs.append(df_exist)
+
+    if 'df_new_left' in locals() and isinstance(df_new_left, pd.DataFrame):
+        dfs.append(df_new_left)
+
+    if 'df_new_right' in locals() and isinstance(df_new_right, pd.DataFrame):
+        dfs.append(df_new_right)
+
+    if dfs:
+        df = pd.concat(dfs, ignore_index=True)
+    else:
+        df = None  # 如果都不存在，回傳空 DataFrame
+
     return df
 
 
 # ======== 範例測試 ========
 if __name__ == "__main__":
     year = 2023
-    sDt = datetime(2020, 1, 1)
-    eDt = datetime(2020, 12, 31)
+    sDt = datetime(2018, 5, 1)
+    eDt = datetime(2025, 12, 31)
     testData = get_notice(sDt, eDt)
     print(testData.head())
-
-    # test = datetime.today()
-    # test = test - relativedelta(months=1)
-
-    # # 測試下載各項資料
-    # get_stock_day("2330", test)
-    # get_stock_day_avg("0050", test)
-    # get_institutional_investors(test)
-    # get_margin_trading(test)
-    # get_notice(datetime(2025, 10, 1), datetime(2025, 10, 4))
