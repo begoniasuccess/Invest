@@ -5,6 +5,7 @@ from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import sqlite3
+import numpy as np
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMC0wNCAxMzoxMjo1NyIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43My41NS4xMDYifQ.YMhmYo6sx7_Z0WZwPbNcjDi8gPvt-a6bIx6XHeax4LM"
 api = DataLoader()
@@ -292,7 +293,7 @@ newcol_list = [
 	"上影/實體",
 	"下影(%)",
 	"下影/實體",
-	"跳空率",
+	"跳空缺口",
 	"5日平均",
 	"10日平均",
 	"20日平均",
@@ -318,10 +319,11 @@ else:
     df_merged = df_merged.rename(columns=rename_dict)
     
     # 單位換算(億)
+    df_merged["總成交金額(億)"] = df_merged["總成交金額(億)"]/100000000
     df_merged["法人總買超(億)"] = df_merged["法人總買超(億)"]/100000000
     df_merged["買超-外資(億)"] = df_merged["買超-外資(億)"]/100000000
     df_merged["買超-外資自營商"] = df_merged["買超-外資自營商"]/100000000
-    df_merged["買超-投信(億)"] = df_merged["買超-投信(億))"]/100000000
+    df_merged["買超-投信(億)"] = df_merged["買超-投信(億)"]/100000000
     df_merged["買超-自營商(自行買賣)"] = df_merged["買超-自營商(自行買賣)"]/100000000
     df_merged["買超-自營商(避險)"] = df_merged["買超-自營商(避險)"]/100000000
 
@@ -335,7 +337,7 @@ else:
     
     ### 寫入新欄位：
     # 5日最大量_日期, 5日最大量, 10日最大量_日期, 10日最大量, 20日最大量_日期, 20日最大量, 
-    # 實體(漲跌率), 上影(%), 上影/實體, 下影(%), 下影/實體, 跳空率, 
+    # 實體(漲跌率), 上影(%), 上影/實體, 下影(%), 下影/實體, 跳空缺口, 
     # 買超-自營商(億)
 
     # 最大交易量
@@ -361,7 +363,75 @@ else:
     # 實體(漲跌率)
     new_df["實體(漲跌率)"] = (df_merged["收盤價"] - df_merged["開盤價"])/df_merged["開盤價"]
 
-    
+    for col in ["開盤價", "收盤價", "最高價", "最低價", "實體(漲跌率)"]:
+        new_df[col] = pd.to_numeric(new_df[col], errors="coerce")
+
+    new_df["上影(%)"] = np.where(
+        new_df["實體(漲跌率)"] > 0,
+        (new_df["最高價"] - new_df["收盤價"]) / new_df["最高價"],
+        np.where(
+            new_df["實體(漲跌率)"] < 0,
+            (new_df["最高價"] - new_df["開盤價"]) / new_df["最高價"],
+            np.nan
+        )
+    )
+
+    new_df["下影(%)"] = np.where(
+        new_df["實體(漲跌率)"] > 0,
+        (new_df["開盤價"] - new_df["最低價"]) / new_df["最低價"],
+        np.where(
+            new_df["實體(漲跌率)"] < 0,
+            (new_df["收盤價"] - new_df["最低價"]) / new_df["最低價"],
+            np.nan
+        )
+    )
+
+    new_df["上影/實體"] = np.where(
+        new_df["實體(漲跌率)"] >= 0,
+        (new_df["最高價"] - new_df["收盤價"]) / (new_df["收盤價"] - new_df["開盤價"]).replace(0, np.nan),
+        (new_df["最高價"] - new_df["開盤價"]) / (new_df["開盤價"] - new_df["收盤價"]).replace(0, np.nan)
+    )
+
+    new_df["下影/實體"] = np.where(
+        new_df["實體(漲跌率)"] >= 0,
+        (new_df["開盤價"] - new_df["最低價"]) / (new_df["收盤價"] - new_df["開盤價"]).replace(0, np.nan),
+        (new_df["收盤價"] - new_df["最低價"]) / (new_df["開盤價"] - new_df["收盤價"]).replace(0, np.nan)
+    )
+
+    # 跳空缺口
+    df_merged["昨高"] = df_merged["最高價"].shift(1)
+    df_merged["昨低"] = df_merged["最低價"].shift(1)
+    conditions = [
+        df_merged["最低價"] > df_merged["昨高"],   # 上跳空
+        df_merged["最高價"] < df_merged["昨低"]    # 下跳空
+    ]
+    choices = ["上跳空", "下跳空"]
+    df_merged["跳空狀態"] = np.select(conditions, choices, default="無跳空")
+
+    # 判斷紅黑K
+    df_merged["is_red"] = df_merged["收盤價"] > df_merged["開盤價"]
+
+    # 今上緣、今下緣
+    df_merged["今上緣"] = np.where(df_merged["is_red"], df_merged["收盤價"], df_merged["開盤價"])
+    df_merged["今下緣"] = np.where(df_merged["is_red"], df_merged["開盤價"], df_merged["收盤價"])
+
+    # 昨上緣、昨下緣（shift 取前一天）
+    df_merged["昨上緣"] = df_merged["今上緣"].shift(1)
+    df_merged["昨下緣"] = df_merged["今下緣"].shift(1)
+
+    # 計算跳空缺口
+    df_merged["跳空缺口"] = np.select(
+        [
+            df_merged["跳空狀態"] == "上跳空",
+            df_merged["跳空狀態"] == "下跳空"
+        ],
+        [
+            df_merged["今下緣"] - df_merged["昨上緣"],   # 上跳空
+            df_merged["今上緣"] - df_merged["昨下緣"]    # 下跳空
+        ],
+        default=None
+    )
+    new_df["跳空缺口"] = df_merged["跳空缺口"]
 
     # 買超-自營商(億)
     new_df["買超-自營商(億)"] = df_merged["買超-外資自營商"] + df_merged["買超-自營商(自行買賣)"] + df_merged["買超-自營商(避險)"]
