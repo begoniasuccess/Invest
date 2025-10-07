@@ -4,8 +4,8 @@ import pandas as pd
 from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import sqlite3
 import numpy as np
+from common import twse
 
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMC0wNCAxMzoxMjo1NyIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43My41NS4xMDYifQ.YMhmYo6sx7_Z0WZwPbNcjDi8gPvt-a6bIx6XHeax4LM"
 api = DataLoader()
@@ -15,7 +15,7 @@ stockId = 'TAIEX'; # 加權指數
 anaMonths = 2 # 近N個月的資料
 
 forceRerun = False # 是否呈重跑所有資料?
-forceReAna = False # 是否重跑分析?
+forceReAna = True # 是否重跑分析?
 
 # 重跑所有資料包含了分析也要重跑
 if forceRerun:
@@ -136,16 +136,9 @@ else:
     df_3mii.to_csv(outputFile, index=False, encoding="utf-8-sig")
 
 ### 融資餘額
-# time,item,today_balance
-conn = sqlite3.connect("../data_center/data_center.db")
-sql = "SELECT time, item, today_balance FROM twse_marginTrading_miMargn"
-sql += f" WHERE time BETWEEN '{sDt.strftime("%Y%m%d")}' AND '{eDt.strftime("%Y%m%d")}'"
-sql += " AND item = '融資金額(仟元)'"
-sql += " ORDER BY time ASC"
-# 讀取成 DataFrame
-df_margin = pd.read_sql(sql, conn)
-df_margin["time"] = pd.to_datetime(df_margin["time"], format="%Y%m%d")
-conn.close()
+df_margin = twse.get_margin_trading(sDt, eDt)
+df_margin = df_margin[df_margin["項目"] == "融資金額(仟元)"]
+df_margin["日期"] = pd.to_datetime(df_margin["日期"], format="%Y%m%d")
 
 ### 開始製作合併資料
 # date,stock_id,Trading_Volume,Volume_Change,Trading_money,open,max,min,close,close-open,近5日均量,近10日均量,近20日均量,5MA,10MA,20MA,5_Devi,10_Devi,20_Devi,法人總買超,買超-外資,買超-外資自營商,買超-投信,買超-自營商(自行買賣),買超-自營商(避險)
@@ -216,19 +209,19 @@ else:
 
     ### 合併融資餘額的資料
     # 先確保日期欄位型別一致
-    df_margin["time"] = pd.to_datetime(df_margin["time"], format="%Y%m%d")
+    df_margin["日期"] = pd.to_datetime(df_margin["日期"], format="%Y%m%d")
     df_merged["date"] = pd.to_datetime(df_merged["date"], format="%Y-%m-%d")
     df_merged = pd.merge(
         df_merged,
-        df_margin[["time", "today_balance"]],
+        df_margin[["日期", "今日餘額"]],
         how="left",              # 保留 df_merged 的全部列
         left_on="date",          # df_merged 的對應欄位
-        right_on="time"          # df_margin 的對應欄位
+        right_on="日期"          # df_margin 的對應欄位
     )
-    df_merged = df_merged.drop(columns=["time"])
+    df_merged = df_merged.drop(columns=["日期"])
     # 原本的融資餘額是千元，這邊轉成億
-    df_merged["today_balance"] = df_merged["today_balance"] * 1000/100000000
-    df_merged = df_merged.rename(columns={"today_balance": "融資餘額(億)"})
+    df_merged["今日餘額"] = df_merged["今日餘額"] * 1000/100000000
+    df_merged = df_merged.rename(columns={"今日餘額": "融資餘額(億)"})
     df_merged["融資增減(億)"] = (df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1))
 
     ### 資金走向
