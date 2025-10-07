@@ -356,8 +356,7 @@ def get_margin_trading_range(sDt: datetime, eDt: datetime) -> pd.DataFrame:
 
 # ======== 5. 注意股公告 ========
 # 編號,證券代號,證券名稱,累計次數,注意交易資訊,日期,收盤價,本益比
-def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
-    print("sDt=" , sDt, "eDt=", eDt)
+def fetch_notice(sDt: datetime | None = None, eDt: datetime | None = None):
     if (sDt > eDt):
         return None
 
@@ -367,101 +366,23 @@ def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
     start_str = _date_to_str(sDt)
     end_str = _date_to_str(eDt)
 
-    ### 先確認庫資料的上下界
-    sql = "SELECT min(日期), MAX(日期) FROM twse_announcement_notice"
-    df_check = query_to_df(sql)
-    minDt = _roc_to_datetime(df_check["min(日期)"].iloc[0])
-    maxDt = _roc_to_datetime(df_check["MAX(日期)"].iloc[0])
-    print(minDt, maxDt)
+    sortKinds = ["STKNO", "DATE"]
 
-    ### 1.資料完全落在庫的範圍，直接搜庫
-    if (_is_fully_in_range(sDt, eDt, minDt, maxDt)):
-        print("*** 直接從庫提取資料")
-        sql = "SELECT * FROM twse_announcement_notice"
-        sql += f" WHERE 日期 between '{_to_roc_date(sDt)}' AND '{_to_roc_date(eDt)}'"
-        print(sql)
-        df = query_to_df(sql)
-        return df
-    
-    ### 2.資料完全落在庫的範圍之外，fetch API
-    if (_is_no_overlap(sDt, eDt, minDt, maxDt)):
-        print("*** 從API提取資料")
-        apiEndpoint = "announcement/notice"
-        apiParams = f"querytype=1&stockNo=&selectType=&sortKind=STKNO&{common_params}"
-        apiParams += f"&startDate={start_str}&endDate={end_str}"
-        apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
+    apiEndpoint = "announcement/notice"
+    apiParams = f"querytype=1&{common_params}"
+    apiParams += f"&stockNo=&selectType=&sortKind={sortKinds[1]}"
+    apiParams += f"&startDate={start_str}&endDate={end_str}"
+    apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
-        res = requests.get(apiUrl)
-        raw_data = res.json()
-        data = raw_data["data"]
-
-        ### 存到db裡
-        values = []
-        for r in data:
-            try:
-                pe = str(r[7]).strip()
-                pe_value = float(pe) if pe.replace('.', '', 1).isdigit() else None
-                if pe_value is None:
-                    continue
-                values.append((
-                    r[1].strip(),
-                    r[2].strip(),
-                    int(r[3]),
-                    r[4].strip(),
-                    r[5].strip(),
-                    float(r[6]),
-                    pe_value
-                ))
-            except:
-                continue
-
-        sql = """
-        INSERT OR REPLACE INTO twse_announcement_notice
-        (證券代號, 證券名稱, 累計次數, 注意交易資訊, 日期, 收盤價, 本益比)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        """
-        execute_sql(sql, values)
-
-        df = pd.DataFrame(raw_data.get("data", []), columns=raw_data.get("fields", []))
-        _save_to_csv(df, apiEndpoint, f"{start_str}_{end_str}")
-        return df
-    
-    ### 3.重疊的部分取庫，超出的部分用API，最後merge
-    ## 找出重疊部分(From 庫)
-    overlap_star, overlap_end = _overlap_period(sDt, eDt, minDt, maxDt)
-    if overlap_star is not None:
-        df_exist = get_notice(overlap_star, overlap_end)
-
-    ## 找出需要獲取的部分
-    if (sDt < minDt):
-        df_new_left = get_notice(sDt, minDt - relativedelta(days=1))
-    
-    if (maxDt < eDt):
-        df_new_right = get_notice(maxDt + relativedelta(days=1), eDt)
-    
-    ## 合併 DataFrames
-    dfs = []
-    if 'df_exist' in locals() and isinstance(df_exist, pd.DataFrame):
-        dfs.append(df_exist)
-
-    if 'df_new_left' in locals() and isinstance(df_new_left, pd.DataFrame):
-        dfs.append(df_new_left)
-
-    if 'df_new_right' in locals() and isinstance(df_new_right, pd.DataFrame):
-        dfs.append(df_new_right)
-
-    if dfs:
-        df = pd.concat(dfs, ignore_index=True)
-    else:
-        df = None  # 如果都不存在，回傳空 DataFrame
-
-    return df
-
+    res = requests.get(apiUrl)
+    raw_data = res.json()
+    df = pd.DataFrame(raw_data.get("data", []), columns=raw_data.get("fields", []))
+    _save_to_csv(df, apiEndpoint, f"{start_str}_{end_str}")
+    del df
+    return raw_data
 
 # ======== 範例測試 ========
 if __name__ == "__main__":
     year = 2023
     sDt = datetime(2018, 5, 1)
     eDt = datetime(2025, 12, 31)
-    testData = get_notice(sDt, eDt)
-    print(testData.head())
