@@ -1,0 +1,5 @@
+# 忽略 Python 編譯後的快取
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

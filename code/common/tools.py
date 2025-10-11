@@ -5,8 +5,19 @@ import pandas as pd
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import os
+import db
 
 data_center = "../data/TwStockExchange"
+
+def roc_to_unix(roc_date: str, seperator: str = "/") -> int:
+    if not seperator in roc_date:
+        return None
+        
+    # 民國 → 西元（加 1911 年）
+    year, month, day = map(int, roc_date.split(seperator))
+    gregorian_year = year + 1911
+    dt = datetime(gregorian_year, month, day)
+    return int(dt.timestamp())
 
 def _date_to_str(date: datetime = None, formate: str = None) -> str:
     """將 datetime 轉為 yyyymmdd 字串，若未指定則取今日"""
@@ -30,6 +41,12 @@ def _save_to_csv(df: pd.DataFrame, apiEndpoint: str, filename: str):
     # 3. 儲存 CSV
     df.to_csv(path, index=False, encoding="utf-8-sig")
     print(f"✅ 已儲存：{path}")
+    
+def get_api_info(dataName: str) -> pd.DataFrame:
+    sql = f"SELECT *, src_link || api_path AS url FROM data_source"
+    sql += f" WHERE name = '{dataName}'"
+    target = db.query_to_df(sql)
+    return target
 
 def _read_from_csv(apiEndpoint: str, filename: str) -> pd.DataFrame:
     # 1. 檢查 data 是否存在
@@ -116,3 +133,9 @@ def _overlap_period(sDt: datetime, eDt: datetime, minDt: datetime, maxDt: dateti
         return overlap_start, overlap_end
     else:
         return None
+
+    
+
+
+
+

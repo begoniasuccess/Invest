@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import time
 
+
 # ---------- 設定 ----------
 data_center = "../data_center"
 DB_PATH = os.path.join(data_center, "data_center.db")

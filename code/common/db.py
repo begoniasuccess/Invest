@@ -24,7 +24,7 @@ def query_to_df(sql: str, params: tuple = ()) -> pd.DataFrame:
         df = pd.read_sql_query(sql, conn, params=params)
     return df
 
-def query_single(sql: str, params: tuple = ()):
+def query_single_value(sql: str, params: tuple = ()):
     """
     執行查詢並回傳單一值。
     例如 SELECT COUNT(*) FROM table

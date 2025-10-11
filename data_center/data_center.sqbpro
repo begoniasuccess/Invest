@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="data_center.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser query pragmas" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="5292"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="data_source" custom_title="0" dock_id="6" table="4,11:maindata_source"/><table title="tpex_bulletin_disposal" custom_title="0" dock_id="2" table="4,22:maintpex_bulletin_disposal"/><table title="tpex_bulletin_attention" custom_title="0" dock_id="10" table="4,23:maintpex_bulletin_attention"/><table title="twse_announcement_notice" custom_title="0" dock_id="9" table="4,24:maintwse_announcement_notice"/><dock_state state="000000ff00000000fd00000001000000020000030e000001b2fc0100000001fc000000000000030e0000013a00fffffffa000000070100000008fb000000160064006f0063006b00420072006f00770073006500310000000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500360100000000ffffffff0000012600fffffffb000000160064006f0063006b00420072006f00770073006500320100000000ffffffff0000012600fffffffb000000160064006f0063006b00420072006f00770073006500350000000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500370000000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500380000000000ffffffff0000000000000000fb000000180064006f0063006b00420072006f007700730065003100300100000000ffffffff0000013a00fffffffb000000160064006f0063006b00420072006f00770073006500390100000000ffffffff0000013a00ffffff0000030e0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="data_source" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="23"/><column index="2" value="174"/><column index="3" value="39"/><column index="4" value="241"/><column index="5" value="187"/><column index="6" value="300"/><column index="7" value="288"/><column index="8" value="64"/><column index="9" value="300"/><column index="10" value="82"/><column index="11" value="38"/><column index="12" value="156"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tpex_bulletin_attention" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="39"/><column index="2" value="57"/><column index="3" value="117"/><column index="4" value="33"/><column index="5" value="300"/><column index="6" value="78"/><column index="7" value="54"/><column index="8" value="62"/><column index="9" value="300"/><column index="10" value="156"/><column index="11" value="85"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tpex_bulletin_disposal" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="0" mode="0"/></sort><column_widths><column index="1" value="20"/><column index="2" value="125"/><column index="3" value="57"/><column index="4" value="57"/><column index="5" value="33"/><column index="6" value="82"/><column index="7" value="57"/><column index="8" value="57"/><column index="9" value="45"/><column index="10" value="45"/><column index="11" value="38"/><column index="12" value="57"/><column index="13" value="71"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_announcement_notice" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="46"/><column index="2" value="57"/><column index="3" value="122"/><column index="4" value="66"/><column index="5" value="169"/><column index="6" value="78"/><column index="7" value="54"/><column index="8" value="54"/><column index="9" value="156"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_marginTrading_miMargn" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="31"/><column index="2" value="70"/><column index="3" value="101"/><column index="4" value="70"/><column index="5" value="70"/><column index="6" value="81"/><column index="7" value="78"/><column index="8" value="78"/><column index="9" value="156"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="v_data_source" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="162"/><column index="2" value="259"/><column index="3" value="64"/><column index="4" value="246"/><column index="5" value="145"/><column index="6" value="82"/><column index="7" value="38"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="History*">-- ① 統一分隔符號成 '.'
+--UPDATE tpex_bulletin_attention SET 公告日期 = REPLACE(roc_date, '/', '.');
+--UPDATE tpex_bulletin_attention SET 公告日期 = REPLACE(roc_date, '-', '.');
+
+-- ② 將民國日期轉換成 UNIX timestamp（秒數）
+UPDATE tpex_bulletin_attention
+SET 公告日期_ts = strftime(
+    '%s',
+    printf(
+        '%04d-%02d-%02d',
+        CAST(substr(公告日期, 1, instr(公告日期, '.') - 1) AS INTEGER) + 1911,
+        CAST(substr(公告日期, instr(公告日期, '.') + 1,
+             instr(substr(公告日期, instr(公告日期, '.') + 1), '.') - 1) AS INTEGER),
+        CAST(substr(公告日期, length(公告日期) - 1, 2) AS INTEGER)
+    )
+)
+WHERE 公告日期_ts IS NULL OR 公告日期_ts = '';
+
+DROP VIEW IF EXISTS v_data_source;
+
+CREATE TABLE &quot;twse_announcement_punish&quot; (
+	&quot;id&quot;	INTEGER,
+	&quot;公布日期&quot;	TEXT,
+	&quot;證券代號&quot;	TEXT,
+	&quot;證券名稱&quot;	TEXT,
+	&quot;累計&quot;	INTEGER,
+	&quot;處置條件&quot;	TEXT,	
+	&quot;處置起迄時間&quot; TEXT,
+	&quot;處置措施&quot;	TEXT,
+	&quot;處置內容&quot;	TEXT,
+	&quot;備註&quot;	TEXT,
+	&quot;created_at&quot;	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	&quot;公布日期_ts&quot;	INTEGER,
+	PRIMARY KEY(&quot;id&quot; AUTOINCREMENT),
+	UNIQUE(&quot;證券代號&quot;,&quot;公布日期&quot;)
+);
+
+CREATE TABLE &quot;tpex_bulletin_disposal&quot; (
+	&quot;id&quot;	INTEGER,
+	&quot;公布日期&quot;	TEXT,
+	&quot;證券代號&quot;	TEXT,
+	&quot;證券名稱&quot;	TEXT,
+	&quot;累計&quot;	INTEGER,
+	&quot;處置起訖時間&quot;	TEXT,	
+	&quot;處置原因&quot; TEXT,
+	&quot;處置內容&quot;	TEXT,
+	&quot;收盤價&quot;	REAL,
+	&quot;本益比&quot;	REAL,
+	&quot;memo&quot; TEXT,
+	&quot;created_at&quot;	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	&quot;公布日期_ts&quot;	INTEGER,
+	PRIMARY KEY(&quot;id&quot; AUTOINCREMENT),
+	UNIQUE(&quot;證券代號&quot;,&quot;公布日期&quot;)
+);
+
+DROP VIEW IF EXISTS v_data_source;
+
+CREATE VIEW IF NOT EXISTS v_data_source AS
+SELECT
+    DS.name,
+	DS.storage_table,
+	DS.api_method,
+    DS.src_link || DS.api_path || '?' || DS.api_params AS api_sample,
+	DS.src_link || DS.web_path AS web_page,
+	DS.api_res_sample,
+	DS.memo
+FROM
+    data_source AS DS;
+
+CREATE UNIQUE INDEX idx_data_source_name ON data_source (name);
+
+ALTER TABLE data_source ADD COLUMN time_col TEXT;
+
+UPDATE data_source SET time_col = '公告日期', name = '上櫃注意股公告' WHERE name = '櫃買 注意股公告';
+</sql><sql name="Execute*">--UPDATE data_source SET time_col = '公告日期', name = '上櫃注意股公告' WHERE name = '';
+INSERT INTO data_source (name,	type,	storage_table,	src_link,	web_path,	api_path,	api_method,	api_params,	api_res_sample,	memo) 
+VALUES 
+('上市公布注意有價證券資訊',	'TWSE',	'twse_announcement_notice',	'https://www.twse.com.tw',	'/zh/announcement/notice.html',	'/rwd/zh/announcement/notice',	'GET',	'querytype=1&amp;stockNo=&amp;selectType=&amp;startDate=20251009&amp;endDate=20251011&amp;sortKind=DATE&amp;response=json',	'',	'')</sql><current_tab id="1"/></tab_sql></sqlb_project>

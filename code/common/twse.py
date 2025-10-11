@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
-from db import query_to_df, execute_sql, get_connection, query_single
+from db import query_to_df, execute_sql, get_connection, query_single_value
 import twse_api
 import tools
 
@@ -26,7 +26,7 @@ def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
 
     ### 先確認庫有資料
     sql = f"SELECT count(*) FROM {table}"
-    dataCnt = query_single(sql)
+    dataCnt = query_single_value(sql)
     if (dataCnt < 1):
         maxDt = sDt - relativedelta(days=1)
         minDt = maxDt - relativedelta(days=1)        
@@ -122,7 +122,7 @@ def get_margin_trading(sDt: datetime, eDt: datetime):
 
     ### 先確認庫有資料
     sql = f"SELECT count(*) FROM {table}"
-    dataCnt = query_single(sql)
+    dataCnt = query_single_value(sql)
     if (dataCnt < 1):
         maxDt = sDt - relativedelta(days=1)
         minDt = maxDt - relativedelta(days=1)        

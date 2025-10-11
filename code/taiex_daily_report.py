@@ -220,6 +220,8 @@ else:
     )
     df_merged = df_merged.drop(columns=["日期"])
     # 原本的融資餘額是千元，這邊轉成億
+    
+    df_merged["今日餘額"] = pd.to_numeric(df_merged["今日餘額"], errors="coerce")
     df_merged["今日餘額"] = df_merged["今日餘額"] * 1000/100000000
     df_merged = df_merged.rename(columns={"今日餘額": "融資餘額(億)"})
     df_merged["融資增減(億)"] = (df_merged["融資餘額(億)"] - df_merged["融資餘額(億)"].shift(1))
