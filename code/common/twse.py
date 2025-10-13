@@ -34,8 +34,8 @@ def get_notice(sDt: datetime | None = None, eDt: datetime | None = None):
         ### 先確認庫資料的上下界
         sql = f"SELECT min(日期), MAX(日期) FROM {table}"
         df_check = query_to_df(sql)
-        minDt = tools._roc_to_datetime(df_check["min(日期)"].iloc[0])
-        maxDt = tools._roc_to_datetime(df_check["MAX(日期)"].iloc[0])
+        minDt = datetime.fromtimestamp(tools.roc_to_unix(df_check["min(日期)"].iloc[0]))
+        maxDt = datetime.fromtimestamp(tools.roc_to_unix(df_check["MAX(日期)"].iloc[0]))
         print(minDt, maxDt)
 
     ### 1.資料完全落在庫的範圍，直接搜庫

@@ -7,15 +7,18 @@ from dateutil.relativedelta import relativedelta
 import os
 import db
 
-data_center = "../data/TwStockExchange"
-
-def roc_to_unix(roc_date: str, seperator: str = "/") -> int:
-    if not seperator in roc_date:
+def roc_to_unix(roc_date: str) -> int:
+    year = None 
+    month = None 
+    day = None    
+    seperators = ["/", ".", "-"]
+    for seperator in seperators:
+        if seperator in roc_date:  
+            year, month, day = map(int, roc_date.split(seperator))
+    if year is None:
         return None
         
-    # 民國 → 西元（加 1911 年）
-    year, month, day = map(int, roc_date.split(seperator))
-    gregorian_year = year + 1911
+    gregorian_year = year + 1911 # 民國 → 西元（加 1911 年）
     dt = datetime(gregorian_year, month, day)
     return int(dt.timestamp())
 
@@ -74,26 +77,6 @@ def _to_roc_date(dt: datetime) -> str:
     """將 datetime 轉成民國年月日格式（yyy.mm.dd）"""
     roc_year = dt.year - 1911
     return f"{roc_year:03d}.{dt.month:02d}.{dt.day:02d}"
-
-def _roc_to_datetime(roc_date: str, seperator: str= None) -> datetime:
-    """
-    將民國年日期字串轉成 datetime
-    例如 "114.04.11" → datetime(2025, 4, 11)
-    """
-    
-    if seperator is None:
-        seperator = "."
-    try:
-        parts = roc_date.split(seperator)
-        if len(parts) != 3:
-            raise ValueError("格式錯誤，應為 yyy.mm.dd")
-        year = int(parts[0]) + 1911  # 民國年轉西元年
-        month = int(parts[1])
-        day = int(parts[2])
-        return datetime(year, month, day)
-    except Exception as e:
-        print(f"[Error] 轉換失敗: {roc_date} ({e})")
-        return None
     
 def _is_fully_in_range(sDt: datetime, eDt: datetime, minDt: datetime, maxDt: datetime) -> bool:
     """
@@ -134,7 +117,7 @@ def _overlap_period(sDt: datetime, eDt: datetime, minDt: datetime, maxDt: dateti
     else:
         return None
 
-    
+
 
 
 
