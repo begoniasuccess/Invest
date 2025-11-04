@@ -13,7 +13,7 @@ api = DataLoader()
 api.login_by_token(api_token=token)
 
 stockId = "TAIEX"
-anaMonths = 2
+anaMonths = 4
 forceRerun = False
 
 # === 日期設定 ===
@@ -168,13 +168,48 @@ new_df["買超-自營商(億)"] = (
 
 # === 價 / 線型 ===
 new_df["漲跌幅(%)"] = (new_df["收盤價"] - new_df["收盤價"].shift(1)) / new_df["收盤價"].shift(1)
-new_df["實體(漲跌率)"] = (new_df["收盤價"] - new_df["開盤價"]) / new_df["開盤價"]
+new_df["實體"] = (new_df["收盤價"] - new_df["開盤價"]) / new_df["開盤價"]
 
-is_red = new_df["收盤價"] >= new_df["開盤價"]
-new_df["上影(%)"] = np.where(is_red, (new_df["最高價"] - new_df["收盤價"]) / new_df["最高價"],
-                            (new_df["最高價"] - new_df["開盤價"]) / new_df["最高價"])
-new_df["下影(%)"] = np.where(is_red, (new_df["開盤價"] - new_df["最低價"]) / new_df["最低價"],
-                            (new_df["收盤價"] - new_df["最低價"]) / new_df["最低價"])
+# === 新增上影/總長、下影/總長 ===
+new_df["上影/總長"] = (new_df["最高價"] - np.maximum(new_df["開盤價"], new_df["收盤價"])) / (
+    new_df["最高價"] - new_df["最低價"])
+new_df["下影/總長"] = (np.minimum(new_df["開盤價"], new_df["收盤價"]) - new_df["最低價"]) / (
+    new_df["最高價"] - new_df["最低價"])
+
+# === 跳空缺口 ===
+df_merged["昨高"] = df_merged["max"].shift(1)
+df_merged["昨低"] = df_merged["min"].shift(1)
+conditions = [
+	df_merged["min"] > df_merged["昨高"],   # 上跳空
+	df_merged["max"] < df_merged["昨低"]    # 下跳空
+]
+choices = ["上跳空", "下跳空"]
+df_merged["跳空狀態"] = np.select(conditions, choices, default="無跳空")
+
+# 判斷紅黑K
+df_merged["is_red"] = df_merged["close"] > df_merged["open"]
+
+# 今上緣、今下緣
+df_merged["今上緣"] = np.where(df_merged["is_red"], df_merged["close"], df_merged["open"])
+df_merged["今下緣"] = np.where(df_merged["is_red"], df_merged["open"], df_merged["close"])
+
+# 昨上緣、昨下緣（shift 取前一天）
+df_merged["昨上緣"] = df_merged["今上緣"].shift(1)
+df_merged["昨下緣"] = df_merged["今下緣"].shift(1)
+
+# 計算跳空缺口
+df_merged["跳空缺口"] = np.select(
+	[
+		df_merged["跳空狀態"] == "上跳空",
+		df_merged["跳空狀態"] == "下跳空"
+	],
+	[
+		df_merged["今下緣"] - df_merged["昨上緣"],   # 上跳空
+		df_merged["今上緣"] - df_merged["昨下緣"]    # 下跳空
+	],
+	default=None
+)
+new_df["跳空缺口"] = df_merged["跳空缺口"]
 
 # === 均線 ===
 for n in [5, 10, 20]:
@@ -229,7 +264,6 @@ new_df["趨勢等級"] = new_df["趨勢強度說明"].map(score_map).fillna(0)
 
 # === 量能最大量 ===
 new_df["成交量"] = pd.to_numeric(new_df["成交量"], errors="coerce")
-# === 5/10/20 日最大量與日期 ===
 for n in [5, 10, 20]:
     vmax_list, vdate_list = [], []
     vols = new_df["成交量"].to_numpy()
@@ -241,17 +275,15 @@ for n in [5, 10, 20]:
             vdate_list.append(np.nan)
             continue
 
-        # 看近 n 天
         window_vol = vols[i + 1 - n : i + 1]
         window_date = dates[i + 1 - n : i + 1]
-
-        # 找最大成交量的 index
         idx = int(np.argmax(window_vol))
         vmax_list.append(window_vol[idx])
         vdate_list.append(window_date[idx])
 
     new_df[f"{n}日最大量"] = vmax_list
     new_df[f"{n}日最大量_日期"] = vdate_list
+
 # === 欄位順序 ===
 columns_order = [
     "日期","股票代號",
@@ -260,7 +292,7 @@ columns_order = [
     "5日均量","5日最大量_日期","5日最大量",
     "10日均量","10日最大量_日期","10日最大量",
     "20日均量","20日最大量_日期","20日最大量",
-    "實體(漲跌率)","上影(%)","下影(%)","上影/實體","下影/實體","跳空缺口",
+    "實體","上影/總長","下影/總長","跳空缺口",
     "5日平均","10日平均","20日平均",
     "5日上升幅度","10日上升幅度","20日上升幅度",
     "5日扣抵值","5日扣抵影響(%)","10日扣抵值","10日扣抵影響(%)","20日扣抵值","20日扣抵影響(%)",
