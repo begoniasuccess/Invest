@@ -5,7 +5,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import tools
+from common import tools
 
 twseUrl = "https://www.twse.com.tw/rwd/zh"
 data_center = "../data/TwStockExchange"
@@ -178,13 +178,36 @@ def fetch_margin_trading(date: datetime | None = None):
     apiParams = f"date={date_str}&selectType=MS&{common_params}"
     apiUrl = f"{twseUrl}/{apiEndpoint}?{apiParams}"
 
-    res = requests.get(apiUrl)
-    data = res.json()
+    try:
+        res = requests.get(apiUrl, timeout=10)
+        text = res.text.strip()
 
-    # tables[0] 才有資料
-    tables = data.get("tables", [])
+        # 1) 空白 → 假日 or TWSE 掛掉
+        if text == "":
+            print(f"[跳過] TWSE 回傳空白（假日?）: {date_str}")
+            return None
+
+        # 2) HTML → 被擋 or 維護
+        if text.startswith("<") or text.startswith("<!--"):
+            print(f"[跳過] TWSE 回傳 HTML（維護或被BAN）: {date_str}")
+            return None
+
+        # 3) 嘗試解析 JSON
+        data = res.json()
+
+    except Exception as e:
+        print(f"[錯誤] JSON 解析失敗 {date_str}: {e}")
+        return None
+
+    # 4) TWSE 自己給的錯誤訊息
+    if "stat" in data and ("無" in data["stat"] or "抱歉" in data["stat"]):
+        print(f"[跳過] 無融資資料: {date_str}")
+        return None
+
+    # 5) tables 結構不完整
+    tables = data.get("tables")
     if not tables or "fields" not in tables[0] or "data" not in tables[0]:
-        print(f"❌ API 回傳格式異常: {data}")
+        print(f"[跳過] TWSE 回傳格式錯誤: {date_str}")
         return None
 
     return tables[0]
@@ -197,23 +220,29 @@ def fetch_margin_trading_range(sDt: datetime, eDt: datetime):
     
     data = []    
     current = sDt
+
     while current <= eDt:
         currentData = fetch_margin_trading(current)
+
+        # 假日 or 無資料 or HTML → 跳過這一天
         if currentData is None:
             current += timedelta(days=1)
             continue
         
-        rows = currentData["data"]
+        rows = currentData.get("data", [])
+        date_str = current.strftime("%Y%m%d")
+
         for aRow in rows:
-            aRow.insert(0, current.strftime("%Y%m%d"))
-        data = data + rows
+            aRow.insert(0, date_str)
+
+        data.extend(rows)
         current += timedelta(days=1)
         
-    result = {
+    return {
         "fields": ['日期', '項目', '買進', '賣出', '現金_券_償還', '前日餘額', '今日餘額'],
         "data": data
     }
-    return result
+
 
 # ======== 5. 注意股公告 ========
 # 編號,證券代號,證券名稱,累計次數,注意交易資訊,日期,收盤價,本益比
