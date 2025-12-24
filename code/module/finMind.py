@@ -2,16 +2,17 @@ import sys
 import os
 from datetime import datetime
 import pandas as pd
-from FinMind.data import DataLoader
-from common import utils
+from FinMind.data import DataLoader 
+from common import utils,db
 import requests
+from typing import Union, Iterable
 
 sys.stdout.reconfigure(encoding='utf-8')
 
 ### FinMind api設定
 apiUrl = "https://api.finmindtrade.com/api/v4/data"
 api = DataLoader()
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMS0xNyAxNjozMDo0NyIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiI0Mi43Mi4xNjQuNTgiLCJleHAiOjE3NjM5NzMwNDd9.n02Tkef5WiIgqAQLmZaKhnt480cd539V2VXT8b2cybs"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMi0yMiAyMDoxOTo1OSIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIyMjMuMTQzLjE5NC45In0.cpV6AuW_6FhXhZXvvnyKhFojvH7gBML9ipthkfNwIUo"
 api.login_by_token(api_token=token)
 
 storageDir = "../data/FinMind"
@@ -233,3 +234,145 @@ def getTwStockTradingDates() -> pd.DataFrame:
     else:
         print(f"📁 使用本地快取：已是最新至 {last_local_date}")
         return df_local
+
+# 取得台股日資料
+def get_tw_stock_daily_price(
+    stock_id: Union[str, list[str]],
+    start_date: datetime,
+    end_date: datetime,
+) -> pd.DataFrame:
+
+    target_table = "fm_taiwan_stock_daily"
+
+    # === 0) stock_id 正規化 ===
+    if isinstance(stock_id, str):
+        stock_ids = [stock_id]
+    else:
+        stock_ids = list(stock_id)
+
+    req_s = pd.Timestamp(start_date).normalize()
+    req_e = pd.Timestamp(end_date).normalize()
+    if req_s > req_e:
+        raise ValueError("start_date 不可大於 end_date")
+
+    def dstr(t: pd.Timestamp) -> str:
+        return t.strftime("%Y-%m-%d")
+
+    all_dfs: list[pd.DataFrame] = []
+
+    # === 1) 逐檔處理 ===
+    for sid in stock_ids:
+
+        # --- 查 span ---
+        span_row = db.query_to_df(
+            """
+            SELECT start_date, end_date
+            FROM fm_stock_span
+            WHERE target_table = ? AND stock_id = ?
+            """,
+            (target_table, sid),
+        )
+
+        mem_s = pd.Timestamp(span_row.loc[0, "start_date"]).normalize() if not span_row.empty else None
+        mem_e = pd.Timestamp(span_row.loc[0, "end_date"]).normalize() if not span_row.empty else None
+
+        fetch_ranges: list[tuple[pd.Timestamp, pd.Timestamp]] = []
+
+        if mem_s is None:
+            fetch_ranges = [(req_s, req_e)]
+            new_s, new_e = req_s, req_e
+        else:
+            new_s = min(mem_s, req_s)
+            new_e = max(mem_e, req_e)
+
+            if req_s >= mem_s and req_e <= mem_e:
+                fetch_ranges = []
+            elif req_s > mem_e:
+                fetch_ranges = [(mem_e + pd.Timedelta(days=1), req_e)]
+            elif req_e < mem_s:
+                fetch_ranges = [(req_s, mem_s - pd.Timedelta(days=1))]
+            else:
+                if req_s < mem_s:
+                    fetch_ranges.append((req_s, mem_s - pd.Timedelta(days=1)))
+                if req_e > mem_e:
+                    fetch_ranges.append((mem_e + pd.Timedelta(days=1), req_e))
+
+        # --- 補資料 ---
+        upsert_sql = f"""
+        INSERT INTO {target_table}
+        (date, stock_id, Trading_Volume, Trading_money, open, max, min, close, spread, Trading_turnover)
+        VALUES (?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(date, stock_id) DO UPDATE SET
+          Trading_Volume   = excluded.Trading_Volume,
+          Trading_money    = excluded.Trading_money,
+          open             = excluded.open,
+          max              = excluded.max,
+          min              = excluded.min,
+          close            = excluded.close,
+          spread           = excluded.spread,
+          Trading_turnover = excluded.Trading_turnover
+        """
+
+        for fs, fe in fetch_ranges:
+            if fs <= fe:
+                df_api = api.taiwan_stock_daily(
+                    stock_id=sid,
+                    start_date=dstr(fs),
+                    end_date=dstr(fe),
+                )
+                if df_api is not None and not df_api.empty:
+                    df_api = df_api.copy()
+                    df_api["date"] = pd.to_datetime(df_api["date"]).dt.strftime("%Y-%m-%d")
+                    df_api["stock_id"] = df_api["stock_id"].astype(str)
+
+                    params = list(df_api[
+                        ["date", "stock_id", "Trading_Volume", "Trading_money",
+                         "open", "max", "min", "close", "spread", "Trading_turnover"]
+                    ].itertuples(index=False, name=None))
+
+                    db.execute_sql(upsert_sql, params)
+
+        # --- 更新 span ---
+        db.execute_sql(
+            """
+            INSERT INTO fm_stock_span (target_table, stock_id, start_date, end_date, updated_at)
+            VALUES (?, ?, ?, ?, strftime('%s','now'))
+            ON CONFLICT(target_table, stock_id) DO UPDATE SET
+              start_date = excluded.start_date,
+              end_date   = excluded.end_date,
+              updated_at = strftime('%s','now')
+            """,
+            (target_table, sid, dstr(new_s), dstr(new_e)),
+        )
+
+        # --- DB 回傳該檔 ---
+        df_sid = db.query_to_df(
+            f"""
+            SELECT date, stock_id, Trading_Volume, Trading_money,
+                   open, max, min, close, spread, Trading_turnover
+            FROM {target_table}
+            WHERE stock_id = ?
+              AND date >= ?
+              AND date <= ?
+            ORDER BY date
+            """,
+            (sid, dstr(req_s), dstr(req_e)),
+        )
+
+        all_dfs.append(df_sid)
+
+    # === 2) 合併回傳 ===
+    if not all_dfs:
+        return pd.DataFrame()
+
+    return pd.concat(all_dfs, ignore_index=True)
+
+# python -m module.finMind
+if __name__ == "__main__":
+    stock_id = ['TAIEX']
+    sDt = datetime(1980, 1, 1)
+    eDt = datetime.now()
+    df = get_tw_stock_daily_price(stock_id, sDt, eDt)
+    
+    print(df.head(), df.tail())
+    

@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from module import twse
 
 # === 基本設定 ===
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMS0yNCAxNjo0NDo1OCIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIxMTYuNTkuMTQ0LjI0MSIsImV4cCI6MTc2NDU3ODY5OH0.M9E9GWaM3FFR06Z7TDXWHBXsNnWLQpbrNRr7ARifdcM"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMi0wMiAwMDoxMzo1MiIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIyMjMuMTQzLjE5Ni4xNjAifQ.T5RhH4GU0P7_dA3I7sfio3VcvUgIULi_wYGm31nqwkI"
 api = DataLoader()
 api.login_by_token(api_token=token)
 
@@ -19,7 +19,6 @@ def taiex_daily_report(anaMonths = 4, forceRerun = True):
     eDt = today
     sDt = eDt - relativedelta(months=anaMonths)    
     return export(stockId, sDt, eDt, forceRerun)
-
 
 def export(stockId, sDt = None, eDt = today, forceRerun = False) -> pd.DataFrame:
     # === 日期設定 ===
@@ -350,6 +349,7 @@ def export(stockId, sDt = None, eDt = today, forceRerun = False) -> pd.DataFrame
     new_df.to_csv(outFile, index=False, encoding="utf-8-sig")
     print(new_df.tail())
     return new_df
+
 
 # python -m main.stock_report
 if __name__ == "__main__":
