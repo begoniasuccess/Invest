@@ -241,7 +241,7 @@ def get_tw_stock_daily_price(
     start_date: datetime,
     end_date: datetime,
 ) -> pd.DataFrame:
-
+    print(f"--- run finMind.get_tw_stock_daily_price--[{stock_id}]")
     target_table = "fm_taiwan_stock_daily"
 
     # === 0) stock_id 正規化 ===
@@ -267,7 +267,7 @@ def get_tw_stock_daily_price(
         span_row = db.query_to_df(
             """
             SELECT start_date, end_date
-            FROM fm_stock_span
+            FROM stock_span
             WHERE target_table = ? AND stock_id = ?
             """,
             (target_table, sid),
@@ -335,7 +335,7 @@ def get_tw_stock_daily_price(
         # --- 更新 span ---
         db.execute_sql(
             """
-            INSERT INTO fm_stock_span (target_table, stock_id, start_date, end_date, updated_at)
+            INSERT INTO stock_span (target_table, stock_id, start_date, end_date, updated_at)
             VALUES (?, ?, ?, ?, strftime('%s','now'))
             ON CONFLICT(target_table, stock_id) DO UPDATE SET
               start_date = excluded.start_date,
@@ -369,8 +369,8 @@ def get_tw_stock_daily_price(
 
 # python -m module.finMind
 if __name__ == "__main__":
-    stock_id = ['TAIEX']
-    sDt = datetime(1980, 1, 1)
+    stock_id = ['0050']
+    sDt = datetime(2025, 12, 1)
     eDt = datetime.now()
     df = get_tw_stock_daily_price(stock_id, sDt, eDt)
     

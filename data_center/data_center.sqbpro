@@ -1,35 +1,178 @@
-<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="data_center.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser query pragmas" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="5590"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="stock_price_involve_report" custom_title="0" dock_id="1" table="4,26:mainstock_price_involve_report"/><dock_state state="000000ff00000000fd000000010000000200000476000002abfc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000004760000012e00ffffff000004760000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="addition_info" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="20"/><column index="2" value="23"/><column index="3" value="64"/><column index="4" value="51"/><column index="5" value="54"/><column index="6" value="43"/><column index="7" value="49"/><column index="8" value="38"/><column index="9" value="57"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="fm_stock_span" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="218"/><column index="2" value="55"/><column index="3" value="102"/><column index="4" value="98"/><column index="5" value="141"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="fm_taiwan_stock_daily" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="1" mode="1"/></sort><column_widths><column index="1" value="61"/><column index="2" value="87"/><column index="3" value="55"/><column index="4" value="102"/><column index="5" value="103"/><column index="6" value="108"/><column index="7" value="63"/><column index="8" value="63"/><column index="9" value="63"/><column index="10" value="63"/><column index="11" value="107"/><column index="12" value="87"/><column index="13" value="87"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="stock_daily" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="34"/><column index="2" value="60"/><column index="3" value="47"/><column index="4" value="47"/><column index="5" value="67"/><column index="6" value="47"/><column index="7" value="47"/><column index="8" value="47"/><column index="9" value="47"/><column index="10" value="47"/><column index="11" value="47"/><column index="12" value="60"/><column index="13" value="106"/><column index="14" value="73"/><column index="15" value="60"/><column index="16" value="106"/><column index="17" value="73"/><column index="18" value="73"/><column index="19" value="119"/><column index="20" value="86"/><column index="21" value="34"/><column index="22" value="34"/><column index="23" value="34"/><column index="24" value="56"/><column index="25" value="60"/><column index="26" value="60"/><column index="27" value="60"/><column index="28" value="73"/><column index="29" value="86"/><column index="30" value="86"/><column index="31" value="99"/><column index="32" value="73"/><column index="33" value="86"/><column index="34" value="73"/><column index="35" value="86"/><column index="36" value="86"/><column index="37" value="99"/><column index="38" value="60"/><column index="39" value="60"/><column index="40" value="60"/><column index="41" value="60"/><column index="42" value="60"/><column index="43" value="86"/><column index="44" value="60"/><column index="45" value="60"/><column index="46" value="60"/><column index="47" value="73"/><column index="48" value="73"/><column index="49" value="73"/><column index="50" value="67"/><column index="51" value="67"/><column index="52" value="80"/><column index="53" value="67"/><column index="54" value="60"/><column index="55" value="86"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="stock_price_involve_report" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="31"/><column index="2" value="143"/><column index="3" value="55"/><column index="4" value="71"/><column index="5" value="175"/><column index="6" value="82"/><column index="7" value="123"/><column index="8" value="87"/><column index="9" value="67"/><column index="10" value="95"/><column index="11" value="135"/><column index="12" value="159"/><column index="13" value="87"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tpex_insti_summary" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="20"/><column index="2" value="57"/><column index="3" value="28"/><column index="4" value="42"/><column index="5" value="57"/><column index="6" value="76"/><column index="7" value="76"/><column index="8" value="63"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_announcement_notice" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="46"/><column index="2" value="57"/><column index="3" value="124"/><column index="4" value="57"/><column index="5" value="300"/><column index="6" value="78"/><column index="7" value="54"/><column index="8" value="54"/><column index="9" value="156"/><column index="10" value="85"/><column index="11" value="247"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_marginTrading_miMargn" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="31"/><column index="2" value="70"/><column index="3" value="101"/><column index="4" value="70"/><column index="5" value="70"/><column index="6" value="81"/><column index="7" value="78"/><column index="8" value="78"/><column index="9" value="156"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 13*">CREATE TABLE IF NOT EXISTS stock_price_involve_report (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="data_center.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser query pragmas" current="2"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="6986"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="v_attention_notice" custom_title="0" dock_id="1" table="4,18:mainv_attention_notice"/><dock_state state="000000ff00000000fd0000000100000002000005bc00000390fc0100000001fc00000000000005bc0000012d00fffffffa000000000100000002fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000012d00fffffffb000000160064006f0063006b00420072006f00770073006500340000000000ffffffff0000000000000000000005bc0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="addition_info" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="20"/><column index="2" value="23"/><column index="3" value="64"/><column index="4" value="51"/><column index="5" value="54"/><column index="6" value="43"/><column index="7" value="49"/><column index="8" value="38"/><column index="9" value="57"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="data_source" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="23"/><column index="2" value="202"/><column index="3" value="39"/><column index="4" value="247"/><column index="5" value="191"/><column index="6" value="300"/><column index="7" value="295"/><column index="8" value="73"/><column index="9" value="300"/><column index="10" value="93"/><column index="11" value="41"/><column index="12" value="159"/><column index="13" value="59"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="fm_taiwan_stock_daily" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="2" mode="1"/></sort><column_widths><column index="1" value="61"/><column index="2" value="87"/><column index="3" value="55"/><column index="4" value="102"/><column index="5" value="103"/><column index="6" value="108"/><column index="7" value="63"/><column index="8" value="63"/><column index="9" value="63"/><column index="10" value="63"/><column index="11" value="107"/><column index="12" value="87"/><column index="13" value="87"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="relation_punish_notice" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="39"/><column index="2" value="39"/><column index="3" value="63"/><column index="4" value="60"/><column index="5" value="159"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="stock_daily" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="34"/><column index="2" value="60"/><column index="3" value="47"/><column index="4" value="47"/><column index="5" value="67"/><column index="6" value="47"/><column index="7" value="47"/><column index="8" value="47"/><column index="9" value="47"/><column index="10" value="47"/><column index="11" value="47"/><column index="12" value="60"/><column index="13" value="106"/><column index="14" value="73"/><column index="15" value="60"/><column index="16" value="106"/><column index="17" value="73"/><column index="18" value="73"/><column index="19" value="119"/><column index="20" value="86"/><column index="21" value="34"/><column index="22" value="34"/><column index="23" value="34"/><column index="24" value="56"/><column index="25" value="60"/><column index="26" value="60"/><column index="27" value="60"/><column index="28" value="73"/><column index="29" value="86"/><column index="30" value="86"/><column index="31" value="99"/><column index="32" value="73"/><column index="33" value="86"/><column index="34" value="73"/><column index="35" value="86"/><column index="36" value="86"/><column index="37" value="99"/><column index="38" value="60"/><column index="39" value="60"/><column index="40" value="60"/><column index="41" value="60"/><column index="42" value="60"/><column index="43" value="86"/><column index="44" value="60"/><column index="45" value="60"/><column index="46" value="60"/><column index="47" value="73"/><column index="48" value="73"/><column index="49" value="73"/><column index="50" value="67"/><column index="51" value="67"/><column index="52" value="80"/><column index="53" value="67"/><column index="54" value="60"/><column index="55" value="86"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="stock_price_involve_report" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="18" mode="0"/></sort><column_widths><column index="1" value="80"/><column index="2" value="143"/><column index="3" value="55"/><column index="4" value="105"/><column index="5" value="175"/><column index="6" value="175"/><column index="7" value="123"/><column index="8" value="87"/><column index="9" value="87"/><column index="10" value="95"/><column index="11" value="135"/><column index="12" value="159"/><column index="13" value="159"/><column index="16" value="159"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="stock_span" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="3" mode="0"/></sort><column_widths><column index="1" value="290"/><column index="2" value="88"/><column index="3" value="119"/><column index="4" value="128"/><column index="5" value="145"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tpex_afterTrading_tradingIndex" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="20"/><column index="2" value="65"/><column index="3" value="34"/><column index="4" value="50"/><column index="5" value="60"/><column index="6" value="67"/><column index="7" value="34"/><column index="8" value="60"/><column index="9" value="41"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tpex_insti_summary" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="20"/><column index="2" value="57"/><column index="3" value="28"/><column index="4" value="42"/><column index="5" value="57"/><column index="6" value="76"/><column index="7" value="76"/><column index="8" value="63"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_announcement_notice" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="46"/><column index="2" value="57"/><column index="3" value="124"/><column index="4" value="57"/><column index="5" value="300"/><column index="6" value="78"/><column index="7" value="54"/><column index="8" value="54"/><column index="9" value="156"/><column index="10" value="85"/><column index="11" value="247"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_exchangeReport_fmtqik" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="20"/><column index="2" value="31"/><column index="3" value="51"/><column index="4" value="47"/><column index="5" value="94"/><column index="6" value="90"/><column index="7" value="74"/><column index="8" value="70"/><column index="9" value="78"/><column index="10" value="65"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_indicesReport_mi_5mins_hist" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="31"/><column index="2" value="79"/><column index="3" value="87"/><column index="4" value="87"/><column index="5" value="73"/><column index="6" value="71"/><column index="7" value="71"/><column index="8" value="74"/><column index="9" value="87"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="twse_marginTrading_miMargn" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="31"/><column index="2" value="70"/><column index="3" value="128"/><column index="4" value="70"/><column index="5" value="70"/><column index="6" value="81"/><column index="7" value="78"/><column index="8" value="78"/><column index="9" value="156"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="v_attention_notice" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="39"/><column index="2" value="87"/><column index="3" value="60"/><column index="4" value="126"/><column index="5" value="247"/><column index="6" value="34"/><column index="7" value="55"/><column index="8" value="55"/><column index="9" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 13">DROP table IF EXISTS twse_market_activity_daily;
+DROP table IF EXISTS twse_taiex_ohlc_daily;
+
+DROP table IF EXISTS twse_exchangeReport_fmtqik;
+DROP table IF EXISTS twse_indicesReport_mi_5mins_hist;
+
+CREATE TABLE IF NOT EXISTS twse_exchangeReport_fmtqik (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    
+    date            TEXT NOT NULL,  -- 來源資料欄位不可動
+    date_ad         TEXT NOT NULL,  -- 標準西元日期 YYYY-MM-DD
+    date_ts         INTEGER NOT NULL, -- UNIX timestamp
+    
+    market_volume   INTEGER NOT NULL,
+    market_money    INTEGER NOT NULL,
+    trade_count     INTEGER NOT NULL,
+    taiex_close     REAL NOT NULL,
+    taiex_spread    REAL NOT NULL,
+    
+    created_at      INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    
+    UNIQUE(date_ad) -- 以西元日期為唯一鍵
+);
+CREATE INDEX IF NOT EXISTS idx_fmtqik_date_ad ON twse_exchangeReport_fmtqik(date_ad);
+CREATE INDEX IF NOT EXISTS idx_fmtqik_date_ts ON twse_exchangeReport_fmtqik(date_ts);
+
+CREATE TABLE IF NOT EXISTS twse_indicesReport_mi_5mins_hist (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    
+    date        TEXT NOT NULL,
+    date_ad     TEXT NOT NULL,
+    date_ts     INTEGER NOT NULL,
+    
+    open_index  REAL NOT NULL,
+    high_index  REAL NOT NULL,
+    low_index   REAL NOT NULL,
+    close_index REAL NOT NULL,
+    
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    
+    UNIQUE(date_ad)
+);
+CREATE INDEX IF NOT EXISTS idx_mi5_date_ad ON twse_indicesReport_mi_5mins_hist(date_ad);
+CREATE INDEX IF NOT EXISTS idx_mi5_date_ts ON twse_indicesReport_mi_5mins_hist(date_ts);
+</sql><sql name="SQL 2">DROP TABLE IF EXISTS stock_price_involve_report;
+
+CREATE TABLE stock_price_involve_report (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+  report TEXT NOT NULL,
+  stock_id TEXT NOT NULL,
+
+  price REAL,
+  lastDt_close_distance REAL,
+  &quot;lcd%&quot; REAL,
+
+  involve_days INTEGER,
+  involve_date TEXT,
+
+  date TEXT,          -- YYYY-MM-DD
+  price_type TEXT,
+
+  volume INTEGER,
+  vol_weight REAL,
+  vol_wei_pr REAL,
+
+  -- ✅ 新增（放最後）
+  vol_adj REAL,
+  vol_wei_adj REAL,
+  vol_wei_pr_adj REAL,
+
+  created_at INTEGER DEFAULT (strftime('%s','now'))
+);
+
+-- 建議加個唯一鍵，避免 INSERT OR IGNORE 沒作用
+CREATE UNIQUE INDEX IF NOT EXISTS uq_spir_row
+ON stock_price_involve_report (report, stock_id, date, price_type, price);
+</sql><sql name="SQL 3">DROP TABLE IF EXISTS stock_price_involve_report;
+
+CREATE TABLE &quot;stock_price_involve_report&quot; (
+    &quot;id&quot; INTEGER PRIMARY KEY AUTOINCREMENT,
+    &quot;report&quot; TEXT NOT NULL,
+    &quot;stock_id&quot; TEXT NOT NULL,
+    &quot;price&quot; REAL,
+    &quot;lastDt_close_distance&quot; REAL,
+    &quot;lcd%&quot; REAL,
+    &quot;involve_days&quot; INTEGER,
+    &quot;involve_date&quot; TEXT,
+    &quot;date&quot; TEXT,  -- 最後交易日日期
+    &quot;date_distance&quot; INTEGER, -- 🆕 距離 last_dt 有幾個交易日
+    &quot;price_type&quot; TEXT,
+    &quot;volume&quot; INTEGER,
+    &quot;vol_weight&quot; REAL,
+    &quot;vol_wei_pr&quot; REAL,
+    &quot;vol_adj&quot; REAL,
+    &quot;vol_wei_adj&quot; REAL,
+    &quot;vol_wei_pr_adj&quot; REAL,
+    &quot;remark&quot; TEXT,
+    &quot;created_at&quot; INTEGER DEFAULT (strftime('%s', 'now'))
+);
+</sql><sql name="SQL 4*">DROP TABLE IF EXISTS stock_report_daily;
 
-  report     TEXT    NOT NULL,  -- {stock_id}-{period_days}-{yyyymmdd}
-  stock_id   TEXT    NOT NULL,
+CREATE TABLE stock_report_daily (
+    row_no                  INTEGER NOT NULL,
 
-  price      REAL    NOT NULL,
+    &quot;日期&quot;                 TEXT    NOT NULL,
+    &quot;股票代號&quot;             TEXT    NOT NULL,
 
-  lastDt_close_distance REAL,   -- (price - last_dt_close) / last_dt_close
+    &quot;開盤價&quot;               REAL,
+    &quot;收盤價&quot;               REAL,
+    &quot;收盤-開盤&quot;            REAL,
+    &quot;最高價&quot;               REAL,
+    &quot;最低價&quot;               REAL,
+    &quot;日振幅&quot;               REAL,
+    &quot;漲跌幅(%)&quot;            REAL,
+    &quot;日振幅_昨收_pct&quot;      REAL,   -- 有方向的 日振幅/昨收(%)
 
-  involve_days  INTEGER NOT NULL,
-  involve_date  TEXT    NOT NULL,   -- yyyymmdd|yyyymmdd|...
+    &quot;成交量&quot;               REAL,
+    &quot;量增率(%)&quot;            REAL,
 
-  date       TEXT    NOT NULL,      -- 'YYYY-MM-DD'
-  price_type TEXT    NOT NULL,      -- close/open/min/max
+    &quot;5日均量&quot;              REAL,
+    &quot;5日最大量_日期&quot;       TEXT,
+    &quot;5日最大量&quot;            REAL,
 
-  volume     INTEGER NOT NULL,
-  vol_weight REAL    NOT NULL,
-  vol_wei_pr REAL    NOT NULL,
+    &quot;10日均量&quot;             REAL,
+    &quot;10日最大量_日期&quot;      TEXT,
+    &quot;10日最大量&quot;           REAL,
 
-  created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    &quot;20日均量&quot;             REAL,
+    &quot;20日最大量_日期&quot;      TEXT,
+    &quot;20日最大量&quot;           REAL,
 
-  -- 防止同一份報告重複寫入
-  UNIQUE (report, stock_id, date, price_type, price)
+    &quot;實體(%)&quot;              REAL,
+    &quot;上影(%)&quot;              REAL,
+    &quot;下影(%)&quot;              REAL,
+    &quot;K線型態&quot;             TEXT,
+    &quot;跳空缺口&quot;             REAL,
+
+    &quot;5日平均&quot;              REAL,
+    &quot;10日平均&quot;             REAL,
+    &quot;20日平均&quot;             REAL,
+
+    &quot;5日上升幅度&quot;          REAL,
+    &quot;10日上升幅度&quot;         REAL,
+    &quot;20日上升幅度&quot;         REAL,
+
+    &quot;5日扣抵值&quot;            REAL,
+    &quot;5日扣抵影響(%)&quot;       REAL,
+    &quot;10日扣抵值&quot;           REAL,
+    &quot;10日扣抵影響(%)&quot;      REAL,
+    &quot;20日扣抵值&quot;           REAL,
+    &quot;20日扣抵影響(%)&quot;      REAL,
+
+    &quot;均線得分&quot;             REAL,
+    &quot;均線方向&quot;             TEXT,
+    &quot;均線排列&quot;             TEXT,
+    &quot;均線距離(%)&quot;          REAL,
+    &quot;均線狀態&quot;             TEXT,
+    &quot;趨勢強度說明&quot;         TEXT,
+    &quot;趨勢等級&quot;             REAL,
+
+    &quot;5日乖離&quot;              REAL,
+    &quot;10日乖離&quot;             REAL,
+    &quot;20日乖離&quot;             REAL,
+
+    &quot;總成交金額(億)&quot;       REAL,
+    &quot;法人總買超(億)&quot;       REAL,
+    &quot;買超-外資(億)&quot;        REAL,
+    &quot;買超-投信(億)&quot;        REAL,
+    &quot;買超-自營商(億)&quot;      REAL,
+    &quot;買超-融資(億)&quot;        REAL,
+
+    &quot;資金走向&quot;             REAL,
+    &quot;資金走向判讀&quot;         TEXT,
+
+    PRIMARY KEY (&quot;股票代號&quot;,&quot;日期&quot;)
 );
-
-CREATE INDEX IF NOT EXISTS idx_spir_report
-ON stock_price_involve_report (report);
-
-CREATE INDEX IF NOT EXISTS idx_spir_stock_report
-ON stock_price_involve_report (stock_id, report);
-
-CREATE INDEX IF NOT EXISTS idx_spir_stock_date
-ON stock_price_involve_report (stock_id, date);
-</sql><current_tab id="0"/></tab_sql></sqlb_project>
+</sql><current_tab id="3"/></tab_sql></sqlb_project>
