@@ -348,10 +348,12 @@ def export(stockId, sDt = None, eDt = today, forceRerun = False) -> pd.DataFrame
     outFile = f"{anaRootDir}/{sDt.strftime('%Y%m%d')}_{eDt.strftime('%Y%m%d')}-final_daily_report.csv"
     new_df.to_csv(outFile, index=False, encoding="utf-8-sig")
     print(new_df.tail())
+    
+    new_df.to_csv("stock_report_old.csv", index=False, encoding="utf-8-sig")
     return new_df
 
 
-# python -m main.stock_report
+# python -m main.stock_report_old
 if __name__ == "__main__":
     df = taiex_daily_report()
     

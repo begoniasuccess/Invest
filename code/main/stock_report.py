@@ -374,7 +374,16 @@ def export(stock_id, sDt, eDt):
     # === upsert 到 DB ===
     upsert(df, stock_id)
 
-    return df
+    sql = f"""
+        SELECT * FROM stock_report_daily
+        WHERE 股票代號 = '{stock_id}'
+            AND 日期 BETWEEN '{sDt.strftime("%Y-%m-%d")}' AND '{eDt.strftime("%Y-%m-%d")}' 
+        ORDER BY 日期
+    """
+    output = db.query_to_df(sql)
+    output.to_csv("stock_report.csv", index=False, encoding="utf-8-sig")
+    
+    return output
 
 # python -m main.stock_report
 if __name__ == "__main__":
