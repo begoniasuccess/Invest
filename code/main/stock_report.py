@@ -6,7 +6,7 @@ from FinMind.data import DataLoader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from pathlib import Path
-from module import twse
+from module import twse, finMind
 
 from common import db  # 你的 DB 模組
 
@@ -92,15 +92,6 @@ def upsert(df: pd.DataFrame, stock_id: str):
     else:
         print("❌ DB 寫入失敗（請看上方 SQLite Error）")
 
-
-# ======================================
-# FinMind 設定
-# ======================================
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNS0xMi0wMiAwMDoxMzo1MiIsInVzZXJfaWQiOiJueWN1bGFiNjE1IiwiaXAiOiIyMjMuMTQzLjE5Ni4xNjAifQ.T5RhH4GU0P7_dA3I7sfio3VcvUgIULi_wYGm31nqwkI"
-api = DataLoader()
-api.login_by_token(api_token=token)
-
-
 # ======================================
 # 主流程
 # ======================================
@@ -108,42 +99,54 @@ def taiex_daily_report(months: int = 4):
     sDt = today - relativedelta(months=months)
     return export("TAIEX", sDt, today)
 
-
 def export(stock_id, sDt, eDt):
+    # 這個還是給三大法人用，保留 +1 天的寫法
     end_next = (eDt + relativedelta(days=1)).strftime("%Y-%m-%d")
 
-    # === 抓日資料 ===
-    df = api.taiwan_stock_daily_adj(
+    # === 1) 抓日資料：改成用 finMind.get_tw_stock_daily_price（走本地快取） ===
+    df = finMind.get_tw_stock_daily_price(
         stock_id=stock_id,
-        start_date=sDt.strftime("%Y-%m-%d"),
-        end_date=end_next,
+        start_date=sDt,
+        end_date=eDt,
     )
-    df["date"] = pd.to_datetime(df["date"]).dt.tz_localize(None)
+    if df is None or df.empty:
+        print(f"[警告] {stock_id} {sDt} ~ {eDt} 無日資料，export 回傳空 DataFrame")
+        return pd.DataFrame()
+
+    df["date"] = pd.to_datetime(df["date"])
+    # 理論上 get_tw_stock_daily_price 已經是區間內，但這行當作保險
     df = df[df["date"] <= pd.to_datetime(eDt.date())].reset_index(drop=True)
 
-    # === 合併法人 ===
-    df3 = api.taiwan_stock_institutional_investors_total(
-        start_date=sDt.strftime("%Y-%m-%d"), end_date=end_next
+    # === 2) 合併法人 ===
+    df3 = finMind.get_tw_institutional_total(
+        start_date=sDt,
+        end_date=eDt,
     )
-    if df3.empty:
+    if df3 is None or df3.empty:
         df3 = pd.DataFrame(columns=["buy", "sell", "date", "name"])
+
+    df3 = df3.copy()
     df3["net"] = df3["buy"] - df3["sell"]
     df3["date"] = pd.to_datetime(df3["date"])
     df3 = df3.pivot(index="date", columns="name", values="net").reset_index()
     df = df.merge(df3, on="date", how="left")
 
-    # === 合併融資 ===
+    # === 3) 合併融資 ===
     df_m = twse.get_margin_trading(sDt, eDt)
     if not df_m.empty:
         df_m = df_m[df_m["項目"] == "融資金額(仟元)"].copy()
         df_m["日期"] = pd.to_datetime(df_m["日期"], format="%Y%m%d")
-        df = df.merge(df_m[["日期", "今日餘額"]],
-                      left_on="date", right_on="日期", how="left")
+        df = df.merge(
+            df_m[["日期", "今日餘額"]],
+            left_on="date",
+            right_on="日期",
+            how="left",
+        )
         df.drop(columns=["日期"], inplace=True, errors="ignore")
     else:
         df["今日餘額"] = np.nan
 
-    # === 基本欄位 rename ===
+    # === 4) 基本欄位 rename ===
     df.rename(
         columns={
             "date": "日期",
@@ -157,7 +160,7 @@ def export(stock_id, sDt, eDt):
         inplace=True,
     )
 
-    # === 價量衍生 ===
+    # === 5) 價量衍生 ===
     df["收盤_開盤"] = df["收盤價"] - df["開盤價"]
     df["日振幅"] = df["最高價"] - df["最低價"]
     df["漲跌幅_pct"] = (df["收盤價"] - df["收盤價"].shift(1)) / df["收盤價"].shift(1)
@@ -170,7 +173,7 @@ def export(stock_id, sDt, eDt):
     df["日振幅_昨收_pct"] = base_range * sign
     df.drop(columns=["昨收_tmp"], inplace=True)
 
-    # === 均量 / 均價 / 扣抵 / 乖離 ===
+    # === 6) 均量 / 均價 / 扣抵 / 乖離 ===
     df["成交量"] = pd.to_numeric(df["成交量"], errors="coerce")
     for n in [5, 10, 20, 60]:
         df[f"{n}日均量"] = df["成交量"].rolling(n).mean()
@@ -180,12 +183,11 @@ def export(stock_id, sDt, eDt):
         df[f"{n}日扣抵影響_pct"] = (df["收盤價"] - df[f"{n}日扣抵值"]) / df["收盤價"]
         df[f"{n}日乖離"] = (df["收盤價"] - df[f"{n}日平均"]) / df[f"{n}日平均"]
 
-    # === 金額換算 / 法人 ===
+    # === 7) 金額換算 / 法人 ===
     df["總成交金額_億"] = pd.to_numeric(df["總成交金額_億"], errors="coerce") / 1e8
     df["法人總買超_億"] = pd.to_numeric(df.get("total"), errors="coerce") / 1e8
     df["買超_外資_億"] = pd.to_numeric(df.get("Foreign_Investor"), errors="coerce") / 1e8
     df["買超_投信_億"] = pd.to_numeric(df.get("Investment_Trust"), errors="coerce") / 1e8
-
     df["買超_自營商_億"] = (
         pd.to_numeric(df.get("Dealer_self"), errors="coerce").fillna(0)
         + pd.to_numeric(df.get("Dealer_Hedging"), errors="coerce").fillna(0)
@@ -198,6 +200,7 @@ def export(stock_id, sDt, eDt):
 
     # 資金走向
     df["資金走向"] = df["收盤_開盤"] - (df["法人總買超_億"] + df["買超_融資_億"])
+
     def _fund_flow_label(x):
         if pd.isna(x):
             return None
@@ -209,15 +212,13 @@ def export(stock_id, sDt, eDt):
 
     df["資金走向判讀"] = df["資金走向"].apply(_fund_flow_label)
 
-    # === 實體 / 上影 / 下影 ===
-    rng = (df["最高價"] - df["最低價"])
-    rng = rng.replace(0, np.nan)
-
+    # === 8) 實體 / 上影 / 下影 ===
+    rng = (df["最高價"] - df["最低價"]).replace(0, np.nan)
     df["實體_pct"] = (df["收盤價"] - df["開盤價"]).abs() / rng
     df["上影_pct"] = (df["最高價"] - np.maximum(df["開盤價"], df["收盤價"])) / rng
     df["下影_pct"] = (np.minimum(df["開盤價"], df["收盤價"]) - df["最低價"]) / rng
 
-    # === K 線型態 ===
+    # === 9) K 線型態 ===
     def classify_k_type(r):
         body = r["實體_pct"]
         upper = r["上影_pct"]
@@ -246,13 +247,13 @@ def export(stock_id, sDt, eDt):
 
     df["K線型態"] = df.apply(classify_k_type, axis=1)
 
-    # === 跳空缺口（邏輯同個股） ===
+    # === 10) 跳空缺口（同個股） ===
     df["昨高"] = df["最高價"].shift(1)
     df["昨低"] = df["最低價"].shift(1)
 
     conds = [
-        df["最低價"] > df["昨高"],  # 上跳空
-        df["最高價"] < df["昨低"],  # 下跳空
+        df["最低價"] > df["昨高"],
+        df["最高價"] < df["昨低"],
     ]
     choices = ["上跳空", "下跳空"]
     df["跳空狀態"] = np.select(conds, choices, default="無跳空")
@@ -276,7 +277,7 @@ def export(stock_id, sDt, eDt):
         default=None,
     )
 
-    # === 均線排列 / 趨勢（只用 5/10/20） ===
+    # === 11) 均線排列 / 趨勢（5/10/20） ===
     for n in [5, 10, 20]:
         df[f"{n}日斜率"] = df[f"{n}日平均"] - df[f"{n}日平均"].shift(1)
 
@@ -347,7 +348,7 @@ def export(stock_id, sDt, eDt):
     }
     df["趨勢等級"] = df["趨勢強度說明"].map(score_map).fillna(0)
 
-    # === 量能最大量（5/10/20/60） ===
+    # === 12) 量能最大量（5/10/20/60） ===
     vols = df["成交量"].to_numpy()
     dates = pd.to_datetime(df["日期"]).dt.strftime("%Y-%m-%d").to_numpy()
 
@@ -367,26 +368,86 @@ def export(stock_id, sDt, eDt):
         df[f"{n}日最大量"] = vmax_list
         df[f"{n}日最大量_日期"] = vdate_list
 
-    # === 把 60 日乖離欄位名稱調整（前面已算過） ===
-    # 這裡只是確保欄位名稱一致
-    # df["60日乖離"] 已在前面 For 迴圈算好了
-
-    # === upsert 到 DB ===
+    # === 13) upsert 到 DB + 後續輸出 ===
     upsert(df, stock_id)
+    update_is_complete()
 
     sql = f"""
         SELECT * FROM stock_report_daily
         WHERE 股票代號 = '{stock_id}'
-            AND 日期 BETWEEN '{sDt.strftime("%Y-%m-%d")}' AND '{eDt.strftime("%Y-%m-%d")}' 
+          AND 日期 BETWEEN '{sDt.strftime("%Y-%m-%d")}' AND '{eDt.strftime("%Y-%m-%d")}'
         ORDER BY 日期
     """
     output = db.query_to_df(sql)
+    output.drop(columns=["id", "is_complete", "updated_at"], inplace=True)
+
+    col_order = [
+        "日期","股票代號","開盤價","收盤價","收盤_開盤","最高價","最低價","日振幅","漲跌幅_pct",
+        "日振幅_昨收_pct","成交量","量增率_pct","5日均量","5日最大量_日期","5日最大量",
+        "10日均量","10日最大量_日期","10日最大量","20日均量","20日最大量_日期","20日最大量",
+        "60日均量","60日最大量_日期","60日最大量","實體_pct","上影_pct","下影_pct","K線型態",
+        "跳空缺口","5日平均","10日平均","20日平均","60日平均","5日上升幅度","10日上升幅度",
+        "20日上升幅度","60日上升幅度","5日扣抵值","5日扣抵影響_pct","10日扣抵值",
+        "10日扣抵影響_pct","20日扣抵值","20日扣抵影響_pct","60日扣抵值","60日扣抵影響_pct",
+        "均線得分","均線方向","均線排列","均線距離_pct","均線狀態","趨勢強度說明",
+        "趨勢等級","5日乖離","10日乖離","20日乖離","60日乖離","總成交金額_億",
+        "法人總買超_億","買超_外資_億","買超_投信_億","買超_自營商_億","買超_融資_億",
+        "資金走向","資金走向判讀",
+    ]
+
+    existing_cols = [c for c in col_order if c in output.columns]
+    remaining_cols = [c for c in output.columns if c not in existing_cols]
+    output = output[existing_cols + remaining_cols].copy()
+
     output.to_csv("stock_report.csv", index=False, encoding="utf-8-sig")
-    
     return output
+
+# 
+def update_is_complete():
+    table = "stock_report_daily"
+
+    # 預設不檢查這些欄位
+    exclude_cols = {
+        "is_complete",
+        "id",
+        "跳空缺口",
+        "created_at",
+        "updated_at"
+    }
+
+    # 取得所有欄位
+    cols_df = db.query_to_df(f"PRAGMA table_info('{table}');")
+    all_cols = cols_df["name"].tolist()
+
+    # 過濾不檢查的欄位
+    check_cols = [c for c in all_cols if c not in exclude_cols]
+
+    if not check_cols:
+        print("⚠ 沒有可檢查欄位，跳過更新。")
+        return
+
+    # 安全包裝欄位名成 "欄位"
+    def q(name: str) -> str:
+        return '"' + name.replace('"', '""') + '"'
+
+    # 建立 NULL 判斷條件
+    null_conditions = " OR ".join([f"{q(c)} IS NULL" for c in check_cols])
+
+    # 最終 SQL
+    sql = f"""
+    UPDATE {q(table)}
+    SET {q("is_complete")} = CASE
+        WHEN {null_conditions} THEN 0
+        ELSE 1
+    END;
+    """
+
+    print("執行 SQL 中 ...")
+    ok = db.execute_sql(sql)
+    print("更新完成 ✔" if ok else "更新失敗 ❌")
 
 # python -m main.stock_report
 if __name__ == "__main__":
-    df = taiex_daily_report()
+    df = taiex_daily_report(60)
     print(df.tail(5))
     print("DONE")

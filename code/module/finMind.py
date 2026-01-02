@@ -367,6 +367,150 @@ def get_tw_stock_daily_price(
 
     return pd.concat(all_dfs, ignore_index=True)
 
+def get_tw_institutional_total(
+    start_date: datetime,
+    end_date: datetime,
+) -> pd.DataFrame:
+    """
+    取得台灣市場整體三大法人買賣超（TaiwanStockTotalInstitutionalInvestors）
+    並快取到 fm_taiwan_stock_institutional_total
+    span 表使用：target_table='fm_taiwan_stock_institutional_total', stock_id='ALL'
+    """
+    print("--- run finMind.get_tw_institutional_total ---")
+    target_table = "fm_taiwan_stock_institutional_total"
+    span_key = "ALL"
+
+    # 先確保快取資料表存在（含 autoincrement id / created_at / updated_at）
+    db.execute_sql(
+        f"""
+        CREATE TABLE IF NOT EXISTS {target_table} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            name TEXT NOT NULL,
+            buy  REAL,
+            sell REAL,
+            updated_at TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+            created_at TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+            UNIQUE(date, name)
+        );
+        """
+    )
+
+    req_s = pd.Timestamp(start_date).normalize()
+    req_e = pd.Timestamp(end_date).normalize()
+    if req_s > req_e:
+        raise ValueError("start_date 不可大於 end_date")
+
+    def dstr(t: pd.Timestamp) -> str:
+        return t.strftime("%Y-%m-%d")
+
+    # === 1) 查 span ===
+    span_row = db.query_to_df(
+        """
+        SELECT start_date, end_date
+        FROM stock_span
+        WHERE target_table = ? AND stock_id = ?
+        """,
+        (target_table, span_key),
+    )
+
+    mem_s = (
+        pd.Timestamp(span_row.loc[0, "start_date"]).normalize()
+        if not span_row.empty
+        else None
+    )
+    mem_e = (
+        pd.Timestamp(span_row.loc[0, "end_date"]).normalize()
+        if not span_row.empty
+        else None
+    )
+
+    fetch_ranges: list[tuple[pd.Timestamp, pd.Timestamp]] = []
+
+    if mem_s is None:
+        # 沒有任何快取 -> 全段補
+        fetch_ranges = [(req_s, req_e)]
+        new_s, new_e = req_s, req_e
+    else:
+        # 有舊 span，算新 span
+        new_s = min(mem_s, req_s)
+        new_e = max(mem_e, req_e)
+
+        if req_s >= mem_s and req_e <= mem_e:
+            # 完全被舊資料涵蓋
+            fetch_ranges = []
+        elif req_s > mem_e:
+            # 完全在舊資料右邊
+            fetch_ranges = [(mem_e + pd.Timedelta(days=1), req_e)]
+        elif req_e < mem_s:
+            # 完全在舊資料左邊
+            fetch_ranges = [(req_s, mem_s - pd.Timedelta(days=1))]
+        else:
+            # 有重疊：左右各缺一段
+            if req_s < mem_s:
+                fetch_ranges.append((req_s, mem_s - pd.Timedelta(days=1)))
+            if req_e > mem_e:
+                fetch_ranges.append((mem_e + pd.Timedelta(days=1), req_e))
+
+    # === 2) 向 FinMind 補資料並寫入快取 ===
+    upsert_sql = f"""
+    INSERT INTO {target_table}
+      (date, name, buy, sell)
+    VALUES (?,?,?,?)
+    ON CONFLICT(date, name) DO UPDATE SET
+      buy        = excluded.buy,
+      sell       = excluded.sell,
+      updated_at = datetime('now', 'localtime');
+    """
+
+    for fs, fe in fetch_ranges:
+        if fs > fe:
+            continue
+
+        df_api = api.taiwan_stock_institutional_investors_total(
+            start_date=dstr(fs),
+            end_date=dstr(fe),
+        )
+
+        if df_api is not None and not df_api.empty:
+            df_api = df_api.copy()
+            df_api["date"] = pd.to_datetime(df_api["date"]).dt.strftime("%Y-%m-%d")
+            params = list(
+                df_api[["date", "name", "buy", "sell"]].itertuples(
+                    index=False, name=None
+                )
+            )
+            db.execute_sql(upsert_sql, params)
+
+    # === 3) 更新 span ===
+    db.execute_sql(
+        """
+        INSERT INTO stock_span (target_table, stock_id, start_date, end_date, updated_at)
+        VALUES (?, ?, ?, ?, strftime('%s','now'))
+        ON CONFLICT(target_table, stock_id) DO UPDATE SET
+          start_date = excluded.start_date,
+          end_date   = excluded.end_date,
+          updated_at = strftime('%s','now')
+        """,
+        (target_table, span_key, dstr(new_s), dstr(new_e)),
+    )
+
+    # === 4) 從快取表讀出需求區間 ===
+    df = db.query_to_df(
+        f"""
+        SELECT date, name, buy, sell
+        FROM {target_table}
+        WHERE date >= ?
+          AND date <= ?
+        ORDER BY date, name
+        """,
+        (dstr(req_s), dstr(req_e)),
+    )
+
+    return df
+
+
+
 # python -m module.finMind
 if __name__ == "__main__":
     stock_id = ['0050']
