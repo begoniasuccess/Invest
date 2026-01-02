@@ -198,7 +198,7 @@ def get_twse_exchangeReport_fmtqik(
     print(f"--- run twse.get_twse_exchangeReport_fmtqik ---")
 
     target_table = "twse_exchangeReport_fmtqik"
-    span_sid = "MARKET"  # 當作 stock_id 用在 stock_span
+    span_sid = "MARKET"  # 當作 stock_id 用在 date_sapn
 
     req_s = pd.Timestamp(start_date).normalize()
     req_e = pd.Timestamp(end_date).normalize()
@@ -212,7 +212,7 @@ def get_twse_exchangeReport_fmtqik(
     span_row = db.query_to_df(
         """
         SELECT start_date, end_date
-        FROM stock_span
+        FROM date_sapn
         WHERE target_table = ? AND stock_id = ?
         """,
         (target_table, span_sid),
@@ -326,7 +326,7 @@ def get_twse_exchangeReport_fmtqik(
 
     db.execute_sql(
         """
-        INSERT INTO stock_span (target_table, stock_id, start_date, end_date, updated_at)
+        INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, strftime('%s','now'))
         ON CONFLICT(target_table, stock_id) DO UPDATE SET
           start_date = excluded.start_date,
@@ -401,7 +401,7 @@ def get_twse_indicesReport_mi_5mins_hist(
     span_row = db.query_to_df(
         """
         SELECT start_date, end_date
-        FROM stock_span
+        FROM date_sapn
         WHERE target_table = ? AND stock_id = ?
         """,
         (target_table, span_sid),
@@ -509,7 +509,7 @@ def get_twse_indicesReport_mi_5mins_hist(
 
     db.execute_sql(
         """
-        INSERT INTO stock_span (target_table, stock_id, start_date, end_date, updated_at)
+        INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, strftime('%s','now'))
         ON CONFLICT(target_table, stock_id) DO UPDATE SET
           start_date = excluded.start_date,

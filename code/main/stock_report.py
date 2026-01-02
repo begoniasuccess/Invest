@@ -95,9 +95,9 @@ def upsert(df: pd.DataFrame, stock_id: str):
 # ======================================
 # 主流程
 # ======================================
-def taiex_daily_report(months: int = 4):
-    sDt = today - relativedelta(months=months)
-    return export("TAIEX", sDt, today)
+def taiex_daily_report(months: int = 4, eDt: datetime = today):
+    sDt = eDt - relativedelta(months=months)
+    return export("TAIEX", sDt, eDt)
 
 def export(stock_id, sDt, eDt):
     # 這個還是給三大法人用，保留 +1 天的寫法
@@ -205,9 +205,9 @@ def export(stock_id, sDt, eDt):
         if pd.isna(x):
             return None
         if x > 0:
-            return "偏重大型股(多)"
+            return "偏重大型股"
         if x < 0:
-            return "偏重小型股(空)"
+            return "偏重小型股"
         return None
 
     df["資金走向判讀"] = df["資金走向"].apply(_fund_flow_label)
@@ -448,6 +448,7 @@ def update_is_complete():
 
 # python -m main.stock_report
 if __name__ == "__main__":
-    df = taiex_daily_report(60)
+    df = export("TAIEX", datetime(2025,2,19), datetime(2025,7,3))
+    # df = taiex_daily_report(60)
     print(df.tail(5))
     print("DONE")

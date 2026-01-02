@@ -267,7 +267,7 @@ def get_tw_stock_daily_price(
         span_row = db.query_to_df(
             """
             SELECT start_date, end_date
-            FROM stock_span
+            FROM date_sapn
             WHERE target_table = ? AND stock_id = ?
             """,
             (target_table, sid),
@@ -335,7 +335,7 @@ def get_tw_stock_daily_price(
         # --- 更新 span ---
         db.execute_sql(
             """
-            INSERT INTO stock_span (target_table, stock_id, start_date, end_date, updated_at)
+            INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
             VALUES (?, ?, ?, ?, strftime('%s','now'))
             ON CONFLICT(target_table, stock_id) DO UPDATE SET
               start_date = excluded.start_date,
@@ -408,7 +408,7 @@ def get_tw_institutional_total(
     span_row = db.query_to_df(
         """
         SELECT start_date, end_date
-        FROM stock_span
+        FROM date_sapn
         WHERE target_table = ? AND stock_id = ?
         """,
         (target_table, span_key),
@@ -485,7 +485,7 @@ def get_tw_institutional_total(
     # === 3) 更新 span ===
     db.execute_sql(
         """
-        INSERT INTO stock_span (target_table, stock_id, start_date, end_date, updated_at)
+        INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, strftime('%s','now'))
         ON CONFLICT(target_table, stock_id) DO UPDATE SET
           start_date = excluded.start_date,
