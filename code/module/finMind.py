@@ -267,8 +267,8 @@ def get_tw_stock_daily_price(
         span_row = db.query_to_df(
             """
             SELECT start_date, end_date
-            FROM date_sapn
-            WHERE target_table = ? AND stock_id = ?
+            FROM date_span
+            WHERE target_table = ? AND idx_key = ?
             """,
             (target_table, sid),
         )
@@ -335,9 +335,9 @@ def get_tw_stock_daily_price(
         # --- 更新 span ---
         db.execute_sql(
             """
-            INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
+            INSERT INTO date_span (target_table, idx_key, start_date, end_date, updated_at)
             VALUES (?, ?, ?, ?, strftime('%s','now'))
-            ON CONFLICT(target_table, stock_id) DO UPDATE SET
+            ON CONFLICT(target_table, idx_key) DO UPDATE SET
               start_date = excluded.start_date,
               end_date   = excluded.end_date,
               updated_at = strftime('%s','now')
@@ -408,8 +408,8 @@ def get_tw_institutional_total(
     span_row = db.query_to_df(
         """
         SELECT start_date, end_date
-        FROM date_sapn
-        WHERE target_table = ? AND stock_id = ?
+        FROM date_span
+        WHERE target_table = ? AND idx_key = ?
         """,
         (target_table, span_key),
     )
@@ -485,9 +485,9 @@ def get_tw_institutional_total(
     # === 3) 更新 span ===
     db.execute_sql(
         """
-        INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
+        INSERT INTO date_span (target_table, idx_key, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, strftime('%s','now'))
-        ON CONFLICT(target_table, stock_id) DO UPDATE SET
+        ON CONFLICT(target_table, idx_key) DO UPDATE SET
           start_date = excluded.start_date,
           end_date   = excluded.end_date,
           updated_at = strftime('%s','now')
@@ -509,14 +509,157 @@ def get_tw_institutional_total(
 
     return df
 
+# 台灣市場整體融資融劵表 
+def get_tw_margin_total(
+    start_date: datetime,
+    end_date: datetime = datetime.now(),
+) -> pd.DataFrame:
+    """
+    FinMind - TaiwanStockTotalMarginPurchaseShortSale
+    快取表：fm_taiwan_stock_margin_total
+    span 表：date_span
+      - target_table = 'fm_taiwan_stock_margin_total'
+      - idx_key = NULL
+    """
+    print("--- run finMind.get_tw_margin_total_finmind ---")
+
+    target_table = "fm_taiwan_stock_margin_total"
+    span_key = "date"   # 不需要 idx_key
+
+    req_s = pd.Timestamp(start_date).normalize()
+    req_e = pd.Timestamp(end_date).normalize()
+    if req_s > req_e:
+        raise ValueError("start_date 不可大於 end_date")
+
+    def dstr(t: pd.Timestamp) -> str:
+        return t.strftime("%Y-%m-%d")
+
+    # === 1) 查 span ===
+    span_row = db.query_to_df(
+        """
+        SELECT start_date, end_date
+        FROM date_span
+        WHERE target_table = ?
+          AND idx_key = ?
+        """,
+        (target_table, span_key),
+    )
+
+    mem_s = pd.Timestamp(span_row.loc[0, "start_date"]).normalize() if not span_row.empty else None
+    mem_e = pd.Timestamp(span_row.loc[0, "end_date"]).normalize() if not span_row.empty else None
+
+    fetch_ranges: list[tuple[pd.Timestamp, pd.Timestamp]] = []
+
+    if mem_s is None:
+        fetch_ranges = [(req_s, req_e)]
+        new_s, new_e = req_s, req_e
+    else:
+        new_s = min(mem_s, req_s)
+        new_e = max(mem_e, req_e)
+
+        if req_s >= mem_s and req_e <= mem_e:
+            fetch_ranges = []
+        elif req_s > mem_e:
+            fetch_ranges = [(mem_e + pd.Timedelta(days=1), req_e)]
+        elif req_e < mem_s:
+            fetch_ranges = [(req_s, mem_s - pd.Timedelta(days=1))]
+        else:
+            if req_s < mem_s:
+                fetch_ranges.append((req_s, mem_s - pd.Timedelta(days=1)))
+            if req_e > mem_e:
+                fetch_ranges.append((mem_e + pd.Timedelta(days=1), req_e))
+
+    # === 2) 補資料（一次一段，避免 ban） ===
+    upsert_sql = f"""
+    INSERT INTO {target_table}
+      (date, name, buy, sell, TodayBalance, YesBalance, Return)
+    VALUES (?,?,?,?,?,?,?)
+    ON CONFLICT(date, name) DO UPDATE SET
+      buy = excluded.buy,
+      sell = excluded.sell,
+      TodayBalance = excluded.TodayBalance,
+      YesBalance = excluded.YesBalance,
+      Return = excluded.Return,
+      updated_at = datetime('now', 'localtime');
+    """
+
+    for fs, fe in fetch_ranges:
+        if fs > fe:
+            continue
+
+        df_api = api.taiwan_stock_margin_purchase_short_sale_total(
+            start_date=dstr(fs),
+            end_date=dstr(fe),
+        )
+
+        if df_api is None or df_api.empty:
+            continue
+
+        df_api = df_api.copy()
+        df_api["date"] = pd.to_datetime(df_api["date"]).dt.strftime("%Y-%m-%d")
+
+        params = list(
+            df_api[
+                ["date", "name", "buy", "sell", "TodayBalance", "YesBalance", "Return"]
+            ].itertuples(index=False, name=None)
+        )
+
+        db.execute_sql(upsert_sql, params)
+
+    # === 3) 重新計算實際 span（用 DB 真實資料） ===
+    span_cov = db.query_to_df(
+        f"""
+        SELECT MIN(date) AS min_d, MAX(date) AS max_d
+        FROM {target_table}
+        """
+    )
+
+    if not span_cov.empty and span_cov.loc[0, "max_d"] is not None:
+        real_s = pd.Timestamp(span_cov.loc[0, "min_d"]).normalize()
+        real_e = pd.Timestamp(span_cov.loc[0, "max_d"]).normalize()
+        real_e = min(real_e, req_e)
+    else:
+        real_s, real_e = req_s, req_e
+
+    db.execute_sql(
+        """
+        INSERT INTO date_span (target_table, idx_key, start_date, end_date, updated_at)
+        VALUES (?, ?, ?, ?, strftime('%s','now'))
+        ON CONFLICT(target_table, idx_key) DO UPDATE SET
+          start_date = excluded.start_date,
+          end_date   = excluded.end_date,
+          updated_at = strftime('%s','now')
+        """,
+        (target_table, span_key, dstr(real_s), dstr(real_e)),
+    )
+
+    # === 4) 從 DB 回傳 ===
+    df = db.query_to_df(
+        f"""
+        SELECT
+          date,
+          name,
+          buy,
+          sell,
+          TodayBalance,
+          YesBalance,
+          Return
+        FROM {target_table}
+        WHERE date >= ?
+          AND date <= ?
+        ORDER BY date, name
+        """,
+        (dstr(req_s), dstr(req_e)),
+    )
+
+    return df
 
 
 # python -m module.finMind
 if __name__ == "__main__":
-    stock_id = ['0050']
-    sDt = datetime(2025, 12, 1)
-    eDt = datetime.now()
-    df = get_tw_stock_daily_price(stock_id, sDt, eDt)
+    sDt = datetime(2020,1,2)
+    eDt = datetime(2025,12,31)
+    df = get_tw_margin_total(sDt,eDt)
     
     print(df.head(), df.tail())
     

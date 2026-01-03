@@ -14,6 +14,7 @@ from datetime import datetime
 from typing import List
 import requests
 from common import db, utils
+import finMind
 
 # sys.path.append(os.path.dirname(__file__))
 # sys.path.append(os.path.dirname(os.path.dirname(__file__))) 
@@ -118,6 +119,144 @@ def get_margin_trading(sDt: datetime, eDt: datetime):
         df = None  # 如果都不存在，回傳空 DataFrame
     return df
 
+# 補闕漏的 融資餘額 資料
+def repair_margin_trading_gaps(
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+):
+    """
+    修補 twse_marginTrading_miMargn 中間缺漏的交易日資料
+    - 若未指定 start/end，則以 DB 中 min/max 日期為範圍
+    - 僅針對缺口呼叫 API
+    """
+    table = "twse_marginTrading_miMargn"
+    span_table = "date_span"
+    target_table = table
+    idx_key = None  # 依你要求，融資不需要 idx_key
+
+    # === 1) 決定修補範圍 ===
+    if start_date is None or end_date is None:
+        row = db.query_to_df(f"""
+            SELECT MIN(日期) AS min_d, MAX(日期) AS max_d
+            FROM {table}
+        """)
+        if row.empty or row.iloc[0]["min_d"] is None:
+            print("⚠ DB 無任何融資資料，無法自動修補")
+            return
+        s = datetime.strptime(row.iloc[0]["min_d"], "%Y%m%d")
+        e = datetime.strptime(row.iloc[0]["max_d"], "%Y%m%d")
+    else:
+        s = pd.Timestamp(start_date).normalize().to_pydatetime()
+        e = pd.Timestamp(end_date).normalize().to_pydatetime()
+
+    print(f"🔍 修補範圍: {s.date()} ~ {e.date()}")
+
+    # === 2) 取得交易日曆 ===
+    df_trade = finMind.getTwStockTradingDates()
+    trade_days = set(
+        pd.to_datetime(df_trade["date"]).dt.strftime("%Y%m%d")
+    )
+
+    # === 3) 取 DB 已有日期 ===
+    df_exist = db.query_to_df(
+        f"""
+        SELECT DISTINCT 日期
+        FROM {table}
+        WHERE 日期 BETWEEN ? AND ?
+        """,
+        (s.strftime("%Y%m%d"), e.strftime("%Y%m%d")),
+    )
+    exist_days = set(df_exist["日期"]) if not df_exist.empty else set()
+
+    # === 4) 找缺口交易日 ===
+    need_days = sorted([
+        d for d in trade_days
+        if s.strftime("%Y%m%d") <= d <= e.strftime("%Y%m%d")
+        and d not in exist_days
+    ])
+
+    if not need_days:
+        print("✅ 無缺漏交易日")
+        return
+
+    # === 5) 將缺日合併為連續區段（最少 API call） ===
+    def to_ranges(days: list[str]):
+        ranges = []
+        start = prev = datetime.strptime(days[0], "%Y%m%d")
+        for d in days[1:]:
+            cur = datetime.strptime(d, "%Y%m%d")
+            if (cur - prev).days > 1:
+                ranges.append((start, prev))
+                start = cur
+            prev = cur
+        ranges.append((start, prev))
+        return ranges
+
+    fetch_ranges = to_ranges(need_days)
+
+    print(f"🚑 發現 {len(fetch_ranges)} 段缺口，開始補資料")
+
+    # === 6) 補資料 ===
+    for fs, fe in fetch_ranges:
+        print(f"📡 補 {fs.date()} ~ {fe.date()}")
+        raw = twse_api.fetch_margin_trading_range(fs, fe)
+        if raw is None or not raw.get("data"):
+            print("⚠ API 無回傳資料")
+            continue
+
+        values = []
+        for r in raw["data"]:
+            try:
+                values.append((
+                    r[0].strip(),  # 日期 YYYYMMDD
+                    r[1].strip(),  # 項目
+                    int(r[2].replace(",", "")),
+                    int(r[3].replace(",", "")),
+                    int(r[4].replace(",", "")),
+                    int(r[5].replace(",", "")),
+                    int(r[6].replace(",", "")),
+                ))
+            except Exception:
+                continue
+
+        db.execute_sql(f"""
+        INSERT OR REPLACE INTO {table}
+          (日期, 項目, 買進, 賣出, 現金_券_償還, 前日餘額, 今日餘額)
+        VALUES (?,?,?,?,?,?,?)
+        """, values)
+
+    # === 7) 更新 date_span ===
+    span = db.query_to_df("""
+        SELECT start_date, end_date
+        FROM date_span
+        WHERE target_table = ? AND idx_key = ?
+    """, (target_table, idx_key))
+
+    new_s = s.strftime("%Y%m%d")
+    new_e = e.strftime("%Y%m%d")
+
+    if span.empty:
+        db.execute_sql("""
+        INSERT INTO date_span (target_table, idx_key, start_date, end_date)
+        VALUES (?, ?, ?, ?)
+        """, (target_table, idx_key, new_s, new_e))
+    else:
+        cur_s = span.loc[0, "start_date"]
+        cur_e = span.loc[0, "end_date"]
+        db.execute_sql("""
+        UPDATE date_span
+        SET start_date = ?, end_date = ?, updated_at = strftime('%s','now')
+        WHERE target_table = ? AND idx_key = ?
+        """, (
+            min(cur_s, new_s),
+            max(cur_e, new_e),
+            target_table,
+            idx_key
+        ))
+
+    print("✅ 缺漏修補完成，date_span 已更新")
+
+
 # =========================
 # 共用小工具
 # =========================
@@ -198,7 +337,7 @@ def get_twse_exchangeReport_fmtqik(
     print(f"--- run twse.get_twse_exchangeReport_fmtqik ---")
 
     target_table = "twse_exchangeReport_fmtqik"
-    span_sid = "MARKET"  # 當作 stock_id 用在 date_sapn
+    span_sid = "MARKET"  # 當作 stock_id 用在 date_span
 
     req_s = pd.Timestamp(start_date).normalize()
     req_e = pd.Timestamp(end_date).normalize()
@@ -212,8 +351,8 @@ def get_twse_exchangeReport_fmtqik(
     span_row = db.query_to_df(
         """
         SELECT start_date, end_date
-        FROM date_sapn
-        WHERE target_table = ? AND stock_id = ?
+        FROM date_span
+        WHERE target_table = ? AND idx_key = ?
         """,
         (target_table, span_sid),
     )
@@ -326,9 +465,9 @@ def get_twse_exchangeReport_fmtqik(
 
     db.execute_sql(
         """
-        INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
+        INSERT INTO date_span (target_table, idx_key, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, strftime('%s','now'))
-        ON CONFLICT(target_table, stock_id) DO UPDATE SET
+        ON CONFLICT(target_table, idx_key) DO UPDATE SET
           start_date = excluded.start_date,
           end_date   = excluded.end_date,
           updated_at = strftime('%s','now')
@@ -401,8 +540,8 @@ def get_twse_indicesReport_mi_5mins_hist(
     span_row = db.query_to_df(
         """
         SELECT start_date, end_date
-        FROM date_sapn
-        WHERE target_table = ? AND stock_id = ?
+        FROM date_span
+        WHERE target_table = ? AND idx_key = ?
         """,
         (target_table, span_sid),
     )
@@ -509,9 +648,9 @@ def get_twse_indicesReport_mi_5mins_hist(
 
     db.execute_sql(
         """
-        INSERT INTO date_sapn (target_table, idx_key, start_date, end_date, updated_at)
+        INSERT INTO date_span (target_table, idx_key, start_date, end_date, updated_at)
         VALUES (?, ?, ?, ?, strftime('%s','now'))
-        ON CONFLICT(target_table, stock_id) DO UPDATE SET
+        ON CONFLICT(target_table, idx_key) DO UPDATE SET
           start_date = excluded.start_date,
           end_date   = excluded.end_date,
           updated_at = strftime('%s','now')
@@ -540,10 +679,6 @@ def get_twse_indicesReport_mi_5mins_hist(
     return df
 
 
-# ======== 範例測試 ========
+# python -m module.twse
 if __name__ == "__main__":
-    year = 2024
-    sDt = datetime(2025, 7, 15)
-    eDt = datetime.today()
-    testData = get_margin_trading(sDt, eDt)
-    print(testData.head(2))
+    repair_margin_trading_gaps()
