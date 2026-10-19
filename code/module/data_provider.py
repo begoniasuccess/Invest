@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from common import db
 from common import tools
-import api_getter
+from module import api_getter
 
 # ======== 注意股公告 ========
 # 證券代號,證券名稱,累計,注意交易資訊,公告日期,收盤價,本益比,link
@@ -29,6 +29,9 @@ def get_punish(type: str, sDt: datetime, eDt: datetime):
             
         case "tpex":
             apiName = "上櫃處置有價證券資訊"
+            
+        case _:
+            return None
             
     return get_time_range_data(apiName, sDt, eDt)
 
@@ -56,10 +59,20 @@ def get_time_range_data(apiName: str, sDt: datetime, eDt: datetime):
         maxDt = sDt - relativedelta(days=1)
         minDt = maxDt - relativedelta(days=1)        
     else:        
-        sql = f"SELECT min({time_col}), MAX({time_col}) FROM {table}"
+        sql = f"""
+        SELECT
+            MIN({time_col}) AS min_date,
+            MAX({time_col}) AS max_date
+        FROM {table}
+        """
         df_check = db.query_to_df(sql)
-        minDt = datetime.fromtimestamp(tools.roc_to_unix(df_check[f"min({time_col})"].iloc[0]))
-        maxDt = datetime.fromtimestamp(tools.roc_to_unix(df_check[f"MAX({time_col})"].iloc[0]))
+
+        minDt = datetime.fromtimestamp(
+            tools.roc_to_unix(df_check["min_date"].iloc[0])
+        )
+        maxDt = datetime.fromtimestamp(
+            tools.roc_to_unix(df_check["max_date"].iloc[0])
+        )
     print([minDt, maxDt])
     # sys.exit()
 
@@ -321,10 +334,11 @@ def writein_db(apiName, data) -> bool:
         return True
     
     sql = f"""
-    INSERT OR REPLACE INTO {table} 
+    INSERT INTO {table}
         ({",".join(insert_cols)})
     VALUES 
         ({", ".join(["?"] * len(insert_cols))})
+    ON CONFLICT DO NOTHING
     """
     return db.execute_sql(sql, values)
 

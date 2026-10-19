@@ -1,0 +1,5 @@
+﻿strategy,market_day_count,signal_count,eligible_order_count,entry_count,entry_rate_per_signal_pct,entry_rate_per_eligible_order_pct,entry_frequency_per_market_day_pct,average_entries_per_month,distance_filtered_count,not_touched_count,missing_count,win_count,loss_count,breakeven_count,win_rate_pct,total_gross_points,total_net_points,average_net_points,median_net_points,total_net_twd,profit_factor,max_drawdown_points,max_losing_streak,stop_loss_count,take_profit_count,close_exit_count
+2-2.10,2133,2133,2124,561,26.3,26.41,26.3,5.29,0,181,9,147,414,0,26.2,3337.4,1654.4,2.95,-24.0,330880.0,1.1064,-1394.78,14,405,124,32
+2-2.7,2133,2133,2128,793,37.18,37.27,37.18,7.48,0,510,5,207,586,0,26.1,272.93,-2106.07,-2.66,-23.0,-421213.0,0.9,-3275.35,24,576,162,55
+2-2.8,2133,2133,2127,485,22.74,22.8,22.74,4.58,0,261,6,126,359,0,25.98,1658.15,203.15,0.42,-24.0,40630.0,1.0147,-2258.4,24,358,101,26
+2-2.9,2133,2133,2122,906,42.48,42.7,42.48,8.55,0,389,11,237,669,0,26.16,-335.02,-3053.02,-3.37,-23.0,-610603.0,0.868,-3093.97,21,662,178,66

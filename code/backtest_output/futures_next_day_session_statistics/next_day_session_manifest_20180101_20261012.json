@@ -1,0 +1,27 @@
+{
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "actual_data_end": "2026-10-12",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2099-12-31",
+    "futures_id": "TX",
+    "range_days": 30,
+    "minimum_sample_size": 100
+  },
+  "night_change_buckets": {
+    "明顯下跌": "夜盤漲跌幅 < -1%",
+    "小幅下跌": "-1% <= 夜盤漲跌幅 < 0%",
+    "小幅上漲": "0% <= 夜盤漲跌幅 < 1%",
+    "明顯上漲": "夜盤漲跌幅 >= 1%"
+  },
+  "definitions": {
+    "availability": "訊號日收盤後已完成的五日核心、日盤與夜盤資料，用於研究下一交易日日盤",
+    "night_change_pct": "(訊號日夜盤收-訊號日日盤收)/訊號日日盤收*100",
+    "target_close_return_pct": "(隔日日盤收-訊號日夜盤收)/訊號日夜盤收*100",
+    "low_close_rebound_pct": "(隔日日盤收-隔日日盤低)/隔日日盤收*100",
+    "high_close_pullback_pct": "(隔日日盤高-隔日日盤收)/隔日日盤收*100",
+    "range_standardization": "高低點至收盤距離/訊號日含當日往回30日平均日盤振幅*100",
+    "direction_hit": "核心多且隔日收盤報酬>0，或核心空且隔日收盤報酬<0",
+    "no_trade_assumption": "本程式只做條件統計，不模擬進場、停損、停利或交易成本"
+  }
+}

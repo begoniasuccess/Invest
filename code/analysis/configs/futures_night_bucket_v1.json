@@ -1,0 +1,10 @@
+{
+  "futures_id": "TX",
+  "start_date": "2018-01-01",
+  "end_date": "2026-09-10",
+  "bucket_edges_pct": [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2],
+  "output_dir": "../output/analysis/night_bucket",
+  "write_database": true,
+  "export_csv": true
+}
+

@@ -1,0 +1,9 @@
+﻿strategy,entry_type,market_day_count,signal_count,eligible_order_count,entry_count,entry_rate_per_signal_pct,entry_rate_per_eligible_order_pct,entry_frequency_per_market_day_pct,average_entries_per_month,distance_filtered_count,not_touched_count,missing_count,win_count,loss_count,breakeven_count,win_rate_pct,total_gross_points,total_net_points,average_net_points,median_net_points,total_net_twd,profit_factor,max_drawdown_points,max_losing_streak,stop_loss_count,take_profit_count,close_exit_count
+2-2.10,INTRADAY_TOUCH,126,126,126,126,100.0,100.0,100.0,2.0,0,0,0,34,92,0,26.98,535.87,157.87,1.25,-22.5,31573.0,1.0462,-612.32,10,85,25,16
+2-2.10,OPENING_IMMEDIATE,435,435,435,435,100.0,100.0,100.0,4.63,0,0,0,113,322,0,25.98,2801.53,1496.53,3.44,-24.0,299307.0,1.1233,-1760.03,14,320,99,16
+2-2.7,INTRADAY_TOUCH,274,274,274,274,100.0,100.0,100.0,2.91,0,0,0,76,198,0,27.74,-1309.02,-2131.02,-7.78,-22.0,-426203.0,0.6994,-2547.28,14,190,46,38
+2-2.7,OPENING_IMMEDIATE,519,519,519,519,100.0,100.0,100.0,4.9,0,0,0,131,388,0,25.24,1581.95,24.95,0.05,-23.0,4990.0,1.0018,-2455.85,18,386,116,17
+2-2.8,INTRADAY_TOUCH,118,118,118,118,100.0,100.0,100.0,1.71,0,0,0,36,82,0,30.51,817.97,463.97,3.93,-24.0,92793.0,1.1635,-795.83,15,82,26,10
+2-2.8,OPENING_IMMEDIATE,367,367,367,367,100.0,100.0,100.0,4.03,0,0,0,90,277,0,24.52,840.18,-260.82,-0.71,-25.0,-52163.0,0.9763,-1808.68,18,276,75,16
+2-2.9,INTRADAY_TOUCH,345,345,345,345,100.0,100.0,100.0,3.48,0,0,0,90,255,0,26.09,-1631.13,-2666.13,-7.73,-23.0,-533227.0,0.6877,-2716.38,12,249,51,45
+2-2.9,OPENING_IMMEDIATE,561,561,561,561,100.0,100.0,100.0,5.29,0,0,0,147,414,0,26.2,1296.12,-386.88,-0.69,-23.0,-77377.0,0.9735,-1435.32,21,413,127,21

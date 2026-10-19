@@ -1,0 +1,63 @@
+{
+  "name": "Yu關鍵加權日K分類器",
+  "version": 1,
+  "date_column": "日期",
+  "formation_features": [
+    "實體絕對點數", "上影點數", "下影點數", "實體占振幅", "上影占振幅", "下影占振幅",
+    "實體_ATR倍數", "上影_ATR倍數", "下影_ATR倍數", "收盤位置", "ATR", "紅黑方向",
+    "量比_5", "成交量百分位_5", "是否截至當日5日新高", "是否截至當日5日新低",
+    "量比_10", "成交量百分位_10", "是否截至當日10日新高", "是否截至當日10日新低",
+    "量比_20", "成交量百分位_20", "是否截至當日20日新高", "是否截至當日20日新低",
+    "量比_60", "成交量百分位_60", "是否截至當日60日新高", "是否截至當日60日新低",
+    "量比_120", "成交量百分位_120", "是否截至當日120日新高", "是否截至當日120日新低",
+    "大量K分數", "波段高分數", "波段低分數", "長實體分數", "長上影分數", "長下影分數"
+  ],
+  "database_sources": {
+    "加權": {
+      "relation": "report.v_taiex_report",
+      "fields": [
+        "漲跌幅_pct", "實體_昨收_pct", "實體_開盤_pct", "日振幅_昨收_pct", "日振福_開盤_pct",
+        "量增率_pct", "5日量增率_pct", "10日量增率_pct", "20日量增率_pct", "60日量增率_pct",
+        "跳空缺口_昨收_pct", "實體_pct", "上影_pct", "下影_pct",
+        "5日上升幅度_pct", "10日上升幅度_pct", "20日上升幅度_pct", "60日上升幅度_pct",
+        "5日明日扣抵影響_pct", "10日明日扣抵影響_pct", "20日明日扣抵影響_pct", "60日明日扣抵影響_pct",
+        "5日乖離", "10日乖離", "20日乖離", "60日乖離", "K線型態", "當日價量", "5日價量",
+        "MA方向_5", "MA方向_10", "MA方向_20", "趨勢", "位置"
+      ]
+    },
+    "期貨": {
+      "relation": "report.v_futures_report_daily",
+      "filters": {"futures_id": "TX"},
+      "fields": [
+        "全價漲跌_pct", "全收開_昨收_pct", "全收開_開盤_pct", "全振幅_昨收_pct", "全振幅_開盤_pct",
+        "全量增減_昨日_pct", "全量增減_五日_pct", "全量增減_十日_pct", "全量增減_二十日_pct",
+        "全實體_pct", "全上影_pct", "全下影_pct", "全5MA乖離率", "全10MA乖離率", "全20MA乖離率",
+        "日價漲跌_pct", "日收開_昨收_pct", "日收開_開盤_pct", "日振幅_昨收_pct", "日振幅_開盤_pct",
+        "日量增減_昨日_pct", "日量增減_五日_pct", "日量增減_十日_pct", "日量增減_二十日_pct",
+        "日實體_pct", "日上影_pct", "日下影_pct", "日5MA乖離率", "日10MA乖離率", "日20MA乖離率",
+        "夜價漲跌_pct", "散戶多空比_小台", "散戶多空比_微台", "法人總買超_億",
+        "全K線型態", "日K線型態", "全位置", "全MA方向_5", "全MA方向_10", "全MA方向_20"
+      ]
+    }
+  },
+  "feature_sets": {
+    "A_形成特徵": {"groups": ["formation"]},
+    "B_形成加日曆": {"groups": ["formation", "calendar"]},
+    "C_加權報表": {"groups": ["加權"]},
+    "D_形成加加權": {"groups": ["formation", "加權"]},
+    "E_形成加期貨": {"groups": ["formation", "期貨"]},
+    "F_全部": {"groups": ["formation", "加權", "期貨"]}
+  },
+  "models": {
+    "logistic": {"type": "logistic", "C": 0.35, "max_iter": 4000},
+    "random_forest": {"type": "random_forest", "n_estimators": 600, "min_samples_leaf": 6, "max_depth": 5, "max_features": "sqrt"}
+  },
+  "validation": {
+    "minimum_train_rows": 60,
+    "test_block_rows": 10,
+    "classification_threshold": 0.5,
+    "top_k": [10, 20, 30],
+    "importance_holdout_rows": 40,
+    "importance_repeats": 12
+  }
+}

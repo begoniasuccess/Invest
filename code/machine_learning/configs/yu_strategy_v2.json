@@ -1,0 +1,86 @@
+{
+  "name": "Yu 台指期策略逆向分析 V2",
+  "version": 2,
+  "labels_sheet": "yu_futures_analysis_2026",
+  "date_column": "日期",
+  "futures": {
+    "relation": "report.v_futures_report_daily_corrected",
+    "entity_filter": {"futures_id": "TX"},
+    "reference_price_field": "全日收",
+    "range_field": "全振幅",
+    "volume_field": "全成交量",
+    "mapped_fields": [
+      {"field": "全日開", "session": "全日", "kind": "開盤"},
+      {"field": "全日收", "session": "全日", "kind": "收盤"},
+      {"field": "全日高", "session": "全日", "kind": "高點"},
+      {"field": "全日低", "session": "全日", "kind": "低點"},
+      {"field": "日盤開", "session": "日盤", "kind": "開盤"},
+      {"field": "日盤收", "session": "日盤", "kind": "收盤"},
+      {"field": "日盤高", "session": "日盤", "kind": "高點"},
+      {"field": "日盤低", "session": "日盤", "kind": "低點"}
+    ],
+    "current_fields": [
+      {"field": "夜盤開", "session": "夜盤", "kind": "開盤"},
+      {"field": "夜盤收", "session": "夜盤", "kind": "收盤"},
+      {"field": "夜盤高", "session": "夜盤", "kind": "高點"},
+      {"field": "夜盤低", "session": "夜盤", "kind": "低點"},
+      {"field": "全5MA", "session": "全日", "kind": "5日均"},
+      {"field": "全10MA", "session": "全日", "kind": "10日均"},
+      {"field": "全20MA", "session": "全日", "kind": "20日均"},
+      {"field": "全布林上軌", "session": "全日", "kind": "布林上軌"},
+      {"field": "全布林下軌", "session": "全日", "kind": "布林下軌"},
+      {"field": "全5_明日扣抵值", "session": "全日", "kind": "5日均扣抵"},
+      {"field": "全10_明日扣抵值", "session": "全日", "kind": "10日均扣抵"},
+      {"field": "日5MA", "session": "日盤", "kind": "5日均"},
+      {"field": "日10MA", "session": "日盤", "kind": "10日均"},
+      {"field": "日20MA", "session": "日盤", "kind": "20日均"},
+      {"field": "日布林上軌", "session": "日盤", "kind": "布林上軌"},
+      {"field": "日布林下軌", "session": "日盤", "kind": "布林下軌"}
+    ]
+  },
+  "taiex": {
+    "relation": "report.v_taiex_report",
+    "key_fields": [
+      "開盤價", "收盤價", "最高價", "最低價", "成交量", "20日均量",
+      "實體_pct", "日振幅_昨收_pct", "跳空缺口_昨收_pct", "K線型態",
+      "5MA", "10MA", "20MA", "60MA", "5日乖離", "20日乖離", "60日乖離",
+      "MA方向_5", "MA方向_10", "MA方向_20", "趨勢", "位置",
+      "法人籌碼", "散戶籌碼", "策略_籌碼_判定", "策略_核心"
+    ],
+    "recent_dates_always_keep": 5,
+    "maximum_key_dates": 25,
+    "pivot_window": 3,
+    "minimum_key_score": 3.0
+  },
+  "direction_features": [
+    "taiex__漲跌幅_pct", "taiex__實體_昨收_pct", "taiex__日振幅_昨收_pct",
+    "taiex__量增率_pct", "taiex__5日量增率_pct", "taiex__實體_pct",
+    "taiex__上影_pct", "taiex__下影_pct", "taiex__5日乖離", "taiex__20日乖離",
+    "taiex__60日乖離", "taiex__MA方向_5", "taiex__MA方向_10",
+    "taiex__MA方向_20", "taiex__趨勢", "taiex__位置", "taiex__法人籌碼",
+    "taiex__散戶籌碼", "taiex__策略_籌碼_判定", "taiex__策略_核心",
+    "tx__全價漲跌_pct", "tx__全振幅_昨收_pct", "tx__全實體_pct",
+    "tx__全上影_pct", "tx__全下影_pct", "tx__全5MA乖離率",
+    "tx__全20MA乖離率", "tx__日價漲跌_pct", "tx__日實體_pct",
+    "tx__夜價漲跌_pct", "tx__法人籌碼", "tx__散戶籌碼",
+    "tx__期貨籌碼", "tx__選權籌碼", "tx__策略_籌碼", "tx__策略_核心_五日價量"
+  ],
+  "direction_model": {
+    "minimum_training_rows": 45,
+    "max_depth": 4,
+    "min_samples_leaf": 8,
+    "random_seed": 42
+  },
+  "candidate": {
+    "lookback_rows": 60,
+    "cluster_tolerance_points": 20,
+    "match_tolerance_points": 35,
+    "minimum_entry_distance_points": 15,
+    "minimum_actionable_distance_points": 300,
+    "range_distance_multiplier": 2.0,
+    "maximum_actionable_distance_points": 1400,
+    "recency_half_life_rows": 20,
+    "round_steps": [50, 100, 500],
+    "top_per_scenario": 12
+  }
+}

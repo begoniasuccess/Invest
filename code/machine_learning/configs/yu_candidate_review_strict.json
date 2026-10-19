@@ -1,0 +1,22 @@
+{
+  "name": "Yu嚴格關鍵K候選V4",
+  "version": 4,
+  "base_config": "yu_candidate_review_v3.json",
+  "candidate_overrides": {
+    "selection_mode": "strict",
+    "strict": {
+      "minimum_signal_families": 2,
+      "large_volume_ratio": 1.5,
+      "large_volume_percentile": 0.9,
+      "long_body_atr": 1.0,
+      "long_body_percentile": 0.9,
+      "long_shadow_atr": 0.65,
+      "long_shadow_percentile": 0.9,
+      "pivot_windows": [20, 60],
+      "extreme_volume_ratio": 2.0,
+      "extreme_body_atr": 1.5,
+      "extreme_shadow_atr": 1.0,
+      "extreme_percentile": 0.97
+    }
+  }
+}

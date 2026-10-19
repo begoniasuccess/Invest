@@ -1,0 +1,8 @@
+{
+  "start": "2018-01-01",
+  "end": "2099-12-31",
+  "futures_id": "TX",
+  "range_days": 30,
+  "minimum_sample_size": 100,
+  "output_dir": "backtest_output/futures_next_day_session_statistics"
+}

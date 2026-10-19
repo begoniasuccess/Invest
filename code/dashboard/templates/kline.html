@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invest Dashboard｜K 線分析</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}?v=20260815-1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20261008-scale-tabs" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20260819-1"></script>
+</head>
+<body data-page="kline">
+  <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="開啟選單"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
+  <div class="app-layout">
+    <aside id="appSidebar" class="sidebar flex-column">
+      <div class="brand"><a class="brand-home" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span class="brand-text">Yu Invest</span></a><button id="sidebarCollapseBtn" class="sidebar-collapse-btn" type="button" aria-label="收合側欄"><i class="bi bi-layout-sidebar-inset"></i></button></div>
+      <div class="sidebar-label">分析工具</div>
+      <nav id="sidebarNav" class="sidebar-nav"></nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-foot"><span class="status-dot"></span>本機資料庫</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <main class="main-content kline-page">
+      <header class="topbar">
+        <div><div class="eyebrow">INTERACTIVE CHART</div><h1>K 線分析</h1><p>互動式行情圖、成交量、自訂均線與水平點位</p></div>
+        <div class="topbar-actions">
+          <span id="kbarUpdateStatus" class="source-badge"><i class="bi bi-database-check"></i> 待命</span>
+          <div class="update-control">
+            <button id="updateKbarBtn" class="btn btn-primary action-btn"><i class="bi bi-bar-chart-steps me-2"></i>更新分 K</button>
+            <details id="kbarUpdateMenu" class="update-menu">
+              <summary class="update-settings-btn" title="設定分 K 更新範圍" aria-label="設定分 K 更新範圍"><i class="bi bi-gear"></i></summary>
+              <div class="update-menu-panel">
+                <div class="update-menu-title">更新範圍</div>
+                <label><input id="updateTaiexKbar" class="form-check-input" type="checkbox" checked><span>加權指數分 K</span></label>
+                <label><input id="updateFuturesKbar" class="form-check-input" type="checkbox" checked><span>期貨指數分 K</span></label>
+              </div>
+            </details>
+          </div>
+          <span id="sourceBadge" class="source-badge"><i class="bi bi-database-check"></i> 讀取中</span>
+        </div>
+      </header>
+
+      <div class="settings-tabs kline-scale-tabs" role="tablist" aria-label="K 線時間尺度">
+        <button id="dailyScaleTab" type="button" role="tab" aria-controls="klineScalePanel" aria-selected="true">日 K 以上（日／週／月／年）</button>
+        <button id="intradayScaleTab" type="button" role="tab" aria-controls="klineScalePanel" aria-selected="false">日 K 以下（分／時）</button>
+      </div>
+      <section id="klineScalePanel" class="filter-panel panel-card">
+        <div class="filter-section">
+          <div class="filter-section-title"><i class="bi bi-sliders"></i>圖表條件</div>
+          <div class="filter-grid kline-filter-grid">
+            <div><label for="market">市場</label><select id="market" class="form-select">{% for key, name in markets.items() %}<option value="{{ key }}">{{ name }}</option>{% endfor %}</select></div>
+            <div><label for="interval">K 線週期</label><select id="interval" class="form-select">{% for key, name in intervals.items() %}<option value="{{ key }}">{{ name }}</option>{% endfor %}</select></div>
+            <div><label for="startDate">開始日期</label><input id="startDate" type="date" class="form-control" value="{{ default_start_date }}"></div>
+            <div><label for="endDate">結束日期</label><input id="endDate" type="date" class="form-control" value="{{ default_end_date }}"></div>
+            <div class="filter-actions"><button id="refreshBtn" class="btn btn-dark"><i class="bi bi-arrow-clockwise me-2"></i>重新整理</button></div>
+          </div>
+        </div>
+      </section>
+
+      <div id="alertBox" class="alert app-alert d-none" role="alert"></div>
+
+      <article id="klinePanel" class="panel-card expandable-panel kline-panel">
+        <div class="panel-heading">
+          <div><span class="panel-kicker">PRICE ACTION</span><h2 id="chartTitle">互動式 K 線</h2></div>
+
+          <div id="drawModeHint" class="draw-mode-hint d-none"></div>
+          <div class="panel-actions"><div class="draw-tools" role="group" aria-label="直接在圖上畫線"><button id="drawHorizontalBtn" class="draw-mode-btn" type="button" title="在圖上點擊新增水平線" aria-pressed="false"><i class="bi bi-dash-lg"></i><span>水平</span></button><button id="drawVerticalBtn" class="draw-mode-btn" type="button" title="在圖上點擊新增垂直線" aria-pressed="false"><i class="bi bi-distribute-horizontal"></i><span>垂直</span></button></div><button id="downloadChartBtn" class="icon-btn" title="下載目前 K 線截圖"><i class="bi bi-camera"></i></button><button id="settingsToggleBtn" class="icon-btn" title="收合右側設定"><i class="bi bi-layout-sidebar-inset-reverse"></i></button><button id="fitBtn" class="icon-btn" title="顯示完整期間"><i class="bi bi-arrows-angle-expand"></i></button><button id="expandBtn" class="icon-btn expand-btn" title="沉浸模式"><i class="bi bi-arrows-fullscreen"></i></button></div>
+        </div>
+        <div class="kline-workspace">
+          <section class="kline-chart-section">
+            <div id="macdLegend" class="macd-status-panel d-none" aria-live="polite">DIF12−26 / MACD9 / OSC</div>
+            <div class="kline-chart-body">
+            <div id="ohlcLegend" class="ohlc-legend">將游標移到 K 棒上查看行情</div>
+            <div id="maLegend" class="ma-legend"></div>
+            <div id="klineChartFrame" class="kline-chart-frame" title="拖曳右下角可調整圖表高度"><div class="level-chart-layout"><div id="klineChart" class="kline-chart"></div><div id="klineLevelLabels" class="level-label-rail" aria-label="水平點位標籤"></div></div></div>
+            </div>
+          </section>
+
+          <aside class="kline-settings">
+            <div class="settings-tabs" role="tablist" aria-label="圖表設定">
+              <button id="subplotTab" type="button" role="tab" aria-controls="subplotSettings" aria-selected="true">副圖設定</button>
+              <button id="annotationTab" type="button" role="tab" aria-controls="annotationSettings" aria-selected="false">標示設定</button>
+            </div>
+            <div id="subplotSettings" role="tabpanel" aria-labelledby="subplotTab">
+            <section class="setting-block"><div class="setting-title"><span>成交量副圖</span><label class="form-check form-switch mb-0"><input id="volumeVisible" class="form-check-input" type="checkbox" checked aria-label="顯示成交量"><span>顯示</span></label></div></section>
+            <section class="setting-block">
+              <div class="setting-title"><span><i class="bi bi-graph-up"></i> MACD 副圖</span><label class="form-check form-switch mb-0"><input id="difVisible" class="form-check-input" type="checkbox" aria-label="顯示 MACD 副圖"><span>顯示</span></label></div>
+              
+            </section>
+
+            </div>
+            <div id="annotationSettings" role="tabpanel" aria-labelledby="annotationTab" hidden>
+            <details class="setting-block setting-collapsible" data-setting-section="ma"><summary class="setting-summary"><span><i class="bi bi-bezier2"></i> 均線設定</span></summary><div class="setting-content">
+              <div class="setting-title"><button id="resetMaBtn" class="btn btn-sm btn-link">恢復預設</button></div>
+              <form id="maForm" class="setting-form ma-form">
+                <div><label for="maPeriod">週期</label><input id="maPeriod" type="number" class="form-control" min="2" max="500" value="20" required></div>
+                <div><label for="maColor">顏色</label><input id="maColor" type="color" class="form-control form-control-color" value="#8b5cf6"></div>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i></button>
+              </form>
+              <div id="maList" class="setting-list"></div>
+            </div></details>
+          <details id="presetLevelControls" class="setting-block setting-collapsible d-none" data-setting-section="preset"><summary class="setting-summary"><span><i class="bi bi-download"></i> 匯入預設點位</span></summary><div class="setting-content preset-level-form">
+            <label for="presetLevelDate" class="small text-secondary">點位日期</label>
+            <select id="presetLevelDate" class="form-select form-select-sm" aria-label="預設點位日期"></select>
+            <button id="importPresetLevelsBtn" type="button" class="btn btn-sm btn-outline-primary">匯入預設點位</button>
+          </div></details>
+
+
+            <details class="setting-block setting-collapsible" data-setting-section="horizontal"><summary class="setting-summary"><span><i class="bi bi-dash-lg"></i> 水平點位</span></summary><div class="setting-content">
+              <div class="setting-title"><div class="setting-title-actions"><button id="sortLinesBtn" class="btn btn-sm btn-link" type="button" title="依點位由高到低排序"><i class="bi bi-sort-numeric-down-alt"></i>排序</button><button id="showAllLinesBtn" class="btn btn-sm btn-link">全顯示</button><button id="hideAllLinesBtn" class="btn btn-sm btn-link">全隱藏</button><button id="clearLinesBtn" class="btn btn-sm btn-link text-danger">清除</button></div></div>
+              <form id="lineForm" class="setting-form line-form">
+                <div class="line-price"><label for="linePrice">點位</label><input id="linePrice" type="number" class="form-control" step="1" placeholder="例如 45500" required></div>
+                <div class="line-name"><label for="lineName">名稱</label><input id="lineName" type="text" class="form-control" maxlength="24" placeholder="支撐／壓力"></div>
+                <div><label for="lineColor">顏色</label><input id="lineColor" type="color" class="form-control form-control-color" value="#ef4444"></div>
+                <div><label for="lineStyle">線型</label><select id="lineStyle" class="form-select"><option value="0">實線</option><option value="2" selected>虛線</option><option value="1">點線</option></select></div>
+                <div><label for="lineWidth">粗細</label><select id="lineWidth" class="form-select"><option value="1">1px</option><option value="2" selected>2px</option><option value="3">3px</option><option value="4">4px</option></select></div>
+                <div class="setting-form-actions"><button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i><span id="lineSubmitText">加入點位</span></button><button id="cancelLineEditBtn" class="btn btn-outline-secondary d-none" type="button">取消</button></div>
+              </form>
+              <div id="lineList" class="setting-list"></div>
+            </div></details>
+
+            <details class="setting-block setting-collapsible" data-setting-section="vertical"><summary class="setting-summary"><span><i class="bi bi-calendar-event"></i> 垂直時間</span></summary><div class="setting-content">
+              <div class="setting-title"><div class="setting-title-actions"><button id="sortVerticalsBtn" class="btn btn-sm btn-link" type="button" title="依日期由舊到新排序"><i class="bi bi-sort-down"></i>排序</button><button id="showAllVerticalsBtn" class="btn btn-sm btn-link">全顯示</button><button id="hideAllVerticalsBtn" class="btn btn-sm btn-link">全隱藏</button><button id="clearVerticalsBtn" class="btn btn-sm btn-link text-danger">清除</button></div></div>
+              <form id="verticalForm" class="setting-form vertical-form">
+                <div class="vertical-date"><label for="verticalDate">K 線日期</label><input id="verticalDate" type="date" class="form-control" required></div>
+                <div class="vertical-name"><label for="verticalName">名稱</label><input id="verticalName" type="text" class="form-control" maxlength="24" placeholder="事件／轉折"></div>
+                <div><label for="verticalColor">顏色</label><input id="verticalColor" type="color" class="form-control form-control-color" value="#8b5cf6"></div>
+                <div><label for="verticalStyle">線型</label><select id="verticalStyle" class="form-select"><option value="0">實線</option><option value="2" selected>虛線</option><option value="1">點線</option></select></div>
+                <div><label for="verticalWidth">粗細</label><select id="verticalWidth" class="form-select"><option value="1">1px</option><option value="2" selected>2px</option><option value="3">3px</option><option value="4">4px</option></select></div>
+                <div class="setting-form-actions"><button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i><span id="verticalSubmitText">加入時間</span></button><button id="cancelVerticalEditBtn" class="btn btn-outline-secondary d-none" type="button">取消</button></div>
+              </form>
+              <div id="verticalList" class="setting-list"></div>
+            </div></details>
+
+            <div class="chart-help"><i class="bi bi-mouse"></i><span>可輸入點位／日期，或用圖表上方的水平、垂直模式直接點圖吸附 K 棒；按 Esc 離開畫線模式。線條設定會沿用上一次選擇。</span></div>
+            </div>
+          </aside>
+        </div>
+        <footer class="chart-attribution">Charting by <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a></footer>
+      </article>
+    </main>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay d-none"><div class="loading-card"><div class="spinner-border text-primary"></div><div id="loadingText">正在載入 K 線資料…</div></div></div>
+  <script src="{{ url_for('static', path='/level_labels.js') }}?v=20260929-2"></script>
+  <script src="{{ url_for('static', path='/kline.js') }}?v=20261008-scale-tabs"></script>
+</body>
+</html>

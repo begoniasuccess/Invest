@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invest Dashboard｜隔日日盤情境研究</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20261013-next-day" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20261013-next-day"></script>
+</head>
+<body data-page="next-day-session">
+  <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="開啟選單"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
+  <div class="app-layout">
+    <aside id="appSidebar" class="sidebar flex-column">
+      <div class="brand"><a class="brand-home" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span class="brand-text">Yu Invest</span></a><button id="sidebarCollapseBtn" class="sidebar-collapse-btn" type="button" aria-label="收合側欄"><i class="bi bi-layout-sidebar-inset"></i></button></div>
+      <div class="sidebar-label">分析工具</div><nav id="sidebarNav" class="sidebar-nav"></nav><div class="sidebar-spacer"></div><div class="sidebar-foot"><span class="status-dot"></span>本機資料庫</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+    <main class="main-content">
+      <header class="topbar">
+        <div><div class="eyebrow">NEXT-DAY SESSION LAB</div><h1>隔日日盤情境研究</h1><p>比較所有盤前可辨識情境的獲利傾向、樣本數、跨年度穩定性與收盤位置</p></div>
+        <div class="topbar-actions"><span id="sourceBadge" class="source-badge"><i class="bi bi-database-check"></i> 讀取中</span></div>
+      </header>
+
+      <section class="filter-panel panel-card">
+        <div class="filter-section"><div class="filter-section-title"><i class="bi bi-funnel"></i>情境篩選</div>
+          <div class="next-day-filter-grid">
+            <div><label for="coreFilter">核心方向</label><select id="coreFilter" class="form-select"><option>全部</option>{% for value in core_options %}<option>{{ value }}</option>{% endfor %}</select></div>
+            <div><label for="bucketFilter">夜盤漲跌</label><select id="bucketFilter" class="form-select"><option>全部</option>{% for value in night_bucket_options %}<option>{{ value }}</option>{% endfor %}</select></div>
+            <div><label for="trendFilter">夜盤走勢</label><select id="trendFilter" class="form-select"><option>全部</option>{% for value in night_trend_options %}<option>{{ value }}</option>{% endfor %}</select></div>
+            <div><label for="startDate">開始日期</label><input id="startDate" type="date" min="2018-01-01" class="form-control" value="{{ default_start_date }}"></div>
+            <div><label for="endDate">結束日期</label><input id="endDate" type="date" class="form-control" value="{{ default_end_date }}"></div>
+            <div class="filter-actions"><button id="refreshBtn" class="btn btn-dark"><i class="bi bi-arrow-clockwise me-2"></i>套用條件</button></div>
+          </div>
+        </div>
+        <div class="night-definition"><i class="bi bi-info-circle"></i><span>這是情境統計，不預設順勢或反轉，也不等同完整交易回測。方向報酬：核心多採原報酬，核心空乘以 −1；樣本少於100筆會標示提醒。</span></div>
+      </section>
+
+      <div id="alertBox" class="alert app-alert d-none" role="alert"></div>
+      <section id="summaryCards" class="summary-grid next-day-summary" aria-live="polite"></section>
+
+      <section class="next-day-chart-grid">
+        <article class="panel-card chart-card next-day-wide"><div class="panel-heading"><div><span class="panel-kicker">OPPORTUNITY MAP</span><h2>情境機會圖</h2><p>越右樣本越多、越高方向平均報酬越高；圓點顏色代表命中率，點擊即可下鑽。</p></div></div><div id="opportunityChart" class="next-day-chart next-day-chart-lg"></div></article>
+        <article class="panel-card chart-card"><div class="panel-heading"><div><span class="panel-kicker">YEARLY CONSISTENCY</span><h2>所選情境逐年表現</h2><p>柱狀為方向平均報酬，折線為方向命中率。</p></div></div><div id="yearlyChart" class="next-day-chart"></div></article>
+        <article class="panel-card chart-card"><div class="panel-heading"><div><span class="panel-kicker">CLOSE LOCATION</span><h2>高低點相對收盤</h2><p>以訊號日往回30日平均日盤振幅標準化，呈現P10～P90。</p></div></div><div id="closePositionChart" class="next-day-chart"></div></article>
+        <article class="panel-card chart-card next-day-wide"><div class="panel-heading"><div><span class="panel-kicker">CONDITION × YEAR</span><h2>情境年度熱圖</h2><p>每格為該情境當年的方向平均報酬；空白代表沒有樣本。</p></div></div><div id="stabilityHeatmap" class="next-day-chart next-day-heatmap"></div></article>
+      </section>
+
+      <article class="panel-card table-card next-day-table-card">
+        <div class="panel-heading"><div><span class="panel-kicker">FULL MATRIX</span><h2>完整情境比較</h2><p>點選任一列，可立即切換成該單一情境。</p></div><button id="resetScenarioBtn" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise me-2"></i>顯示全部</button></div>
+        <div class="table-wrap"><table id="scenarioTable" class="table align-middle mb-0"><thead><tr><th>核心</th><th>夜盤漲跌</th><th>夜盤走勢</th><th>樣本</th><th>命中率</th><th>方向平均</th><th>中位數</th><th>報酬因子</th><th>有利年度</th><th>低收反彈P50</th><th>高收回落P50</th></tr></thead><tbody></tbody></table></div>
+      </article>
+
+      <section class="panel-card next-day-definition-card">
+        <div class="panel-heading"><div><span class="panel-kicker">HOW TO READ</span><h2>指標閱讀方式</h2></div></div>
+        <div class="next-day-definition-grid">
+          <div><strong>方向平均報酬</strong><span>用核心方向換算後的隔日收盤報酬；正值才代表方向有利。</span></div>
+          <div><strong>方向命中率</strong><span>核心多且隔日收漲，或核心空且隔日收跌的比例。</span></div>
+          <div><strong>低收反彈</strong><span>隔日日盤最低點到收盤的距離，越大表示收盤離低點越遠。</span></div>
+          <div><strong>高收回落</strong><span>隔日日盤最高點到收盤的距離，越大表示收盤離高點越遠。</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="loadingOverlay" class="loading-overlay d-none"><div class="loading-card"><div class="spinner-border text-primary"></div><div>正在計算隔日日盤情境…</div></div></div>
+  <script src="{{ url_for('static', path='/next_day_session.js') }}?v=20261013-1"></script>
+</body>
+</html>

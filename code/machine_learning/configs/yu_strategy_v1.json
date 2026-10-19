@@ -1,0 +1,67 @@
+{
+  "name": "Yu 台指期策略逆向分析 V1",
+  "report_relation": "report.v_futures_report_daily_corrected",
+  "date_column": "日期",
+  "entity_filter": {
+    "futures_id": "TX"
+  },
+  "labels_sheet": "yu_futures_analysis_2026",
+  "direction_features": [
+    "月", "星期", "全價漲跌_pct", "全收開_昨收_pct", "全振幅_昨收_pct",
+    "全量增減_昨日_pct", "全量增減_五日_pct", "全實體_pct", "全上影_pct", "全下影_pct",
+    "全5MA乖離率", "全20MA乖離率", "全60MA乖離率",
+    "日價漲跌_pct", "日收開_昨收_pct", "日振幅_昨收_pct",
+    "日量增減_昨日_pct", "日量增減_五日_pct", "日實體_pct", "日上影_pct", "日下影_pct",
+    "日5MA乖離率", "日20MA乖離率", "日60MA乖離率",
+    "夜價漲跌_pct", "夜價量結構", "夜K線型態",
+    "主力新建多單", "主力新建空單", "主力淨多空和_5日", "主力淨多空和_20日",
+    "散戶多空比_小台", "散戶多空比_微台", "法人總買超_億",
+    "買賣權比_月選", "買賣權比_週三", "買賣權比_週五",
+    "全位置", "全MA方向_5", "全MA方向_10", "全MA方向_20",
+    "法人籌碼", "散戶籌碼", "加權籌碼", "期貨籌碼", "選權籌碼", "策略_籌碼", "策略_核心_五日價量"
+  ],
+  "direction_model": {
+    "minimum_training_rows": 45,
+    "max_depth": 4,
+    "min_samples_leaf": 8,
+    "random_seed": 42
+  },
+  "candidate": {
+    "lookback_rows": 60,
+    "match_tolerance_points": 35,
+    "cluster_tolerance_points": 15,
+    "reference_price_field": "全日收",
+    "volume_field": "全成交量",
+    "round_steps": [50, 100, 500],
+    "raw_fields": [
+      {"field": "全日開", "session": "全日", "kind": "開盤"},
+      {"field": "全日收", "session": "全日", "kind": "收盤"},
+      {"field": "全日高", "session": "全日", "kind": "高點"},
+      {"field": "全日低", "session": "全日", "kind": "低點"},
+      {"field": "日盤開", "session": "日盤", "kind": "開盤"},
+      {"field": "日盤收", "session": "日盤", "kind": "收盤"},
+      {"field": "日盤高", "session": "日盤", "kind": "高點"},
+      {"field": "日盤低", "session": "日盤", "kind": "低點"},
+      {"field": "夜盤開", "session": "夜盤", "kind": "開盤"},
+      {"field": "夜盤收", "session": "夜盤", "kind": "收盤"},
+      {"field": "夜盤高", "session": "夜盤", "kind": "高點"},
+      {"field": "夜盤低", "session": "夜盤", "kind": "低點"}
+    ],
+    "current_fields": [
+      {"field": "全5MA", "session": "全日", "kind": "5日均"},
+      {"field": "全10MA", "session": "全日", "kind": "10日均"},
+      {"field": "全20MA", "session": "全日", "kind": "20日均"},
+      {"field": "全布林上軌", "session": "全日", "kind": "布林上軌"},
+      {"field": "全布林下軌", "session": "全日", "kind": "布林下軌"},
+      {"field": "全5_明日扣抵值", "session": "全日", "kind": "5日均扣抵"},
+      {"field": "全10_明日扣抵值", "session": "全日", "kind": "10日均扣抵"},
+      {"field": "日5MA", "session": "日盤", "kind": "5日均"},
+      {"field": "日10MA", "session": "日盤", "kind": "10日均"},
+      {"field": "日20MA", "session": "日盤", "kind": "20日均"},
+      {"field": "日布林上軌", "session": "日盤", "kind": "布林上軌"},
+      {"field": "日布林下軌", "session": "日盤", "kind": "布林下軌"},
+      {"field": "日5_明日扣抵值", "session": "日盤", "kind": "5日均扣抵"},
+      {"field": "日10_明日扣抵值", "session": "日盤", "kind": "10日均扣抵"}
+    ]
+  }
+}

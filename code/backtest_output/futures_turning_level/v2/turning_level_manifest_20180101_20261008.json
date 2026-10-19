@@ -1,0 +1,98 @@
+{
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "actual_data_end": "2026-10-08",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2099-12-31",
+    "futures_id": "TX",
+    "entry_time": "08:45:00",
+    "forced_exit_time": "13:45:00",
+    "range_days": 30,
+    "stop_loss_ratio": 0.15,
+    "take_profit_ratio": 0.5,
+    "entry_filter_ratio": 0.3,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0,
+    "contracts": 1
+  },
+  "strategies": {
+    "A": {
+      "code": "A",
+      "signal_column": "策略_核心_昨價量",
+      "level_source": "DAY",
+      "distance_filter": false
+    },
+    "B": {
+      "code": "B",
+      "signal_column": "策略_核心_五日價量",
+      "level_source": "DAY",
+      "distance_filter": false
+    },
+    "C": {
+      "code": "C",
+      "signal_column": "策略_核心_昨價量",
+      "level_source": "NIGHT",
+      "distance_filter": false
+    },
+    "D": {
+      "code": "D",
+      "signal_column": "策略_核心_五日價量",
+      "level_source": "NIGHT",
+      "distance_filter": false
+    },
+    "E": {
+      "code": "E",
+      "signal_column": "策略_核心_昨價量",
+      "level_source": "COMBINED",
+      "distance_filter": false
+    },
+    "F": {
+      "code": "F",
+      "signal_column": "策略_核心_五日價量",
+      "level_source": "COMBINED",
+      "distance_filter": false
+    },
+    "G": {
+      "code": "G",
+      "signal_column": "策略_核心_昨價量",
+      "level_source": "DAY",
+      "distance_filter": true
+    },
+    "H": {
+      "code": "H",
+      "signal_column": "策略_核心_五日價量",
+      "level_source": "DAY",
+      "distance_filter": true
+    },
+    "I": {
+      "code": "I",
+      "signal_column": "策略_核心_昨價量",
+      "level_source": "NIGHT",
+      "distance_filter": true
+    },
+    "J": {
+      "code": "J",
+      "signal_column": "策略_核心_五日價量",
+      "level_source": "NIGHT",
+      "distance_filter": true
+    },
+    "K": {
+      "code": "K",
+      "signal_column": "策略_核心_昨價量",
+      "level_source": "COMBINED",
+      "distance_filter": true
+    },
+    "L": {
+      "code": "L",
+      "signal_column": "策略_核心_五日價量",
+      "level_source": "COMBINED",
+      "distance_filter": true
+    }
+  },
+  "definitions": {
+    "signal_date": "前一報表交易日的核心策略、轉折點、夜盤收，用於下一交易日日盤",
+    "range": "訊號日含當日往回30個完整交易日之(日盤高-日盤低)平均",
+    "distance_filter": "G-L要求 abs(進場點-訊號日夜盤收) >= 30日平均振幅*30%",
+    "exit_priority": "成交後依Tick時序觸發15%停損或50%停利；否則13:45前最後Tick出場"
+  }
+}

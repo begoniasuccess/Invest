@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yu Invest｜Yu 點位審核</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20260929-2" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20260924-1"></script>
+</head>
+<body data-page="yu-key-levels">
+  <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
+  <div class="app-layout">
+    <aside id="appSidebar" class="sidebar flex-column">
+      <div class="brand"><a class="brand-home" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span class="brand-text">Yu Invest</span></a><button id="sidebarCollapseBtn" class="sidebar-collapse-btn" type="button"><i class="bi bi-layout-sidebar-inset"></i></button></div>
+      <div class="sidebar-label">分析工具</div><nav id="sidebarNav" class="sidebar-nav"></nav><div class="sidebar-spacer"></div>
+      <div class="sidebar-foot"><span class="status-dot"></span>本機資料庫</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <main class="main-content yu-level-page">
+      <header class="topbar">
+        <div><div class="eyebrow">YU KEY LEVEL REVIEW</div><h1>Yu 點位審核</h1><p>列出所選期間內曾形成的全部歷史候選點位，直接對照加權指數日 K</p></div>
+        <div class="topbar-actions"><span id="sourceBadge" class="source-badge"><i class="bi bi-shield-check"></i> 不使用未來資料</span></div>
+      </header>
+
+      <section class="filter-panel panel-card yu-filter-panel">
+        <div class="filter-section yu-filter-section">
+          <div class="filter-section-title"><i class="bi bi-sliders"></i>候選點位設定</div>
+          <div class="filter-grid yu-filter-grid-settings">
+            <div><label for="candidateMode">點位模式</label><select id="candidateMode" class="form-select"><option value="strict" selected>嚴格關鍵K（建議）</option><option value="broad">寬鬆候選全集</option><option value="actual">Yu實際使用點位</option></select></div>
+            <div><label>顯示等級</label><div id="gradeFilters" class="yu-grade-options"><label><input class="form-check-input grade-filter" type="checkbox" value="S" checked><span>S</span></label><label><input class="form-check-input grade-filter" type="checkbox" value="A" checked><span>A</span></label><label><input class="form-check-input grade-filter" type="checkbox" value="B" checked><span>B</span></label><label><input class="form-check-input grade-filter" type="checkbox" value="C"><span>C</span></label><label><input class="form-check-input grade-filter" type="checkbox" value="D"><span>D</span></label></div></div>
+            <div><label for="minimumScore">最低重要度</label><input id="minimumScore" type="number" class="form-control" min="0" max="100" step="1" value="55"></div>
+            <div><label for="yuCompareEnabled">Yu 點位對照</label><div class="yu-compare-control"><label class="form-check form-switch"><input id="yuCompareEnabled" class="form-check-input" type="checkbox"><span>顯示對照</span></label><input id="yuCompareTolerance" type="number" class="form-control" min="0" max="500" step="1" value="35" title="候選點位與Yu實際點位的容許誤差"><span>點</span></div></div>
+          </div>
+        </div>
+        <div class="filter-section filter-section-period yu-filter-section yu-filter-period-section">
+          <div class="filter-section-title"><i class="bi bi-calendar-range"></i>圖表期間</div>
+          <div class="filter-grid yu-filter-grid-period">
+            <div><label for="periodMode">區間模式</label><select id="periodMode" class="form-select"><option value="date">指定日期</option><option value="year">選擇年份</option></select></div>
+            <div id="startDateField"><label for="startDate">開始日期</label><input id="startDate" type="date" class="form-control" min="{{ default_start_date }}" max="{{ default_end_date }}" value="{{ default_start_date }}"></div>
+            <div id="endDateField"><label for="endDate">結束／推論截止日</label><input id="endDate" type="date" class="form-control" min="{{ default_start_date }}" max="{{ default_end_date }}" value="{{ default_end_date }}"></div>
+            <div id="startYearField" class="d-none"><label for="startYear">起始年份</label><select id="startYear" class="form-select"></select></div>
+            <div id="endYearField" class="d-none"><label for="endYear">結束年份</label><select id="endYear" class="form-select"></select></div>
+            <div class="filter-actions"><button id="loadBtn" class="btn btn-primary"><i class="bi bi-bullseye me-2"></i>產生候選並畫圖</button></div>
+          </div>
+        </div>
+      </section>
+
+      <div id="alertBox" class="alert app-alert d-none" role="alert"></div>
+
+      <article class="panel-card yu-level-chart-panel">
+        <div class="panel-heading"><div><span class="panel-kicker">TAIEX DAILY K</span><h2 id="chartTitle">加權指數日 K｜Yu 關鍵點位</h2></div><div class="panel-actions"><button id="downloadChartBtn" class="icon-btn" title="下載目前 K 線截圖"><i class="bi bi-camera"></i></button><button id="fitBtn" class="icon-btn" title="顯示完整期間"><i class="bi bi-arrows-angle-expand"></i></button></div></div>
+        <div id="ohlcLegend" class="yu-level-legend">載入後將滑鼠移到 K 棒上查看行情</div>
+        <div id="yuComparisonSummary" class="yu-comparison-summary d-none"></div>
+        <div id="yuLevelChartFrame" class="yu-level-chart-frame" title="拖曳右下角可調整圖表高度"><div class="level-chart-layout"><div id="yuLevelChart" class="yu-level-chart"></div><div id="yuLevelLabels" class="level-label-rail" aria-label="水平點位標籤"></div></div></div>
+        <div class="yu-level-resize-hint"><i class="bi bi-arrows-expand-vertical me-1"></i>拖曳圖表右下角可調整高度</div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-heading"><div><span class="panel-kicker">CANDIDATE LIST</span><h2>候選點位明細</h2><p id="candidateSummary" class="yu-level-panel-note">尚未產生候選</p></div><div class="panel-actions"><button id="showAllBtn" class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-eye me-1"></i>全顯示</button><button id="hideAllBtn" class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-eye-slash me-1"></i>全隱藏</button></div></div>
+        <div class="table-responsive"><table class="table yu-level-table mb-0">
+          <thead><tr><th>顯示</th><th>順序</th><th>等級</th><th>重要度</th><th>代表點位</th><th>點位區間</th><th>Yu對照</th><th>K棒型態／形成原因</th><th>方向強度</th><th>形成／使用日期</th><th>來源數</th><th>目前狀態</th></tr></thead>
+          <tbody id="candidateRows"><tr><td colspan="12" class="text-center text-secondary py-4">請先選日期並產生候選</td></tr></tbody>
+        </table></div>
+      </article>
+    </main>
+  </div>
+  <div id="loadingOverlay" class="loading-overlay d-none"><div class="loading-card"><div class="spinner-border text-primary"></div><div>正在重建候選點位與 K 線…</div></div></div>
+  <script src="{{ url_for('static', path='/level_labels.js') }}?v=20260929-2"></script>
+  <script src="{{ url_for('static', path='/yu_key_levels.js') }}?v=20260929-1"></script>
+</body>
+</html>

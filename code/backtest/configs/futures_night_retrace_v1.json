@@ -1,0 +1,32 @@
+{
+  "futures_id": "TX",
+  "start_date": "2018-01-01",
+  "end_date": "2026-09-10",
+  "entry_start_time": "08:45:00",
+  "last_entry_time": "13:20:00",
+  "forced_exit_time": "13:25:00",
+  "x_bands": [
+    {"label": "x_00_05", "min_pct": 0.0, "max_pct": 0.5},
+    {"label": "x_05_10", "min_pct": 0.5, "max_pct": 1.0},
+    {"label": "x_10_15", "min_pct": 1.0, "max_pct": 1.5},
+    {"label": "x_15_up", "min_pct": 1.5, "max_pct": null},
+    {"label": "x_025_up", "min_pct": 0.25, "max_pct": null},
+    {"label": "x_050_up", "min_pct": 0.5, "max_pct": null},
+    {"label": "x_075_up", "min_pct": 0.75, "max_pct": null},
+    {"label": "x_100_up", "min_pct": 1.0, "max_pct": null}
+  ],
+  "y_retrace_pct_values": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
+  "z_stop_pct_values": [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
+  "costs": {
+    "entry_slippage_points": 1.0,
+    "exit_slippage_points": 1.0,
+    "fee_tax_points": 1.0
+  },
+  "train_end": "2023-12-31",
+  "validation_end": "2025-12-31",
+  "minimum_train_entries": 80,
+  "detail_top_n": 20,
+  "output_dir": "../output/backtest/night_retrace",
+  "write_database": true,
+  "export_csv": true
+}

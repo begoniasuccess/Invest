@@ -1,0 +1,18 @@
+{
+  "start": "2016-01-01",
+  "end": "2026-09-10",
+  "signal_column": "策略_核心_五日價量",
+  "futures_id": "TX",
+  "entry_time": "08:45:00",
+  "forced_exit_time": "13:45:00",
+  "output_dir": "../output/backtest/signal_path_statistics",
+  "thresholds": {
+    "points": [50, 75, 100, 125, 150, 175, 200, 250, 300],
+    "percents": [0.2, 0.3, 0.4, 0.5, 0.75, 1.0]
+  },
+  "trailing_analysis": {
+    "activation_points": [100, 125, 150, 200],
+    "drawdown_points": [75, 100, 125],
+    "drawdown_percents": [0.15, 0.2, 0.25]
+  }
+}

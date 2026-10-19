@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invest Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}?v=20260815-1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20260819-1" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20260819-1"></script>
+</head>
+<body data-page="distribution">
+  <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="開啟選單"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
+  <div class="app-layout">
+    <aside id="appSidebar" class="sidebar flex-column">
+      <div class="brand"><a class="brand-home" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span class="brand-text">Yu Invest</span></a><button id="sidebarCollapseBtn" class="sidebar-collapse-btn" type="button" aria-label="收合側欄"><i class="bi bi-layout-sidebar-inset"></i></button></div>
+      <div class="sidebar-label">分析工具</div>
+      <nav id="sidebarNav" class="sidebar-nav"></nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-foot"><span class="status-dot"></span>本機資料庫</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">MARKET ANALYTICS</div>
+          <h1>級距統計</h1>
+          <p>加權指數與台指期日盤、夜盤、全日的歷史波動分布</p>
+        </div>
+        <div class="topbar-actions">
+          <span id="sourceBadge" class="source-badge"><i class="bi bi-database-check"></i> 讀取中</span>
+          <button id="updateBtn" class="btn btn-primary action-btn"><i class="bi bi-cloud-arrow-down me-2"></i>更新最新資料</button>
+        </div>
+      </header>
+
+      <section class="filter-panel panel-card">
+        <div class="filter-section">
+          <div class="filter-section-title"><i class="bi bi-sliders"></i>統計條件</div>
+          <div class="filter-grid filter-grid-analysis">
+            <div>
+              <label for="market">市場</label>
+              <select id="market" class="form-select">
+                {% for key, name in markets.items() %}<option value="{{ key }}">{{ name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="indicator-field">
+              <label for="indicator">統計指標</label>
+              <select id="indicator" class="form-select">
+                {% for key, spec in indicators.items() %}<option value="{{ key }}">{{ spec.title }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="bin-width-field">
+              <label for="binWidth">級距寬度</label>
+              <div class="input-group">
+                <input id="binWidth" type="number" class="form-control" value="50" min="1" step="1">
+                <span id="binUnit" class="input-group-text">點</span>
+                <button id="resetBinBtn" class="btn btn-outline-secondary" type="button" title="恢復預設級距"><i class="bi bi-arrow-counterclockwise"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section filter-section-period">
+          <div class="filter-section-title"><i class="bi bi-calendar-range"></i>報表區間</div>
+          <div class="filter-grid filter-grid-period">
+            <div>
+              <label for="periodMode">區間模式</label>
+              <select id="periodMode" class="form-select">
+                <option value="date">指定日期</option>
+                <option value="year">選擇年份</option>
+              </select>
+            </div>
+            <div id="startDateField">
+              <label for="startDate">開始日期</label>
+              <input id="startDate" type="date" class="form-control" value="{{ default_start_date }}">
+            </div>
+            <div id="endDateField">
+              <label for="endDate">結束日期</label>
+              <input id="endDate" type="date" class="form-control" value="{{ default_end_date }}">
+            </div>
+            <div id="startYearField" class="d-none">
+              <label for="startYear">起始年份</label>
+              <select id="startYear" class="form-select"></select>
+            </div>
+            <div id="endYearField" class="d-none">
+              <label for="endYear">結束年份</label>
+              <select id="endYear" class="form-select"></select>
+            </div>
+            <div class="filter-actions">
+              <button id="refreshBtn" class="btn btn-dark"><i class="bi bi-arrow-clockwise me-2"></i>重新整理</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="alertBox" class="alert app-alert d-none" role="alert"></div>
+
+      <section id="summaryGrid" class="summary-grid" aria-live="polite"></section>
+
+      <section class="dashboard-grid">
+        <article id="chartPanel" class="panel-card chart-card expandable-panel">
+          <div class="panel-heading">
+            <div><span class="panel-kicker">DISTRIBUTION</span><h2 id="chartTitle">歷史級距分布</h2></div>
+            <div class="panel-actions">
+              <button id="saveChartBtn" class="icon-btn" title="下載圖表"><i class="bi bi-image"></i></button>
+              <button id="chartExpandBtn" class="icon-btn expand-btn" title="放大圖表"><i class="bi bi-arrows-fullscreen"></i></button>
+            </div>
+          </div>
+          <div id="distributionChart" class="chart-area"></div>
+        </article>
+
+        <article id="tablePanel" class="panel-card table-card expandable-panel">
+          <div class="panel-heading">
+            <div><span class="panel-kicker">YEARLY BREAKDOWN</span><h2 id="tableTitle">級距與年度統計</h2></div>
+            <div class="panel-actions">
+              <button id="downloadBtn" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-2"></i>下載 CSV</button>
+              <button id="tableExpandBtn" class="icon-btn expand-btn" title="放大表格"><i class="bi bi-arrows-fullscreen"></i></button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="distributionTable" class="table align-middle mb-0"><thead></thead><tbody></tbody></table></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay d-none"><div class="loading-card"><div class="spinner-border text-primary" role="status"></div><div id="loadingText">正在整理資料…</div></div></div>
+  <script src="{{ url_for('static', path='/app.js') }}?v=20261004-manual-refresh"></script>
+</body>
+</html>

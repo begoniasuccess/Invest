@@ -1,5 +1,4 @@
 import sys, os
-sys.path.append(os.path.dirname(__file__))
 sys.stdout.reconfigure(encoding='utf-8')
 
 import pandas as pd
@@ -8,7 +7,13 @@ from pathlib import Path
 import re
 from common.constants import Panel
 from common.constants import Iloc
-import db
+from common import db
+from typing import Callable
+
+
+def _taipei_today() -> pd.Timestamp:
+    """回傳台灣市場的今天，不受執行主機／容器時區影響。"""
+    return pd.Timestamp.now(tz="Asia/Taipei").tz_localize(None).normalize()
 
 def nowTime():
     """取得當前時間 (yyyy/mm/dd hh:mm:ss)"""
@@ -400,3 +405,345 @@ def chinese_to_int(s) -> int:
             section = ch + section
     total += section_to_number(section)
     return total
+
+# =========================================================
+# 共用工具
+# =========================================================
+def _dstr(t) -> str:
+    return pd.Timestamp(t).strftime("%Y-%m-%d")
+
+
+def _to_norm_ts(t) -> pd.Timestamp:
+    return pd.Timestamp(t).normalize()
+
+
+def _ensure_list(x):
+    return [x] if isinstance(x, str) else list(x)
+
+
+def _get_date_span(target_table: str, idx_key: str):
+    span_row = db.query_to_df(
+        """
+        SELECT start_date, end_date
+        FROM date_span
+        WHERE target_table = ? AND idx_key = ?
+        """,
+        (target_table, str(idx_key)),
+    )
+
+    mem_s = (
+        pd.Timestamp(span_row.loc[0, "start_date"]).normalize()
+        if not span_row.empty and pd.notna(span_row.loc[0, "start_date"])
+        else None
+    )
+    mem_e = (
+        pd.Timestamp(span_row.loc[0, "end_date"]).normalize()
+        if not span_row.empty and pd.notna(span_row.loc[0, "end_date"])
+        else None
+    )
+    return mem_s, mem_e
+
+
+def _calc_fetch_ranges(req_s: pd.Timestamp, req_e: pd.Timestamp, mem_s, mem_e):
+    if mem_s is None or mem_e is None:
+        return [(req_s, req_e)]
+
+    if req_s >= mem_s and req_e <= mem_e:
+        return []
+    if req_s > mem_e:
+        return [(mem_e + pd.Timedelta(days=1), req_e)]
+    if req_e < mem_s:
+        return [(req_s, mem_s - pd.Timedelta(days=1))]
+
+    ranges = []
+    if req_s < mem_s:
+        ranges.append((req_s, mem_s - pd.Timedelta(days=1)))
+    if req_e > mem_e:
+        ranges.append((mem_e + pd.Timedelta(days=1), req_e))
+    return ranges
+
+
+def _sync_date_span_from_actual_table(
+    target_table: str,
+    idx_key: str,
+    idx_field: str | None = None,
+    date_field: str = "date",
+    safe_lag_days: int = 0,
+) -> None:
+    """
+    用資料表實際存在的 MIN(date), MAX(date) 回寫 date_span。
+
+    重點：
+    - date_span.end_date 以 DB 實際 MAX(date) 為基礎，但最多只記錄到昨天
+    - 如果 DB 沒資料，不更新 date_span，避免把空資料誤記成已完成
+    - safe_lag_days 可用於期貨/選擇權這類你想保守少記一天的資料
+    """
+
+    if idx_field is None:
+        sql = f"""
+        SELECT
+            MIN({date_field}) AS min_date,
+            MAX({date_field}) AS max_date
+        FROM {target_table}
+        """
+        params = ()
+    else:
+        sql = f"""
+        SELECT
+            MIN({date_field}) AS min_date,
+            MAX({date_field}) AS max_date
+        FROM {target_table}
+        WHERE {idx_field} = ?
+        """
+        params = (str(idx_key),)
+
+    span_df = db.query_to_df(sql, params)
+
+    if span_df is None or span_df.empty:
+        ptMsg(f"⚠️ 無法同步 date_span，查無資料表結果：{target_table}, {idx_key}")
+        return
+
+    min_date = span_df.loc[0, "min_date"]
+    max_date = span_df.loc[0, "max_date"]
+
+    if pd.isna(min_date) or pd.isna(max_date):
+        ptMsg(
+            f"⚠️ {target_table}[{idx_key}] DB 無實際資料，不更新 date_span，避免誤記請求日期"
+        )
+        return
+
+    actual_s = pd.Timestamp(min_date).normalize()
+    actual_e = pd.Timestamp(max_date).normalize()
+
+    # date_span.end_date 永遠最多只能記錄到昨天
+    yesterday = _taipei_today() - pd.Timedelta(days=1)
+    actual_e = min(actual_e, yesterday)
+
+    # 若某些資料類型想再更保守，例如再少記 1 天、2 天
+    if safe_lag_days > 0:
+        actual_e = actual_e - pd.Timedelta(days=safe_lag_days)
+
+    if actual_e < actual_s:
+        ptMsg(
+            f"⚠️ {target_table}[{idx_key}] actual_e < actual_s，不更新 date_span"
+        )
+        return
+
+    ok = db.execute_sql(
+        """
+        INSERT INTO date_span (target_table, idx_key, start_date, end_date, updated_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(target_table, idx_key) DO UPDATE SET
+            start_date = EXCLUDED.start_date,
+            end_date = EXCLUDED.end_date,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        (
+            target_table,
+            str(idx_key),
+            _dstr(actual_s),
+            _dstr(actual_e),
+        ),
+    )
+
+    if not ok:
+        ptMsg(
+            f"❌ date_span 同步失敗："
+            f"{target_table}[{idx_key}]"
+        )
+        return False
+
+    ptMsg(
+        f"✅ date_span 已依 DB 實際資料同步："
+        f"{target_table}[{idx_key}] {_dstr(actual_s)} ~ {_dstr(actual_e)}"
+    )
+    return True
+
+
+def _query_range_df(
+    target_table: str,
+    select_cols_sql: str,
+    idx_field: str,
+    idx_key: str,
+    req_s: pd.Timestamp,
+    req_e: pd.Timestamp,
+    order_by_sql: str,
+):
+    return db.query_to_df(
+        f"""
+        SELECT {select_cols_sql}
+        FROM {target_table}
+        WHERE {idx_field} = ?
+          AND date >= ?
+          AND date <= ?
+        ORDER BY {order_by_sql}
+        """,
+        (str(idx_key), _dstr(req_s), _dstr(req_e)),
+    )
+    
+def _fetch_with_cache(
+    *,
+    ids,
+    target_table: str,
+    idx_field: str,
+    fetcher: Callable[[str, pd.Timestamp, pd.Timestamp], pd.DataFrame],
+    upsert_df: Callable[[pd.DataFrame], None],
+    select_cols_sql: str,
+    order_by_sql: str,
+    debug_name: str,
+    output_csv: str | None = None,
+    max_future_days: int = 0,
+    force_refresh: bool = False,
+    recent_refresh_days: int = 0,
+):
+    ids = _ensure_list(ids)
+
+    all_dfs = []
+
+    for raw_id in ids:
+        idx_key = str(raw_id)
+
+        mem_s, mem_e = _get_date_span(target_table, idx_key)
+        req_s = _fetch_with_cache.req_s
+        req_e = _fetch_with_cache.req_e
+
+        today = _taipei_today()
+
+        # 一般資料最多抓到今天。期貨盤後資料會歸屬到下一個交易日，
+        # 呼叫端可針對該資料集明確放寬未來日期查詢上限。
+        future_limit = today + pd.Timedelta(days=max(0, int(max_future_days)))
+        fetch_req_e = min(req_e, future_limit)
+
+        if req_s > fetch_req_e:
+            print(
+                f"[{debug_name}][{idx_key}] "
+                f"req=({_dstr(req_s)}~{_dstr(req_e)}), "
+                f"fetch_req_e={_dstr(fetch_req_e)}，請求區間只包含未來日期，略過"
+            )
+            continue
+
+        fetch_ranges = (
+            [(req_s, fetch_req_e)]
+            if force_refresh
+            else _calc_fetch_ranges(req_s, fetch_req_e, mem_s, mem_e)
+        )
+
+        # 某些資料集（尤其期貨日行情）會先出現「下一交易日」歸屬的夜盤，
+        # 使 date_span 的最大日期越過尚未發布或曾抓取失敗的日盤日期。
+        # 因此允許呼叫端固定覆抓近期小區間，修補 min/max 快取看不到的中間洞。
+        if not force_refresh and recent_refresh_days > 0:
+            refresh_start = max(
+                req_s,
+                fetch_req_e - pd.Timedelta(days=int(recent_refresh_days)),
+            )
+            fetch_ranges.append((refresh_start, fetch_req_e))
+
+            # 合併重疊或相鄰區間，避免新資料原本就在缺口範圍時重複打 API。
+            merged_ranges: list[tuple[pd.Timestamp, pd.Timestamp]] = []
+            for range_start, range_end in sorted(fetch_ranges):
+                if not merged_ranges or range_start > merged_ranges[-1][1] + pd.Timedelta(days=1):
+                    merged_ranges.append((range_start, range_end))
+                else:
+                    old_start, old_end = merged_ranges[-1]
+                    merged_ranges[-1] = (old_start, max(old_end, range_end))
+            fetch_ranges = merged_ranges
+
+        print(
+            f"[{debug_name}][{idx_key}] "
+            f"req=({_dstr(req_s)}~{_dstr(req_e)}), "
+            f"fetch_req=({_dstr(req_s)}~{_dstr(fetch_req_e)}), "
+            f"cache=({_dstr(mem_s) if mem_s is not None else 'None'}~{_dstr(mem_e) if mem_e is not None else 'None'}), "
+            f"fetch_ranges={[( _dstr(s), _dstr(e) ) for s, e in fetch_ranges]}"
+        )
+
+        for fs, fe in fetch_ranges:
+            if fs > fe:
+                continue
+
+            df_api = fetcher(idx_key, fs, fe)
+
+            if df_api is None or df_api.empty:
+                continue
+
+            upsert_df(df_api)
+
+        # =====================================================
+        # 同步 date_span
+        # 你的 _sync_date_span_from_actual_table 已經會：
+        # - 用 DB 實際 MIN(date), MAX(date)
+        # - end_date 最多只記到昨天
+        # 所以這裡不要再額外 safe_lag_days=1，避免變成只記到前天
+        # =====================================================
+        _sync_date_span_from_actual_table(
+            target_table=target_table,
+            idx_key=idx_key,
+            idx_field=idx_field,
+            date_field="date",
+            safe_lag_days=0,
+        )
+
+        df_one = _query_range_df(
+            target_table=target_table,
+            select_cols_sql=select_cols_sql,
+            idx_field=idx_field,
+            idx_key=idx_key,
+            req_s=req_s,
+            req_e=fetch_req_e,
+            order_by_sql=order_by_sql,
+        )
+
+        all_dfs.append(df_one)
+
+    output = pd.concat(all_dfs, ignore_index=True) if all_dfs else pd.DataFrame()
+
+    if output_csv:
+        output.to_csv(output_csv, index=False, encoding="utf-8-sig")
+
+    return output
+
+# =========================================================
+# 共用清洗 / upsert helper
+# =========================================================
+def _normalize_date_col(df: pd.DataFrame, col="date") -> pd.DataFrame:
+    df = df.copy()
+    df[col] = pd.to_datetime(df[col]).dt.strftime("%Y-%m-%d")
+    return df
+
+
+def _to_str_cols(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+    df = df.copy()
+    for c in cols:
+        if c in df.columns:
+            df[c] = df[c].astype(str)
+    return df
+
+
+def _to_num_cols(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+    df = df.copy()
+    for c in cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+    return df
+
+
+def _fill_text_cols(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+    df = df.copy()
+    for c in cols:
+        if c in df.columns:
+            df[c] = df[c].fillna("").astype(str)
+    return df
+
+def _yesterday_ts() -> pd.Timestamp:
+    """
+    回傳昨天日期，normalize 成 00:00:00。
+    date_span 最晚只能記錄到昨天。
+    """
+    return (_taipei_today() - pd.Timedelta(days=1))
+
+
+def _cap_end_date_to_yesterday(end_date: pd.Timestamp) -> pd.Timestamp:
+    """
+    將 end_date 上限限制為昨天。
+    """
+    end_date = pd.Timestamp(end_date).normalize()
+    return min(end_date, _yesterday_ts())

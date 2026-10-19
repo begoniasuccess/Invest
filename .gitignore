@@ -3,3 +3,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.db
+.env
+*.zip
+*.sqbpro
+deprecated/*
+output/*
+all_python_code.txt
+db_migrate/*

@@ -1,0 +1,114 @@
+{
+  "name": "Yu 自動選點模型 V3",
+  "version": 3,
+  "labels_sheet": "yu_futures_analysis_2026",
+  "date_column": "日期",
+  "futures": {
+    "relation": "report.v_futures_report_daily_corrected",
+    "entity_filter": {"futures_id": "TX"},
+    "reference_price_field": "全日收",
+    "range_field": "全振幅",
+    "volume_field": "全成交量",
+    "mapped_fields": [
+      {"field": "全日開", "session": "全日", "kind": "開盤"},
+      {"field": "全日收", "session": "全日", "kind": "收盤"},
+      {"field": "全日高", "session": "全日", "kind": "高點"},
+      {"field": "全日低", "session": "全日", "kind": "低點"},
+      {"field": "日盤開", "session": "日盤", "kind": "開盤"},
+      {"field": "日盤收", "session": "日盤", "kind": "收盤"},
+      {"field": "日盤高", "session": "日盤", "kind": "高點"},
+      {"field": "日盤低", "session": "日盤", "kind": "低點"}
+    ],
+    "current_fields": [
+      {"field": "夜盤開", "session": "夜盤", "kind": "開盤"},
+      {"field": "夜盤收", "session": "夜盤", "kind": "收盤"},
+      {"field": "夜盤高", "session": "夜盤", "kind": "高點"},
+      {"field": "夜盤低", "session": "夜盤", "kind": "低點"},
+      {"field": "全5MA", "session": "全日", "kind": "5日均"},
+      {"field": "全10MA", "session": "全日", "kind": "10日均"},
+      {"field": "全20MA", "session": "全日", "kind": "20日均"},
+      {"field": "全布林上軌", "session": "全日", "kind": "布林上軌"},
+      {"field": "全布林下軌", "session": "全日", "kind": "布林下軌"},
+      {"field": "全5_明日扣抵值", "session": "全日", "kind": "5日均扣抵"},
+      {"field": "全10_明日扣抵值", "session": "全日", "kind": "10日均扣抵"},
+      {"field": "日5MA", "session": "日盤", "kind": "5日均"},
+      {"field": "日10MA", "session": "日盤", "kind": "10日均"},
+      {"field": "日20MA", "session": "日盤", "kind": "20日均"},
+      {"field": "日布林上軌", "session": "日盤", "kind": "布林上軌"},
+      {"field": "日布林下軌", "session": "日盤", "kind": "布林下軌"}
+    ]
+  },
+  "taiex": {
+    "relation": "report.v_taiex_report",
+    "key_fields": [
+      "開盤價", "收盤價", "最高價", "最低價", "成交量", "20日均量",
+      "實體_pct", "日振幅_昨收_pct", "跳空缺口_昨收_pct", "K線型態",
+      "5MA", "10MA", "20MA", "60MA", "5日乖離", "20日乖離", "60日乖離",
+      "MA方向_5", "MA方向_10", "MA方向_20", "趨勢", "位置",
+      "法人籌碼", "散戶籌碼", "策略_籌碼_判定", "策略_核心"
+    ],
+    "recent_dates_always_keep": 5,
+    "maximum_key_dates": 25,
+    "pivot_window": 3,
+    "minimum_key_score": 3.0
+  },
+  "candidate": {
+    "lookback_rows": 60,
+    "cluster_tolerance_points": 20,
+    "match_tolerance_points": 35,
+    "minimum_entry_distance_points": 15,
+    "minimum_actionable_distance_points": 300,
+    "range_distance_multiplier": 2.0,
+    "maximum_actionable_distance_points": 1400,
+    "recency_half_life_rows": 20,
+    "round_steps": [50, 100, 500],
+    "top_per_scenario": 5
+  },
+  "selector": {
+    "minimum_training_plans": 45,
+    "model": {"type": "logistic_regression", "C": 1.0, "max_iter": 1500, "random_seed": 42},
+    "tx_report_fields": [
+      "全價漲跌_pct", "全振幅_昨收_pct", "全成交量", "全量增減_昨日_pct",
+      "全量增減_五日_pct", "全實體_pct", "全上影_pct", "全下影_pct",
+      "全5MA乖離率", "全10MA乖離率", "全20MA乖離率", "全60MA乖離率",
+      "日價漲跌_pct", "日振幅_昨收_pct", "日量增減_昨日_pct", "日實體_pct",
+      "日上影_pct", "日下影_pct", "夜價漲跌_pct", "散戶多空比_小台",
+      "散戶多空比_微台", "法人總買超_億", "買賣權比_月選", "買賣權比_週三",
+      "買賣權比_週五", "全位置", "策略_全價量昨日", "策略_全價量五日",
+      "全MA方向_5", "全MA方向_10", "全MA方向_20", "策略_線型",
+      "法人籌碼", "散戶籌碼", "加權籌碼", "期貨籌碼", "選權籌碼",
+      "策略_籌碼", "策略_核心_五日價量"
+    ],
+    "taiex_report_fields": [
+      "漲跌幅_pct", "實體_昨收_pct", "日振幅_昨收_pct", "成交量", "量增率_pct",
+      "5日量增率_pct", "實體_pct", "上影_pct", "下影_pct", "5日乖離",
+      "10日乖離", "20日乖離", "60日乖離", "法人總買超_億",
+      "法人買賣超_總成交_pct", "散戶多空比_微台", "漲跌幅級距",
+      "三大法人買賣超級距", "資金走向判定", "位置", "MA方向_5", "MA方向_10",
+      "MA方向_20", "趨勢", "法人籌碼", "散戶籌碼", "策略_籌碼_判定", "策略_核心"
+    ],
+    "yu_context_fields": [
+      "分析方向", "盤型描述", "價量判斷", "線型判斷", "籌碼判斷",
+      "加權籌碼", "期貨籌碼", "選擇權籌碼", "加權方向", "期貨方向", "期貨夜盤方向"
+    ],
+    "feature_groups": {
+      "candidate_core": [
+        "進場情境", "主要盤別", "主要類型", "主要加權選日原因", "依據數",
+        "來源日期數", "距參考收盤點數", "距參考收盤絕對點數", "最近來源列數",
+        "最高加權關鍵K分數"
+      ],
+      "yu_history": [
+        "歷史同情境樣本數", "歷史同情境類型盤別選用次數",
+        "歷史同情境類型盤別選用率", "歷史同情境類型選用次數"
+      ]
+    },
+    "feature_sets": [
+      {"name": "A_候選本身", "groups": ["candidate_core"]},
+      {"name": "B_候選加Yu歷史", "groups": ["candidate_core", "yu_history"]},
+      {"name": "C_候選加Yu歷史加期貨", "groups": ["candidate_core", "yu_history", "tx_report"]},
+      {"name": "D_候選加Yu歷史加加權", "groups": ["candidate_core", "yu_history", "taiex_report"]},
+      {"name": "E_候選加Yu歷史加期貨加加權", "groups": ["candidate_core", "yu_history", "tx_report", "taiex_report"]},
+      {"name": "F_全部加Yu當日判斷", "groups": ["candidate_core", "yu_history", "tx_report", "taiex_report", "yu_context"], "research_only": true}
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "start": "2018-01-01",
+  "end": "2099-12-31",
+  "futures_id": "TX",
+  "entry_time": "17:00:00",
+  "forced_exit_time": "05:00:00",
+  "range_days": 30,
+  "stop_loss_ratio": 0.15,
+  "take_profit_ratio": 0.50,
+  "round_trip_cost_points": 3.0,
+  "point_value_twd": 200.0,
+  "contracts": 1,
+  "output_dir": "backtest_output/futures_session_trend_night"
+}

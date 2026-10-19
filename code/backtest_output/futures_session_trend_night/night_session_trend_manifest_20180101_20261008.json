@@ -1,0 +1,51 @@
+{
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "actual_data_end": "2026-10-08",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2099-12-31",
+    "futures_id": "TX",
+    "entry_time": "17:00:00",
+    "forced_exit_time": "05:00:00",
+    "range_days": 30,
+    "stop_loss_ratio": 0.15,
+    "take_profit_ratio": 0.5,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0,
+    "contracts": 1
+  },
+  "strategies": {
+    "2-2.11": {
+      "code": "2-2.11",
+      "direction": "LONG",
+      "level_source": "DAY",
+      "description": "五日核心多；當日日盤漲勢掛日盤支撐，當日日盤跌勢掛日盤壓力"
+    },
+    "2-2.12": {
+      "code": "2-2.12",
+      "direction": "SHORT",
+      "level_source": "DAY",
+      "description": "五日核心空；當日日盤漲勢掛日盤支撐，當日日盤跌勢掛日盤壓力"
+    },
+    "2-2.13": {
+      "code": "2-2.13",
+      "direction": "LONG",
+      "level_source": "PREVIOUS_NIGHT",
+      "description": "五日核心多；上一個已完成夜盤漲勢掛夜盤支撐，跌勢掛夜盤壓力"
+    },
+    "2-2.14": {
+      "code": "2-2.14",
+      "direction": "SHORT",
+      "level_source": "PREVIOUS_NIGHT",
+      "description": "五日核心空；上一個已完成夜盤漲勢掛夜盤支撐，跌勢掛夜盤壓力"
+    }
+  },
+  "definitions": {
+    "availability": "當日核心與日盤資料自設定的17:00起使用；夜盤型策略只使用當日05:00前已完成的上一夜盤",
+    "night_window": "訊號日17:00至次日05:00；設定可調但不得早於15:00",
+    "trend_level": "漲勢盤選支撐；跌勢盤選壓力；核心方向決定多空",
+    "limit_fill": "多單價格小於等於掛單價成交；空單價格大於等於掛單價成交；首Tick已符合則以較優首Tick價成交",
+    "range": "訊號日含當日往回30個完整交易日之(日盤高-日盤低)平均",
+    "exit": "成交後依Tick時序觸發15%停損或50%停利；否則次日05:00前最後Tick出場"
+  }
+}

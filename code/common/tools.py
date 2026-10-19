@@ -1,11 +1,9 @@
-import sys, os
-sys.path.append(os.path.dirname(__file__))
-
+import os
 import pandas as pd
+
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import os
-import db
+from common import db
 
 def roc_to_unix(roc_date: str) -> int:
     year = None 
@@ -46,9 +44,12 @@ def _save_to_csv(df: pd.DataFrame, apiEndpoint: str, filename: str):
     print(f"✅ 已儲存：{path}")
     
 def get_api_info(dataName: str) -> pd.DataFrame:
-    sql = f"SELECT *, src_link || api_path AS url FROM data_source"
-    sql += f" WHERE name = '{dataName}'"
-    target = db.query_to_df(sql)
+    sql = """
+    SELECT *, src_link || api_path AS url
+    FROM data_source
+    WHERE name = ?
+    """
+    target = db.query_to_df(sql, (dataName,))
     return target
 
 def _read_from_csv(apiEndpoint: str, filename: str) -> pd.DataFrame:

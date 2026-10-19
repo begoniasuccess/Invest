@@ -1,0 +1,31 @@
+{
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "strategies": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-10-09",
+    "futures_id": "TX",
+    "signal_column": "策略_核心_昨價量",
+    "entry_time": "08:45:00",
+    "forced_exit_time": "13:45:00",
+    "range_days": 30,
+    "stop_loss_ratio": 0.15,
+    "take_profit_ratio": 0.5,
+    "entry_filter_ratio": 0.3,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0,
+    "contracts": 1
+  },
+  "definitions": {
+    "range": "訊號日含當日往回30個完整交易日之(日盤高-日盤低)平均",
+    "D_E_F_filter": "abs(進場點-訊號日夜盤收) >= 30日平均振幅*30%",
+    "exit_priority": "成交後依Tick先後；先停損，或先到轉折目標/50%固定停利，否則收盤"
+  }
+}

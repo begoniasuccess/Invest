@@ -1,0 +1,186 @@
+{
+  "targets": {
+    "最高": "(明日日盤高 / 今日日盤收 - 1) * 100",
+    "最低": "(明日日盤低 / 今日日盤收 - 1) * 100"
+  },
+  "prediction_time": "T日夜盤結束後、T+1日盤開盤前",
+  "night_data_alignment": "直接使用T列夜盤（T日晚間至T+1日清晨），不shift",
+  "xgboost_version": "3.1.2",
+  "features": [
+    "月",
+    "週次",
+    "日價漲跌_pct",
+    "日收開_昨收_pct",
+    "日收開_開盤_pct",
+    "日振幅_昨收_pct",
+    "日振幅_開盤_pct",
+    "跳空缺口_昨收_pct",
+    "實體_pct",
+    "上影_pct",
+    "下影_pct",
+    "日量增減_昨日_pct",
+    "日量增減_五日_pct",
+    "日量增減_十日_pct",
+    "日量增減_二十日_pct",
+    "日量增減_六十日_pct",
+    "日5均上升幅度_pct",
+    "日10均上升幅度_pct",
+    "日20均上升幅度_pct",
+    "日60均上升幅度_pct",
+    "日5_明日扣抵值影響_pct",
+    "日10_明日扣抵值影響_pct",
+    "日20_明日扣抵值影響_pct",
+    "日60_明日扣抵值影響_pct",
+    "日5MA乖離率",
+    "日10MA乖離率",
+    "日20MA乖離率",
+    "日60MA乖離率",
+    "ATR5_pct",
+    "近5日報酬標準差_pct",
+    "ATR10_pct",
+    "近10日報酬標準差_pct",
+    "ATR20_pct",
+    "近20日報酬標準差_pct",
+    "ATR60_pct",
+    "近60日報酬標準差_pct",
+    "日成交量_近5日均量比",
+    "日成交量_近20日均量比",
+    "日成交量_近60日均量比",
+    "夜盤開_日收_pct",
+    "夜盤收_日收_pct",
+    "夜盤高_日收_pct",
+    "夜盤低_日收_pct",
+    "夜盤實體_pct",
+    "夜盤振幅_pct",
+    "夜盤上影_pct",
+    "夜盤下影_pct",
+    "夜5MA乖離率",
+    "夜10MA乖離率",
+    "夜20MA乖離率",
+    "夜60MA乖離率",
+    "夜120MA乖離率",
+    "夜成交量_近5日均量比",
+    "夜成交量_近20日均量比",
+    "夜成交量_近60日均量比",
+    "夜法人淨多空量",
+    "夜法人淨多空比_pct"
+  ],
+  "train_dates": [
+    "2000-01-04",
+    "2018-07-25"
+  ],
+  "valid_dates": [
+    "2018-07-26",
+    "2022-08-11"
+  ],
+  "test_dates": [
+    "2022-08-12",
+    "2026-09-10"
+  ],
+  "tuning_dates": [
+    "2018-07-26",
+    "2020-08-04"
+  ],
+  "calibration_dates": [
+    "2020-08-05",
+    "2022-08-11"
+  ],
+  "production_train_dates": [
+    "2000-01-04",
+    "2026-09-10"
+  ],
+  "production_training_rows": 6595,
+  "production_data_fingerprint_sha256": "19b4923db8fc6d32e110fc47d7b090c6860b94e5900f7889b0f2d2c13ea6f615",
+  "latest_feature_fingerprint_sha256": "af6818b0ad5d570469f0b560d592047a3d31c74a9af6f4570f574b284efe0464",
+  "latest_feature_missing_count": 2,
+  "production_best_rounds": {
+    "最高": {
+      "Q10": 284,
+      "Q50": 805,
+      "Q90": 706
+    },
+    "最低": {
+      "Q10": 177,
+      "Q50": 716,
+      "Q90": 327
+    }
+  },
+  "calibration_offsets_pct_points": {
+    "最高": {
+      "Q10": 0.0,
+      "Q50": 0.09045033287392013,
+      "Q90": 0.4818011321156934
+    },
+    "最低": {
+      "Q10": -0.014225744070841984,
+      "Q50": -0.025236418828461726,
+      "Q90": 0.0
+    }
+  },
+  "calibration_rules": {
+    "最高": {
+      "Q10": "不校準",
+      "Q50": "固定校準",
+      "Q90": "近期滾動校準"
+    },
+    "最低": {
+      "Q10": "近期滾動校準",
+      "Q50": "固定校準",
+      "Q90": "不校準"
+    }
+  },
+  "expanding_refit_every_trading_days": 60,
+  "run_expanding_backtest": false,
+  "deterministic_training": {
+    "random_state": 42,
+    "n_jobs": 1,
+    "production_diagnostics": {
+      "最高": {
+        "Q10": {
+          "training_rows": 6595,
+          "non_null_target_rows": 6595,
+          "best_rounds": 284,
+          "raw_latest_prediction_pct": 0.8251778483390808,
+          "calibration_offset_pct_points": 0.0
+        },
+        "Q50": {
+          "training_rows": 6595,
+          "non_null_target_rows": 6595,
+          "best_rounds": 805,
+          "raw_latest_prediction_pct": 1.334791898727417,
+          "calibration_offset_pct_points": 0.09045033287392013
+        },
+        "Q90": {
+          "training_rows": 6595,
+          "non_null_target_rows": 6595,
+          "best_rounds": 706,
+          "raw_latest_prediction_pct": 2.074333906173706,
+          "calibration_offset_pct_points": 0.4818011321156934
+        }
+      },
+      "最低": {
+        "Q10": {
+          "training_rows": 6595,
+          "non_null_target_rows": 6595,
+          "best_rounds": 177,
+          "raw_latest_prediction_pct": -1.0643702745437622,
+          "calibration_offset_pct_points": -0.014225744070841984
+        },
+        "Q50": {
+          "training_rows": 6595,
+          "non_null_target_rows": 6595,
+          "best_rounds": 716,
+          "raw_latest_prediction_pct": 0.2931083142757416,
+          "calibration_offset_pct_points": -0.025236418828461726
+        },
+        "Q90": {
+          "training_rows": 6595,
+          "non_null_target_rows": 6595,
+          "best_rounds": 327,
+          "raw_latest_prediction_pct": 0.7119508385658264,
+          "calibration_offset_pct_points": 0.0
+        }
+      }
+    }
+  }
+}

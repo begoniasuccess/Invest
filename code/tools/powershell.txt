@@ -1,0 +1,26 @@
+### 擷取當前目錄下所有python檔(包含子資料夾)
+Get-ChildItem -Path . -Filter *.py -File -Recurse |
+Where-Object {
+    $_.FullName -notmatch '\\(\.venv|venv|env|__pycache__|site-packages|build|dist)(\\|$)'
+} |
+Sort-Object FullName |
+ForEach-Object {
+    "`r`n"
+    "=" * 100
+    "檔案：$($_.FullName)"
+    "=" * 100
+    Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
+} | Set-Content -Path "all_python_code.txt" -Encoding UTF8
+
+######
+postgresql 相關
+######
+
+### 查看postgresql資料庫服務是否運行
+Get-Service *postgres*
+
+### 啟動postgresql資料庫服務
+Start-Service postgresql-x64-18
+
+### postgresql連線進入資料庫inveset
+& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -h localhost -p 5432 -d invest

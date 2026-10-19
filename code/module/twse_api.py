@@ -1,6 +1,3 @@
-import sys, os
-sys.path.append(os.path.dirname(__file__))
-
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
