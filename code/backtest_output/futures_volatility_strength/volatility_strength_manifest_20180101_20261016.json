@@ -1,0 +1,50 @@
+{
+  "run_id": "977ec916-529c-442b-9582-ac791ececeba",
+  "analysis_name": "futures_volatility_strength_baseline",
+  "metric_version": "1.0.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-10-16",
+    "futures_id": "TX",
+    "split_date": "2023-01-01",
+    "history_window": 252,
+    "minimum_history": 60,
+    "minimum_group_size": 30,
+    "minimum_year_size": 10,
+    "alpha": 0.05,
+    "winsor_tail": 0.005
+  },
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "score_rules": {
+    "布林通道位置": {
+      "operator": "<=",
+      "threshold": 20.0,
+      "condition": "布林低位"
+    },
+    "散戶多空比": {
+      "operator": ">=",
+      "threshold": 80.0,
+      "condition": "散戶比偏高"
+    },
+    "MA10斜率": {
+      "operator": "<=",
+      "threshold": 20.0,
+      "condition": "MA10斜率偏低"
+    },
+    "主力淨多空_OI比": {
+      "operator": "<=",
+      "threshold": 20.0,
+      "condition": "主力淨多空OI偏低"
+    }
+  },
+  "level_rule": {
+    "低波動": "0-1分",
+    "中波動": "2分",
+    "高波動": "3-4分"
+  },
+  "limitations": [
+    "此分數是在第一階段結果後選出的探索性基準，不是完全未觀察樣本外模型",
+    "分數只預測波動空間，不預測多空方向",
+    "MFE來自日K，不能判定停利與停損的盤中先後順序"
+  ]
+}

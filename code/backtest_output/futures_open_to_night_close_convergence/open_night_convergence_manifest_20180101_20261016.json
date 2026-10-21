@@ -1,0 +1,21 @@
+{
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-10-16",
+    "futures_id": "TX",
+    "minimum_sample_size": 30,
+    "alpha": 0.05
+  },
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "date_alignment": "訊號日之後下一個實際存在的交易日",
+  "research_question": "隔日日盤開盤距離昨日夜盤收越遠時，盤中與收盤是否更傾向往夜盤收方向移動",
+  "night_gap": "abs(隔日日盤開-昨日夜盤收)/昨日夜盤收*100",
+  "intraday_toward": "夜收在開盤上方使用日盤高-開盤；夜收在開盤下方使用開盤-日盤低",
+  "intraday_recovery_ratio": "盤中最大向夜收點數/開盤距夜收點數*100；100%代表曾觸及或越過夜收",
+  "close_toward": "sign(夜收-開盤)*(日盤收-開盤)；正值代表收盤往夜收方向",
+  "close_recovery_ratio": "收盤向夜收移動點數/開盤距夜收點數*100，可為負數或超過100%",
+  "closer_at_close": "abs(日盤收-夜盤收) < abs(日盤開-夜盤收)",
+  "anchor_position": "隔日開盤相對昨日日盤收與昨日夜盤收的位置",
+  "multiple_testing": "所有統計檢定一起使用Benjamini-Hochberg FDR校正",
+  "ohlc_limit": "日K可衡量最大向夜收與背離幅度，但無法判斷兩者發生先後；加入停損需改用分鐘K"
+}

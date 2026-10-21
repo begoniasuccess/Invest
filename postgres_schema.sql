@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict edyDRaZ5f6ChCtkS94jtKNHqmD1jz9zKHx7XrG9c5KIVJdbWld1zuqTBQdZqUKi
+\restrict UcKQvz6kTFjqovpkJhLLvkBKdjfax7sQzamfPlH6zSLXAQtI99bD7HogOgqxm0X
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -2430,8 +2430,17 @@ CREATE TABLE report.futures_turning_levels (
     "日盤轉折支撐" numeric,
     "日盤轉折壓力" numeric,
     "夜盤轉折支撐" numeric,
-    "夜盤轉折壓力" numeric
+    "夜盤轉折壓力" numeric,
+    "日盤走勢" text,
+    "夜盤走勢" text
 );
+
+
+--
+-- Name: TABLE futures_turning_levels; Type: COMMENT; Schema: report; Owner: -
+--
+
+COMMENT ON TABLE report.futures_turning_levels IS '2026-10-20-v2-last-extreme-time；走勢依最後一次最高／最低點時間判定。';
 
 
 --
@@ -8565,18 +8574,10 @@ CREATE VIEW report.v_futures_dashboard_turning AS
     b."call_週五",
     b."put_週五",
     b."買賣權比_週五",
-        CASE
-            WHEN ((b."日盤高" IS NULL) OR (b."日盤低" IS NULL) OR (b."日盤收" IS NULL)) THEN NULL::text
-            WHEN (abs((b."日盤高" - b."日盤收")) < abs((b."日盤收" - b."日盤低"))) THEN '漲勢盤'::text
-            ELSE '跌勢盤'::text
-        END AS "日盤走勢",
+    t."日盤走勢",
     t."日盤轉折支撐",
     t."日盤轉折壓力",
-        CASE
-            WHEN ((b."夜盤高" IS NULL) OR (b."夜盤低" IS NULL) OR (b."夜盤收" IS NULL)) THEN NULL::text
-            WHEN (abs((b."夜盤高" - b."夜盤收")) < abs((b."夜盤收" - b."夜盤低"))) THEN '漲勢盤'::text
-            ELSE '跌勢盤'::text
-        END AS "夜盤走勢",
+    t."夜盤走勢",
     t."夜盤轉折支撐",
     t."夜盤轉折壓力",
     b."全位置",
@@ -9833,18 +9834,10 @@ CREATE VIEW report.v_futures_report_daily AS
     b."call_週五",
     b."put_週五",
     b."買賣權比_週五",
-        CASE
-            WHEN ((b."日盤高" IS NULL) OR (b."日盤低" IS NULL) OR (b."日盤收" IS NULL)) THEN NULL::text
-            WHEN (abs((b."日盤高" - b."日盤收")) < abs((b."日盤收" - b."日盤低"))) THEN '漲勢盤'::text
-            ELSE '跌勢盤'::text
-        END AS "日盤走勢",
+    t."日盤走勢",
     t."日盤轉折支撐",
     t."日盤轉折壓力",
-        CASE
-            WHEN ((b."夜盤高" IS NULL) OR (b."夜盤低" IS NULL) OR (b."夜盤收" IS NULL)) THEN NULL::text
-            WHEN (abs((b."夜盤高" - b."夜盤收")) < abs((b."夜盤收" - b."夜盤低"))) THEN '漲勢盤'::text
-            ELSE '跌勢盤'::text
-        END AS "夜盤走勢",
+    t."夜盤走勢",
     t."夜盤轉折支撐",
     t."夜盤轉折壓力",
     b."全位置",
@@ -10524,18 +10517,10 @@ CREATE VIEW report.v_futures_report_daily_corrected_turning AS
     b."call_週五",
     b."put_週五",
     b."買賣權比_週五",
-        CASE
-            WHEN ((b."日盤高" IS NULL) OR (b."日盤低" IS NULL) OR (b."日盤收" IS NULL)) THEN NULL::text
-            WHEN (abs((b."日盤高" - b."日盤收")) < abs((b."日盤收" - b."日盤低"))) THEN '漲勢盤'::text
-            ELSE '跌勢盤'::text
-        END AS "日盤走勢",
+    t."日盤走勢",
     t."日盤轉折支撐",
     t."日盤轉折壓力",
-        CASE
-            WHEN ((b."夜盤高" IS NULL) OR (b."夜盤低" IS NULL) OR (b."夜盤收" IS NULL)) THEN NULL::text
-            WHEN (abs((b."夜盤高" - b."夜盤收")) < abs((b."夜盤收" - b."夜盤低"))) THEN '漲勢盤'::text
-            ELSE '跌勢盤'::text
-        END AS "夜盤走勢",
+    t."夜盤走勢",
     t."夜盤轉折支撐",
     t."夜盤轉折壓力",
     b."全位置",
@@ -14132,6 +14117,165 @@ CREATE TABLE research.futures_night_bucket_yearly (
 
 
 --
+-- Name: futures_volatility_strength_daily; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_strength_daily (
+    run_id uuid NOT NULL,
+    signal_date date NOT NULL,
+    result_date date NOT NULL,
+    bollinger_position_raw double precision,
+    bollinger_position_percentile_pct double precision,
+    retail_ratio_raw double precision,
+    retail_ratio_percentile_pct double precision,
+    ma10_slope_raw double precision,
+    ma10_slope_percentile_pct double precision,
+    main_net_oi_raw double precision,
+    main_net_oi_percentile_pct double precision,
+    bollinger_low_flag smallint,
+    retail_high_flag smallint,
+    ma10_low_flag smallint,
+    main_net_oi_low_flag smallint,
+    available_condition_count smallint CONSTRAINT futures_volatility_strength__available_condition_count_not_null NOT NULL,
+    volatility_score smallint,
+    volatility_level text,
+    next_open_close_return_pct double precision,
+    next_up_mfe_pct double precision,
+    next_down_mfe_pct double precision,
+    next_intraday_range_pct double precision,
+    next_close_location_pct double precision,
+    next_open_gap_day_close_pct double precision,
+    next_open_gap_night_close_pct double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_strength_available CHECK (((available_condition_count >= 0) AND (available_condition_count <= 4))),
+    CONSTRAINT ck_volatility_strength_dates CHECK ((signal_date < result_date)),
+    CONSTRAINT ck_volatility_strength_level CHECK ((((volatility_score IS NULL) AND (volatility_level IS NULL)) OR ((volatility_score IS NOT NULL) AND (volatility_level = ANY (ARRAY['低波動'::text, '中波動'::text, '高波動'::text]))))),
+    CONSTRAINT ck_volatility_strength_score CHECK (((volatility_score IS NULL) OR ((volatility_score >= 0) AND (volatility_score <= 4))))
+);
+
+
+--
+-- Name: TABLE futures_volatility_strength_daily; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_strength_daily IS '四個代表性盤前訊號形成的0至4分波動強度，以及隔日日盤實際結果。';
+
+
+--
+-- Name: futures_volatility_strength_summary; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_strength_summary (
+    run_id uuid NOT NULL,
+    period_name text NOT NULL,
+    group_type text NOT NULL,
+    group_label text NOT NULL,
+    sample_count integer NOT NULL,
+    range_mean_pct double precision,
+    range_median_pct double precision,
+    range_std_pct double precision,
+    up_mfe_mean_pct double precision,
+    down_mfe_mean_pct double precision,
+    open_close_mean_pct double precision,
+    up_probability_pct double precision,
+    close_location_mean_pct double precision,
+    range_ge_100_probability_pct double precision,
+    range_ge_150_probability_pct double precision,
+    range_ge_200_probability_pct double precision,
+    up_ge_050_probability_pct double precision,
+    down_ge_050_probability_pct double precision,
+    up_ge_075_probability_pct double precision,
+    down_ge_075_probability_pct double precision,
+    up_ge_100_probability_pct double precision,
+    down_ge_100_probability_pct double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_summary_count CHECK ((sample_count >= 0)),
+    CONSTRAINT ck_volatility_summary_group_type CHECK ((group_type = ANY (ARRAY['分數'::text, '等級'::text]))),
+    CONSTRAINT ck_volatility_summary_period CHECK ((period_name = ANY (ARRAY['全期'::text, '探索期'::text, '驗證期'::text])))
+);
+
+
+--
+-- Name: TABLE futures_volatility_strength_summary; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_strength_summary IS '波動分數及低中高等級在全期、探索期與驗證期的統計。';
+
+
+--
+-- Name: futures_volatility_strength_test; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_strength_test (
+    run_id uuid NOT NULL,
+    period_name text NOT NULL,
+    test_type text NOT NULL,
+    sample_count integer NOT NULL,
+    low_count integer,
+    high_count integer,
+    statistic double precision,
+    effect_value double precision,
+    effect_direction text NOT NULL,
+    effect_size double precision,
+    p_value double precision,
+    low_mean_pct double precision,
+    high_mean_pct double precision,
+    fdr_q_value double precision,
+    fdr_significant boolean NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_test_count CHECK ((sample_count >= 0)),
+    CONSTRAINT ck_volatility_test_period CHECK ((period_name = ANY (ARRAY['全期'::text, '探索期'::text, '驗證期'::text])))
+);
+
+
+--
+-- Name: TABLE futures_volatility_strength_test; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_strength_test IS '波動分數趨勢及高低波動組差異檢定。';
+
+
+--
+-- Name: futures_volatility_strength_yearly; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_strength_yearly (
+    run_id uuid NOT NULL,
+    result_year integer NOT NULL,
+    volatility_level text NOT NULL,
+    sample_count integer NOT NULL,
+    range_mean_pct double precision,
+    range_median_pct double precision,
+    range_std_pct double precision,
+    up_mfe_mean_pct double precision,
+    down_mfe_mean_pct double precision,
+    open_close_mean_pct double precision,
+    up_probability_pct double precision,
+    close_location_mean_pct double precision,
+    range_ge_100_probability_pct double precision,
+    range_ge_150_probability_pct double precision,
+    range_ge_200_probability_pct double precision,
+    up_ge_050_probability_pct double precision,
+    down_ge_050_probability_pct double precision,
+    up_ge_075_probability_pct double precision,
+    down_ge_075_probability_pct double precision,
+    up_ge_100_probability_pct double precision,
+    down_ge_100_probability_pct double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_year CHECK (((result_year >= 2000) AND (result_year <= 2200))),
+    CONSTRAINT ck_volatility_year_count CHECK ((sample_count >= 0)),
+    CONSTRAINT ck_volatility_year_level CHECK ((volatility_level = ANY (ARRAY['低波動'::text, '中波動'::text, '高波動'::text])))
+);
+
+
+--
+-- Name: TABLE futures_volatility_strength_yearly; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_strength_yearly IS '低中高波動等級的逐年穩定性統計。';
+
+
+--
 -- Name: market_daily_feature; Type: TABLE; Schema: research; Owner: -
 --
 
@@ -14347,6 +14491,178 @@ CREATE TABLE research.night_retrace_yearly_summary (
     year_count integer NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+
+--
+-- Name: raw_signal_strength_bucket; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.raw_signal_strength_bucket (
+    run_id uuid NOT NULL,
+    signal_category text NOT NULL,
+    signal_code text NOT NULL,
+    bucket_id smallint NOT NULL,
+    bucket_label text NOT NULL,
+    sample_count integer NOT NULL,
+    raw_mean double precision,
+    raw_median double precision,
+    history_percentile_mean_pct double precision,
+    next_open_close_mean_pct double precision,
+    next_open_close_median_pct double precision,
+    next_up_probability_pct double precision,
+    next_up_mfe_mean_pct double precision,
+    next_down_mfe_mean_pct double precision,
+    up_mfe_greater_probability_pct double precision,
+    next_intraday_range_mean_pct double precision,
+    next_close_location_mean_pct double precision,
+    up_ge_025_probability_pct double precision,
+    down_ge_025_probability_pct double precision,
+    up_ge_050_probability_pct double precision,
+    down_ge_050_probability_pct double precision,
+    up_ge_075_probability_pct double precision,
+    down_ge_075_probability_pct double precision,
+    up_ge_100_probability_pct double precision,
+    down_ge_100_probability_pct double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_raw_signal_bucket_count CHECK ((sample_count >= 0)),
+    CONSTRAINT ck_raw_signal_bucket_id CHECK (((bucket_id >= 1) AND (bucket_id <= 5)))
+);
+
+
+--
+-- Name: TABLE raw_signal_strength_bucket; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.raw_signal_strength_bucket IS '每次原始訊號強度研究的全期間五分位統計。';
+
+
+--
+-- Name: raw_signal_strength_daily; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.raw_signal_strength_daily (
+    run_id uuid NOT NULL,
+    signal_date date NOT NULL,
+    result_date date NOT NULL,
+    signal_category text NOT NULL,
+    signal_code text NOT NULL,
+    formula text NOT NULL,
+    natural_direction boolean NOT NULL,
+    raw_value double precision,
+    history_percentile_pct double precision,
+    bucket_id smallint,
+    bucket_label text,
+    raw_sign text NOT NULL,
+    next_open_close_return_pct double precision,
+    next_up_mfe_pct double precision,
+    next_down_mfe_pct double precision,
+    next_intraday_range_pct double precision,
+    next_close_location_pct double precision,
+    next_open_gap_day_close_pct double precision,
+    next_open_gap_night_close_pct double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_raw_signal_daily_bucket CHECK ((((bucket_id IS NULL) AND (bucket_label IS NULL)) OR (((bucket_id >= 1) AND (bucket_id <= 5)) AND (bucket_label IS NOT NULL)))),
+    CONSTRAINT ck_raw_signal_daily_dates CHECK ((signal_date < result_date)),
+    CONSTRAINT ck_raw_signal_daily_percentile CHECK (((history_percentile_pct IS NULL) OR ((history_percentile_pct >= (0)::double precision) AND (history_percentile_pct <= (100)::double precision))))
+);
+
+
+--
+-- Name: TABLE raw_signal_strength_daily; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.raw_signal_strength_daily IS '原始連續訊號的逐日值、僅使用過去資料的歷史分位，以及隔日台指期日盤結果。';
+
+
+--
+-- Name: raw_signal_strength_test; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.raw_signal_strength_test (
+    run_id uuid NOT NULL,
+    signal_category text NOT NULL,
+    signal_code text NOT NULL,
+    outcome_name text NOT NULL,
+    test_type text NOT NULL,
+    sample_count integer NOT NULL,
+    low_bucket_count integer,
+    high_bucket_count integer,
+    statistic double precision,
+    effect_value double precision,
+    effect_direction text NOT NULL,
+    effect_size double precision,
+    p_value double precision,
+    low_bucket_mean double precision,
+    high_bucket_mean double precision,
+    fdr_q_value double precision,
+    fdr_significant boolean NOT NULL,
+    discovery_effect_value double precision,
+    discovery_p_value double precision,
+    discovery_q_value double precision,
+    validation_effect_value double precision,
+    validation_p_value double precision,
+    validation_q_value double precision,
+    same_direction boolean NOT NULL,
+    comparable_year_count integer NOT NULL,
+    same_direction_year_count integer NOT NULL,
+    yearly_direction_consistency double precision,
+    repeated_validation_pass boolean NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_raw_signal_test_count CHECK ((sample_count >= 0)),
+    CONSTRAINT ck_raw_signal_test_year_consistency CHECK (((yearly_direction_consistency IS NULL) OR ((yearly_direction_consistency >= (0)::double precision) AND (yearly_direction_consistency <= (1)::double precision))))
+);
+
+
+--
+-- Name: TABLE raw_signal_strength_test; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.raw_signal_strength_test IS '每次原始訊號強度研究的統計檢定、探索驗證結果與年度穩定性。';
+
+
+--
+-- Name: raw_signal_strength_yearly; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.raw_signal_strength_yearly (
+    run_id uuid NOT NULL,
+    result_year integer NOT NULL,
+    signal_category text NOT NULL,
+    signal_code text NOT NULL,
+    bucket_id smallint NOT NULL,
+    bucket_label text NOT NULL,
+    sample_count integer NOT NULL,
+    raw_mean double precision,
+    raw_median double precision,
+    history_percentile_mean_pct double precision,
+    next_open_close_mean_pct double precision,
+    next_open_close_median_pct double precision,
+    next_up_probability_pct double precision,
+    next_up_mfe_mean_pct double precision,
+    next_down_mfe_mean_pct double precision,
+    up_mfe_greater_probability_pct double precision,
+    next_intraday_range_mean_pct double precision,
+    next_close_location_mean_pct double precision,
+    up_ge_025_probability_pct double precision,
+    down_ge_025_probability_pct double precision,
+    up_ge_050_probability_pct double precision,
+    down_ge_050_probability_pct double precision,
+    up_ge_075_probability_pct double precision,
+    down_ge_075_probability_pct double precision,
+    up_ge_100_probability_pct double precision,
+    down_ge_100_probability_pct double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_raw_signal_year CHECK (((result_year >= 2000) AND (result_year <= 2200))),
+    CONSTRAINT ck_raw_signal_yearly_bucket CHECK (((bucket_id >= 1) AND (bucket_id <= 5))),
+    CONSTRAINT ck_raw_signal_yearly_count CHECK ((sample_count >= 0))
+);
+
+
+--
+-- Name: TABLE raw_signal_strength_yearly; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.raw_signal_strength_yearly IS '每次原始訊號強度研究的逐年五分位統計。';
 
 
 --
@@ -15098,6 +15414,38 @@ ALTER TABLE ONLY research.futures_night_bucket_yearly
 
 
 --
+-- Name: futures_volatility_strength_daily futures_volatility_strength_daily_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_daily
+    ADD CONSTRAINT futures_volatility_strength_daily_pkey PRIMARY KEY (run_id, signal_date);
+
+
+--
+-- Name: futures_volatility_strength_summary futures_volatility_strength_summary_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_summary
+    ADD CONSTRAINT futures_volatility_strength_summary_pkey PRIMARY KEY (run_id, period_name, group_type, group_label);
+
+
+--
+-- Name: futures_volatility_strength_test futures_volatility_strength_test_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_test
+    ADD CONSTRAINT futures_volatility_strength_test_pkey PRIMARY KEY (run_id, period_name, test_type);
+
+
+--
+-- Name: futures_volatility_strength_yearly futures_volatility_strength_yearly_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_yearly
+    ADD CONSTRAINT futures_volatility_strength_yearly_pkey PRIMARY KEY (run_id, result_year, volatility_level);
+
+
+--
 -- Name: night_retrace_backtest_run night_retrace_backtest_run_pkey; Type: CONSTRAINT; Schema: research; Owner: -
 --
 
@@ -15135,6 +15483,38 @@ ALTER TABLE ONLY research.night_retrace_yearly_summary
 
 ALTER TABLE ONLY research.market_daily_feature
     ADD CONSTRAINT pk_market_daily_feature PRIMARY KEY (market_type, instrument_id, session, trade_date, feature_name, feature_version);
+
+
+--
+-- Name: raw_signal_strength_bucket raw_signal_strength_bucket_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_bucket
+    ADD CONSTRAINT raw_signal_strength_bucket_pkey PRIMARY KEY (run_id, signal_code, bucket_id);
+
+
+--
+-- Name: raw_signal_strength_daily raw_signal_strength_daily_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_daily
+    ADD CONSTRAINT raw_signal_strength_daily_pkey PRIMARY KEY (run_id, signal_date, signal_code);
+
+
+--
+-- Name: raw_signal_strength_test raw_signal_strength_test_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_test
+    ADD CONSTRAINT raw_signal_strength_test_pkey PRIMARY KEY (run_id, signal_code, outcome_name, test_type);
+
+
+--
+-- Name: raw_signal_strength_yearly raw_signal_strength_yearly_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_yearly
+    ADD CONSTRAINT raw_signal_strength_yearly_pkey PRIMARY KEY (run_id, result_year, signal_code, bucket_id);
 
 
 --
@@ -15467,6 +15847,41 @@ CREATE INDEX ix_market_daily_feature_lookup ON research.market_daily_feature USI
 
 
 --
+-- Name: ix_raw_signal_daily_date; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_raw_signal_daily_date ON research.raw_signal_strength_daily USING btree (signal_date, signal_code);
+
+
+--
+-- Name: ix_raw_signal_test_candidate; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_raw_signal_test_candidate ON research.raw_signal_strength_test USING btree (repeated_validation_pass, outcome_name);
+
+
+--
+-- Name: ix_raw_signal_yearly_lookup; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_raw_signal_yearly_lookup ON research.raw_signal_strength_yearly USING btree (signal_code, result_year, bucket_id);
+
+
+--
+-- Name: ix_volatility_strength_daily_date; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_volatility_strength_daily_date ON research.futures_volatility_strength_daily USING btree (signal_date, volatility_level);
+
+
+--
+-- Name: ix_volatility_strength_yearly_lookup; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_volatility_strength_yearly_lookup ON research.futures_volatility_strength_yearly USING btree (result_year, volatility_level);
+
+
+--
 -- Name: ix_yu_candidate_raw_source; Type: INDEX; Schema: research; Owner: -
 --
 
@@ -15582,6 +15997,38 @@ ALTER TABLE ONLY research.futures_night_bucket_yearly
 
 
 --
+-- Name: futures_volatility_strength_daily futures_volatility_strength_daily_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_daily
+    ADD CONSTRAINT futures_volatility_strength_daily_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: futures_volatility_strength_summary futures_volatility_strength_summary_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_summary
+    ADD CONSTRAINT futures_volatility_strength_summary_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: futures_volatility_strength_test futures_volatility_strength_test_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_test
+    ADD CONSTRAINT futures_volatility_strength_test_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: futures_volatility_strength_yearly futures_volatility_strength_yearly_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_strength_yearly
+    ADD CONSTRAINT futures_volatility_strength_yearly_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
 -- Name: night_retrace_parameter_summary night_retrace_parameter_summary_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
 --
 
@@ -15603,6 +16050,38 @@ ALTER TABLE ONLY research.night_retrace_trade_detail
 
 ALTER TABLE ONLY research.night_retrace_yearly_summary
     ADD CONSTRAINT night_retrace_yearly_summary_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.night_retrace_backtest_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: raw_signal_strength_bucket raw_signal_strength_bucket_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_bucket
+    ADD CONSTRAINT raw_signal_strength_bucket_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: raw_signal_strength_daily raw_signal_strength_daily_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_daily
+    ADD CONSTRAINT raw_signal_strength_daily_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: raw_signal_strength_test raw_signal_strength_test_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_test
+    ADD CONSTRAINT raw_signal_strength_test_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: raw_signal_strength_yearly raw_signal_strength_yearly_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.raw_signal_strength_yearly
+    ADD CONSTRAINT raw_signal_strength_yearly_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
 
 
 --
@@ -15657,5 +16136,5 @@ ALTER TABLE ONLY research.yu_candidate_zones
 -- PostgreSQL database dump complete
 --
 
-\unrestrict edyDRaZ5f6ChCtkS94jtKNHqmD1jz9zKHx7XrG9c5KIVJdbWld1zuqTBQdZqUKi
+\unrestrict UcKQvz6kTFjqovpkJhLLvkBKdjfax7sQzamfPlH6zSLXAQtI99bD7HogOgqxm0X
 

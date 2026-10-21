@@ -1,0 +1,30 @@
+{
+  "run_id": "1c047459-abb2-41b1-adb6-688992778198",
+  "analysis_name": "futures_volatility_model_compare",
+  "metric_version": "1.0.0",
+  "start": "2018-01-01",
+  "end": "2026-10-16",
+  "first_test_year": 2021,
+  "features": [
+    "布林低位強度",
+    "散戶比偏高強度",
+    "MA10斜率偏低強度",
+    "主力淨多空OI偏低強度"
+  ],
+  "targets": {
+    "隔日日內振幅_pct": {
+      "kind": "regression",
+      "threshold": null
+    },
+    "振幅至少1.0pct": {
+      "kind": "binary",
+      "threshold": 1.0
+    },
+    "振幅至少1.5pct": {
+      "kind": "binary",
+      "threshold": 1.5
+    }
+  },
+  "method": "每年只使用此前年度資料訓練，再預測該年度；Ridge alpha=1，Logistic C=1",
+  "warning": "特徵由先前全期探索選出，因此逐年預測為樣本外，但整體研究仍非完全未觀察樣本外"
+}

@@ -11,3 +11,7 @@ deprecated/*
 output/*
 all_python_code.txt
 db_migrate/*
+# Local database
+*.db
+*.db-shm
+*.db-wal

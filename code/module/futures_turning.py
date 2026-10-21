@@ -7,6 +7,7 @@ import json
 import math
 
 COLUMNS = ('日盤轉折支撐', '日盤轉折壓力', '夜盤轉折支撐', '夜盤轉折壓力')
+TURNING_RULE_VERSION = '2026-10-20-v2-last-extreme-time'
 
 
 def calculate_bars(rows, seed=None):
@@ -71,6 +72,49 @@ def find_turning(bars, support=True, previous_direction=None, previous_close=Non
     return match['value'] if match else None
 
 
+def session_trend(bars):
+    """依最後一次最高／最低點的實際一分 K 時間判定時段走勢。"""
+    if not bars:
+        return None
+    highest = max(float(bar['high']) for bar in bars)
+    lowest = min(float(bar['low']) for bar in bars)
+    if highest == lowest:
+        return None
+    last_high_time = max(
+        bar.get('high_time', bar['time'])
+        for bar in bars if float(bar['high']) == highest
+    )
+    last_low_time = max(
+        bar.get('low_time', bar['time'])
+        for bar in bars if float(bar['low']) == lowest
+    )
+    if last_high_time > last_low_time:
+        return '漲勢盤'
+    if last_low_time > last_high_time:
+        return '跌勢盤'
+    return None
+
+
+def _session_window(day, session):
+    start = datetime.combine(day, datetime.min.time()) + (
+        timedelta(hours=8, minutes=45)
+        if session == 'position'
+        else timedelta(hours=15)
+    )
+    return start, start + (
+        timedelta(hours=5) if session == 'position' else timedelta(hours=14)
+    )
+
+
+def _session_is_complete(items, day, session, now):
+    start, end = _session_window(day, session)
+    return (
+        now >= end
+        and items[0]['time'] <= start + timedelta(minutes=5)
+        and items[-1]['last_time'] >= end - timedelta(minutes=5)
+    )
+
+
 def session_results(bars, now=None, previous_direction=None, previous_close=None):
     now = now or datetime.now(ZoneInfo('Asia/Taipei')).replace(tzinfo=None)
     groups = {}
@@ -84,10 +128,8 @@ def session_results(bars, now=None, previous_direction=None, previous_close=None
         prior_close = bar['close']
     results = []
     for (date, session), (items, left, left_close) in groups.items():
-        start = datetime.combine(date, datetime.min.time()) + timedelta(hours=8, minutes=45) if session == 'position' else datetime.combine(date, datetime.min.time()) + timedelta(hours=15)
-        end = start + (timedelta(hours=5) if session == 'position' else timedelta(hours=14))
         # Incomplete/in-progress sessions cannot represent the whole interval.
-        complete = now >= end and items[0]['time'] <= start + timedelta(minutes=5) and items[-1]['last_time'] >= end - timedelta(minutes=5)
+        complete = _session_is_complete(items, date, session, now)
         results.append((date, session, find_turning(items, True, left, left_close) if complete else None,
                         find_turning(items, False, left, left_close) if complete else None))
     return results
@@ -103,14 +145,23 @@ CREATE TABLE IF NOT EXISTS report.futures_turning_levels (
  futures_id text NOT NULL DEFAULT 'TX', "日期" date NOT NULL,
  "日盤轉折支撐" numeric, "日盤轉折壓力" numeric,
  "夜盤轉折支撐" numeric, "夜盤轉折壓力" numeric,
+ "日盤走勢" text, "夜盤走勢" text,
  PRIMARY KEY (futures_id, "日期")
 );
+ALTER TABLE report.futures_turning_levels
+ ADD COLUMN IF NOT EXISTS "日盤走勢" text;
+ALTER TABLE report.futures_turning_levels
+ ADD COLUMN IF NOT EXISTS "夜盤走勢" text;
 '''
 
 
 def ensure_turning_views():
     """Wrap the public report, keeping old dependent views/cache layouts intact."""
     from common import db
+    current_comment = str(db.query_single_value(
+        "SELECT obj_description(to_regclass('report.futures_turning_levels'), 'pg_class')"
+    ) or '')
+    rule_changed = TURNING_RULE_VERSION not in current_comment
     if not db.execute_sql(DDL): raise RuntimeError('建立轉折結果資料表失敗')
     # Renaming preserves existing dependent objects; the new public name exposes
     # columns at the required ordinal positions without DROP ... CASCADE.
@@ -118,13 +169,9 @@ def ensure_turning_views():
 DO $turning$
 DECLARE fields text;
 DECLARE additions text :=
- 'CASE WHEN b."日盤高" IS NULL OR b."日盤低" IS NULL OR b."日盤收" IS NULL THEN NULL '
- 'WHEN abs(b."日盤高"-b."日盤收") < abs(b."日盤收"-b."日盤低") THEN ''漲勢盤'' '
- 'ELSE ''跌勢盤'' END AS "日盤走勢", '
+ 't."日盤走勢", '
  't."日盤轉折支撐", t."日盤轉折壓力", '
- 'CASE WHEN b."夜盤高" IS NULL OR b."夜盤低" IS NULL OR b."夜盤收" IS NULL THEN NULL '
- 'WHEN abs(b."夜盤高"-b."夜盤收") < abs(b."夜盤收"-b."夜盤低") THEN ''漲勢盤'' '
- 'ELSE ''跌勢盤'' END AS "夜盤走勢", '
+ 't."夜盤走勢", '
  't."夜盤轉折支撐", t."夜盤轉折壓力"';
 BEGIN
  PERFORM pg_advisory_xact_lock(26100451);
@@ -184,6 +231,7 @@ BEGIN
 END $turning$;
 '''
     if not db.execute_sql(statement): raise RuntimeError('安裝轉折報表 View 失敗')
+    return rule_changed
 
 
 SOURCE_SQL = '''
@@ -206,6 +254,8 @@ WITH ranked AS (
 )
 SELECT min(bar_datetime) AS time, session_date, trading_session AS session,
  max(high) AS high, min(low) AS low,
+ (array_agg(bar_datetime ORDER BY high DESC, bar_datetime DESC))[1] AS high_time,
+ (array_agg(bar_datetime ORDER BY low ASC, bar_datetime DESC))[1] AS low_time,
  (array_agg(close ORDER BY bar_datetime DESC))[1] AS close, max(bar_datetime) AS last_time
 FROM grouped GROUP BY session_date,trading_session,bar_time ORDER BY time
 '''
@@ -294,9 +344,9 @@ def _refresh_turning_levels(*, full=False, start_date=None):
     start_date; all later EMA/session results are rebuilt from that point.
     """
     from common import db
-    ensure_turning_views()
+    rule_changed = ensure_turning_views()
     latest = db.query_single_value('SELECT max(bar_time) FROM report.futures_turning_5m_bars')
-    start = datetime(1900,1,1) if full or latest is None else datetime.combine((latest - timedelta(days=14)).date(), datetime.min.time()) + timedelta(hours=8, minutes=45)
+    start = datetime(1900,1,1) if full or rule_changed or latest is None else datetime.combine((latest - timedelta(days=14)).date(), datetime.min.time()) + timedelta(hours=8, minutes=45)
     if start_date is not None and not full:
         start = min(start, datetime.combine(start_date, datetime.min.time()) + timedelta(hours=8, minutes=45))
     checkpoint = db.query_to_df('SELECT direction,close,ema_state FROM report.futures_turning_5m_bars WHERE bar_time < ? ORDER BY bar_time DESC LIMIT 1', (start,))
@@ -311,8 +361,16 @@ def _refresh_turning_levels(*, full=False, start_date=None):
         row['last_time'] = row['last_time'].to_pydatetime() if hasattr(row['last_time'],'to_pydatetime') else row['last_time']
         if hasattr(row['session_date'],'date'): row['session_date'] = row['session_date'].date()
     bars = calculate_bars(rows, seed)
-    results = session_results(bars, previous_direction=prior,
+    now = datetime.now(ZoneInfo('Asia/Taipei')).replace(tzinfo=None)
+    results = session_results(bars, now=now, previous_direction=prior,
                               previous_close=None if checkpoint.empty else checkpoint.iloc[0].get('close'))
+    grouped_bars = {}
+    for bar in bars:
+        grouped_bars.setdefault((bar['session_date'], bar['session']), []).append(bar)
+    trends = {
+        key: session_trend(items) if _session_is_complete(items, key[0], key[1], now) else None
+        for key, items in grouped_bars.items()
+    }
     # Replace the refreshed tail and its levels in one transaction.
     with db.get_connection() as conn:
         conn.execute('DELETE FROM report.futures_turning_5m_bars WHERE bar_time >= %s', (start,))
@@ -322,8 +380,15 @@ def _refresh_turning_levels(*, full=False, start_date=None):
                 [(b['time'],b['session_date'],b['session'],float(b['high']),float(b['low']),float(b['close']),b['last_time'],b['dif'],b['direction'],json.dumps(b['ema_state'])) for b in bars])
             for date, session, support, resistance in results:
                 names = COLUMNS[:2] if session=='position' else COLUMNS[2:]
-                cur.execute(f'INSERT INTO report.futures_turning_levels (futures_id,"日期","{names[0]}","{names[1]}") VALUES (\'TX\',%s,%s,%s) ON CONFLICT (futures_id,"日期") DO UPDATE SET "{names[0]}"=EXCLUDED."{names[0]}","{names[1]}"=EXCLUDED."{names[1]}"', (date,support,resistance))
+                trend_name = '日盤走勢' if session == 'position' else '夜盤走勢'
+                trend = trends.get((date, session))
+                cur.execute(f'INSERT INTO report.futures_turning_levels (futures_id,"日期","{names[0]}","{names[1]}","{trend_name}") VALUES (\'TX\',%s,%s,%s,%s) ON CONFLICT (futures_id,"日期") DO UPDATE SET "{names[0]}"=EXCLUDED."{names[0]}","{names[1]}"=EXCLUDED."{names[1]}","{trend_name}"=EXCLUDED."{trend_name}"', (date,support,resistance,trend))
         conn.commit()
+    if not db.execute_sql(
+        "COMMENT ON TABLE report.futures_turning_levels IS "
+        f"'{TURNING_RULE_VERSION}；走勢依最後一次最高／最低點時間判定。'"
+    ):
+        raise RuntimeError('寫入轉折規則版本失敗')
     try:
         export_turning_audit()
     except OSError as exc:

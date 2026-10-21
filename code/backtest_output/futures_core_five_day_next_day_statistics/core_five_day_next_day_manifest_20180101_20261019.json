@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-10-19",
+    "futures_id": "TX",
+    "alpha": 0.05
+  },
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "signal_column": "策略_核心_五日價量",
+  "alignment": "訊號日後的下一個實際交易日（SQL LEAD）",
+  "return_formula": "(隔日日盤價-基準價)/基準價*100",
+  "up_definition": "隔日日盤收 > 基準價；平盤不計上漲",
+  "multiple_testing": "所有檢定一起使用 Benjamini-Hochberg 校正"
+}

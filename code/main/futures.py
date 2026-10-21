@@ -6,6 +6,13 @@ from time import perf_counter
 import pandas as pd
 import traceback
 
+
+class SourceDataPendingError(RuntimeError):
+    """外部資料源尚未發布資料，不代表報表更新程序故障。"""
+
+    is_data_pending = True
+
+
 # =========================================================
 # 抓取期貨、選擇權近期資料
 # =========================================================
@@ -2302,7 +2309,11 @@ def audit_latest_completed_night(futures_id: str = "TX") -> dict:
         "夜盤轉折壓力",
     )
     missing_fields = [name for name in required_fields if pd.isna(result[name])]
-    if source_rows == 0 or missing_fields:
+    if source_rows == 0:
+        raise SourceDataPendingError(
+            "最新夜盤法人資料尚未發布，請稍後再更新。"
+        )
+    if missing_fields:
         raise RuntimeError(
             "跨日稽核失敗：最近完成交易日的必要夜盤欄位仍不完整；"
             f"報表日={result['report_date']}、行情來源日={result['price_source_date']}、"

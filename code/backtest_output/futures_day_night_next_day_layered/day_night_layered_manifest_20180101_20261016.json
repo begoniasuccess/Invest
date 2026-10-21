@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-10-16",
+    "futures_id": "TX",
+    "minimum_sample_size": 30,
+    "alpha": 0.05
+  },
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "date_alignment": "訊號日後下一個實際存在的交易日",
+  "day_return": "(昨日日盤收-再前一日日盤收)/再前一日日盤收*100",
+  "night_return": "(昨日夜盤收-昨日日盤收)/昨日日盤收*100",
+  "opposite": "日盤漲跌幅與夜盤漲跌幅異號",
+  "between": "隔日價格位於昨日日盤收與昨日夜盤收的閉區間內",
+  "night_outer": "隔日收盤超過昨日夜收，沿夜盤方向延伸",
+  "day_outer": "隔日收盤越過昨日日收，完全收復夜盤走勢",
+  "comparison": "相同夜盤絕對幅度桶內，比較反向與同向；全項BH-FDR校正"
+}

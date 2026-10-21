@@ -1,0 +1,32 @@
+{
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-10-16",
+    "futures_id": "TX",
+    "minimum_group_size": 100,
+    "minimum_year_size": 20,
+    "split_date": "2023-01-01",
+    "alpha": 0.05,
+    "winsor_tail": 0.005
+  },
+  "source_view": "report.v_futures_report_daily_corrected_turning",
+  "objective": "尋找隔日台指期日盤當沖可利用的策略訊號",
+  "included_outcomes": [
+    "隔日開盤相對前日日收",
+    "隔日開盤相對前日夜收",
+    "隔日日收相對前日日收",
+    "隔日日收相對前日夜收",
+    "隔日日盤開到收",
+    "隔日日開到最高",
+    "隔日日開到最低",
+    "前日夜收到隔日最高",
+    "前日夜收到隔日最低",
+    "隔日日盤振幅",
+    "隔日最高到收盤回落",
+    "隔日最低到收盤反彈",
+    "隔日收盤區間位置"
+  ],
+  "excluded": "隔日均線、法人、選權、籌碼、成交量等不能直接代表當沖損益的欄位",
+  "directional_assumption": "多訊號做多、空訊號做空；未扣交易成本與滑價",
+  "mfe_mae_warning": "最大有利/不利空間只表示盤中曾到達，不代表可實現損益"
+}

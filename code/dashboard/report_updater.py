@@ -79,14 +79,23 @@ def _run(modules: tuple[str, ...]) -> None:
             finished_at=datetime.now().isoformat(timespec="seconds"),
         )
     except Exception as exc:
-        traceback.print_exc()
-        _set_state(
-            running=False,
-            step="failed",
-            message=f"更新失敗：{exc}",
-            error=str(exc),
-            finished_at=datetime.now().isoformat(timespec="seconds"),
-        )
+        if getattr(exc, "is_data_pending", False):
+            _set_state(
+                running=False,
+                step="pending",
+                message=str(exc),
+                error=None,
+                finished_at=datetime.now().isoformat(timespec="seconds"),
+            )
+        else:
+            traceback.print_exc()
+            _set_state(
+                running=False,
+                step="failed",
+                message=f"更新失敗：{exc}",
+                error=str(exc),
+                finished_at=datetime.now().isoformat(timespec="seconds"),
+            )
     finally:
         _LOCK.release()
 

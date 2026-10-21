@@ -248,7 +248,14 @@ function toggleExpanded() {
 async function pollUpdateStatus() {
   try {
     const status = await requestJson("/api/report-update/status");
-    $("updateStatus").innerHTML = `<i class="bi ${status.running ? "bi-arrow-repeat spin" : status.step === "failed" ? "bi-exclamation-triangle" : "bi-database-check"}"></i> ${escapeHtml(status.message)}`;
+    const statusIcon = status.running
+      ? "bi-arrow-repeat spin"
+      : status.step === "failed"
+        ? "bi-exclamation-triangle"
+        : status.step === "pending"
+          ? "bi-info-circle"
+          : "bi-database-check";
+    $("updateStatus").innerHTML = `<i class="bi ${statusIcon}"></i> ${escapeHtml(status.message)}`;
     $("updateReportBtn").disabled = status.running;
     $("reportUpdateMenu").classList.toggle("update-menu-disabled", status.running);
     $("updateTaiexReport").disabled = status.running;
@@ -259,6 +266,10 @@ async function pollUpdateStatus() {
     }
     clearInterval(state.pollTimer); state.pollTimer = null;
     if (status.step === "completed") await loadRawData(true, `${status.message}，畫面已重新載入。`);
+    if (status.step === "pending") {
+      await loadRawData(false);
+      showAlert(status.message, "info");
+    }
     if (status.step === "failed") showAlert(status.message, "danger");
   } catch (error) { clearInterval(state.pollTimer); state.pollTimer = null; $("updateReportBtn").disabled = false; $("reportUpdateMenu").classList.remove("update-menu-disabled"); $("updateTaiexReport").disabled = false; $("updateFuturesReport").disabled = false; showAlert(`無法取得更新狀態：${error.message}`, "danger"); }
 }
