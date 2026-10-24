@@ -3,15 +3,15 @@
   "version": 5,
   "date_column": "日期",
   "taiex": {
-    "relation": "report.v_taiex_report",
+    "relation": "report.v_taiex_report_turnover",
     "fields": [
-      "開盤價", "最高價", "最低價", "收盤價", "成交量", "跳空缺口",
+      "開盤價", "最高價", "最低價", "收盤價", "成交金額", "跳空缺口",
       "漲跌幅_pct", "實體_pct", "上影_pct", "下影_pct",
       "5日最大量", "10日最大量", "20日最大量", "60日最大量"
     ],
     "column_map": {
       "open": "開盤價", "high": "最高價", "low": "最低價",
-      "close": "收盤價", "volume": "成交量"
+      "close": "收盤價", "volume": "成交金額"
     },
     "gap_column": "跳空缺口"
   },

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict UcKQvz6kTFjqovpkJhLLvkBKdjfax7sQzamfPlH6zSLXAQtI99bD7HogOgqxm0X
+\restrict 6FXvRAvkqlMEmw3Nz2pIkaPP7bhIK1TP0XEctFb5IrwcNDLIgqDIryWdQgQHVST
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -8319,6 +8319,138 @@ COMMENT ON MATERIALIZED VIEW report.mv_futures_report_daily_base IS '期貨完�
 
 
 --
+-- Name: report_rule_versions; Type: TABLE; Schema: report; Owner: -
+--
+
+CREATE TABLE report.report_rule_versions (
+    rule_name text NOT NULL,
+    rule_version text NOT NULL,
+    applied_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: taiex_report_dashboard_cache_v2; Type: TABLE; Schema: report; Owner: -
+--
+
+CREATE TABLE report.taiex_report_dashboard_cache_v2 (
+    "日期" date,
+    "年" bigint,
+    "月" bigint,
+    "星期" text,
+    "週次" bigint,
+    "天別" text,
+    "開盤價" numeric,
+    "收盤價" numeric,
+    "最高價" numeric,
+    "最低價" numeric,
+    "漲跌" numeric,
+    "漲跌幅_pct" numeric,
+    "收盤_開盤" numeric,
+    "實體_昨收_pct" numeric,
+    "實體_開盤_pct" numeric,
+    "日振幅" numeric,
+    "日振幅_昨收_pct" numeric,
+    "日振福_開盤_pct" numeric,
+    "成交股數" numeric,
+    "成交金額" numeric,
+    "5日最大量_日期" date,
+    "5日最大量" numeric,
+    "10日最大量_日期" date,
+    "10日最大量" numeric,
+    "20日最大量_日期" date,
+    "20日最大量" numeric,
+    "60日最大量_日期" date,
+    "60日最大量" numeric,
+    "5日均量" numeric,
+    "10日均量" numeric,
+    "20日均量" numeric,
+    "60日均量" numeric,
+    "量增率_pct" numeric,
+    "5日量增率_pct" numeric,
+    "10日量增率_pct" numeric,
+    "20日量增率_pct" numeric,
+    "60日量增率_pct" numeric,
+    "當日價量" text,
+    "5日價量" text,
+    "10日價量" text,
+    "20日價量" text,
+    "60日價量" text,
+    "K線型態" text,
+    "跳空缺口" numeric,
+    "跳空缺口_昨收_pct" numeric,
+    "實體_pct" numeric,
+    "上影_pct" numeric,
+    "下影_pct" numeric,
+    "5MA" numeric,
+    "10MA" numeric,
+    "20MA" numeric,
+    "60MA" numeric,
+    "120MA" double precision,
+    "240MA" double precision,
+    "5日上升幅度" numeric,
+    "10日上升幅度" numeric,
+    "20日上升幅度" numeric,
+    "60日上升幅度" numeric,
+    "5日上升幅度_pct" numeric,
+    "10日上升幅度_pct" numeric,
+    "20日上升幅度_pct" numeric,
+    "60日上升幅度_pct" numeric,
+    "5日扣抵值" numeric,
+    "10日扣抵值" numeric,
+    "20日扣抵值" numeric,
+    "60日扣抵值" numeric,
+    "5日明日扣抵影響_點" numeric,
+    "10日明日扣抵影響_點" numeric,
+    "20日明日扣抵影響_點" numeric,
+    "60日明日扣抵影響_點" numeric,
+    "5日明日扣抵影響_pct" numeric,
+    "10日明日扣抵影響_pct" numeric,
+    "20日明日扣抵影響_pct" numeric,
+    "60日明日扣抵影響_pct" numeric,
+    "5日乖離" numeric,
+    "10日乖離" numeric,
+    "20日乖離" numeric,
+    "60日乖離" numeric,
+    "布林標準差" numeric,
+    "布林上軌" numeric,
+    "布林下軌" numeric,
+    "總成交金額_億" numeric,
+    "法人總買超_億" numeric,
+    "買超_外資_億" numeric,
+    "買超_投信_億" numeric,
+    "買超_自營商_億" numeric,
+    "買超_融資_億" numeric,
+    "法人淨買賣超_扣融資_億" numeric,
+    "法人買賣超_總成交_pct" numeric,
+    "散戶多空比_微台" numeric,
+    "漲跌幅百分位數" numeric,
+    "漲跌幅級距" bigint,
+    "三大法人買賣超百分位數" numeric,
+    "三大法人買賣超級距" bigint,
+    "資金走向判定" text,
+    "位置" text,
+    "策略_價量昨日_判斷" text,
+    "策略_價量五日_判斷" text,
+    "MA方向_5" text,
+    "MA方向_10" text,
+    "MA方向_20" text,
+    "趨勢" text,
+    "法人籌碼" text,
+    "散戶籌碼" text,
+    "策略_籌碼_判定" text,
+    "策略_價量昨日_線型" text,
+    "策略_價量五日_線型" text,
+    "策略_價量昨日_籌碼" text,
+    "策略_價量五日_籌碼" text,
+    "策略_線型_籌碼" text,
+    "策略_核心" text,
+    "策略_核心_昨價量" text,
+    "策略_核心_五日價量" text
+);
+
+
+--
 -- Name: v_attention_notice; Type: VIEW; Schema: report; Owner: -
 --
 
@@ -13988,6 +14120,127 @@ COMMENT ON VIEW report.v_taiex_report IS '加權指數對外報表；2026-09-09 
 
 
 --
+-- Name: v_taiex_report_turnover; Type: VIEW; Schema: report; Owner: -
+--
+
+CREATE VIEW report.v_taiex_report_turnover AS
+ SELECT "日期",
+    "年",
+    "月",
+    "星期",
+    "週次",
+    "天別",
+    "開盤價",
+    "收盤價",
+    "最高價",
+    "最低價",
+    "漲跌",
+    "漲跌幅_pct",
+    "收盤_開盤",
+    "實體_昨收_pct",
+    "實體_開盤_pct",
+    "日振幅",
+    "日振幅_昨收_pct",
+    "日振福_開盤_pct",
+    "成交量" AS "成交股數",
+    "總成交金額_億" AS "成交金額",
+    "5日最大量_日期",
+    "5日最大量",
+    "10日最大量_日期",
+    "10日最大量",
+    "20日最大量_日期",
+    "20日最大量",
+    "60日最大量_日期",
+    "60日最大量",
+    "5日均量",
+    "10日均量",
+    "20日均量",
+    "60日均量",
+    "量增率_pct",
+    "5日量增率_pct",
+    "10日量增率_pct",
+    "20日量增率_pct",
+    "60日量增率_pct",
+    "當日價量",
+    "5日價量",
+    "10日價量",
+    "20日價量",
+    "60日價量",
+    "K線型態",
+    "跳空缺口",
+    "跳空缺口_昨收_pct",
+    "實體_pct",
+    "上影_pct",
+    "下影_pct",
+    "5MA",
+    "10MA",
+    "20MA",
+    "60MA",
+    "120MA",
+    "240MA",
+    "5日上升幅度",
+    "10日上升幅度",
+    "20日上升幅度",
+    "60日上升幅度",
+    "5日上升幅度_pct",
+    "10日上升幅度_pct",
+    "20日上升幅度_pct",
+    "60日上升幅度_pct",
+    "5日扣抵值",
+    "10日扣抵值",
+    "20日扣抵值",
+    "60日扣抵值",
+    "5日明日扣抵影響_點",
+    "10日明日扣抵影響_點",
+    "20日明日扣抵影響_點",
+    "60日明日扣抵影響_點",
+    "5日明日扣抵影響_pct",
+    "10日明日扣抵影響_pct",
+    "20日明日扣抵影響_pct",
+    "60日明日扣抵影響_pct",
+    "5日乖離",
+    "10日乖離",
+    "20日乖離",
+    "60日乖離",
+    "布林標準差",
+    "布林上軌",
+    "布林下軌",
+    "總成交金額_億",
+    "法人總買超_億",
+    "買超_外資_億",
+    "買超_投信_億",
+    "買超_自營商_億",
+    "買超_融資_億",
+    "法人淨買賣超_扣融資_億",
+    "法人買賣超_總成交_pct",
+    "散戶多空比_微台",
+    "漲跌幅百分位數",
+    "漲跌幅級距",
+    "三大法人買賣超百分位數",
+    "三大法人買賣超級距",
+    "資金走向判定",
+    "位置",
+    "策略_價量昨日_判斷",
+    "策略_價量五日_判斷",
+    "MA方向_5",
+    "MA方向_10",
+    "MA方向_20",
+    "趨勢",
+    "法人籌碼",
+    "散戶籌碼",
+    "策略_籌碼_判定",
+    "策略_價量昨日_線型",
+    "策略_價量五日_線型",
+    "策略_價量昨日_籌碼",
+    "策略_價量五日_籌碼",
+    "策略_線型_籌碼",
+    "策略_核心",
+    "策略_核心_昨價量",
+    "策略_核心_五日價量"
+   FROM report.v_taiex_report b;
+
+
+--
 -- Name: analysis_run; Type: TABLE; Schema: research; Owner: -
 --
 
@@ -14114,6 +14367,101 @@ CREATE TABLE research.futures_night_bucket_yearly (
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT ck_research_night_yearly_bucket CHECK (((bucket_id >= 1) AND (bucket_id <= 10)))
 );
+
+
+--
+-- Name: futures_volatility_model_coefficient; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_model_coefficient (
+    run_id uuid NOT NULL,
+    test_year integer NOT NULL,
+    target_name text NOT NULL,
+    model_name text NOT NULL,
+    feature_name text NOT NULL,
+    standardized_coefficient double precision CONSTRAINT futures_volatility_model_coef_standardized_coefficient_not_null NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_model_coefficient_name CHECK ((model_name = ANY (ARRAY['Ridge'::text, 'Logistic'::text]))),
+    CONSTRAINT ck_volatility_model_coefficient_year CHECK (((test_year >= 2000) AND (test_year <= 2200)))
+);
+
+
+--
+-- Name: TABLE futures_volatility_model_coefficient; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_model_coefficient IS '各樣本外年度模型的標準化特徵係數，用於檢查訊號方向及穩定性。';
+
+
+--
+-- Name: futures_volatility_model_metric; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_model_metric (
+    run_id uuid NOT NULL,
+    evaluation_period text NOT NULL,
+    target_name text NOT NULL,
+    model_name text NOT NULL,
+    sample_count integer NOT NULL,
+    mae double precision,
+    rmse double precision,
+    spearman double precision,
+    brier double precision,
+    roc_auc double precision,
+    log_loss double precision,
+    top20_actual double precision,
+    top20_lift double precision,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_model_auc CHECK (((roc_auc IS NULL) OR ((roc_auc >= (0)::double precision) AND (roc_auc <= (1)::double precision)))),
+    CONSTRAINT ck_volatility_model_metric_count CHECK ((sample_count >= 0)),
+    CONSTRAINT ck_volatility_model_metric_name CHECK ((model_name = ANY (ARRAY['簡單分數'::text, 'Ridge'::text, 'Logistic'::text])))
+);
+
+
+--
+-- Name: TABLE futures_volatility_model_metric; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_model_metric IS '簡單波動分數與正則化 Ridge、Logistic 模型的樣本外成效比較。';
+
+
+--
+-- Name: futures_volatility_model_prediction; Type: TABLE; Schema: research; Owner: -
+--
+
+CREATE TABLE research.futures_volatility_model_prediction (
+    run_id uuid NOT NULL,
+    signal_date date NOT NULL,
+    result_date date NOT NULL,
+    volatility_score smallint NOT NULL,
+    actual_range_pct double precision NOT NULL,
+    actual_range_ge_100 smallint CONSTRAINT futures_volatility_model_predictio_actual_range_ge_100_not_null NOT NULL,
+    actual_range_ge_150 smallint CONSTRAINT futures_volatility_model_predictio_actual_range_ge_150_not_null NOT NULL,
+    test_year integer NOT NULL,
+    score_predicted_range_pct double precision CONSTRAINT futures_volatility_model_pre_score_predicted_range_pct_not_null NOT NULL,
+    ridge_predicted_range_pct double precision CONSTRAINT futures_volatility_model_pre_ridge_predicted_range_pct_not_null NOT NULL,
+    score_range_ge_100_probability double precision CONSTRAINT futures_volatility_model_pr_score_range_ge_100_probabi_not_null NOT NULL,
+    logistic_range_ge_100_probability double precision CONSTRAINT futures_volatility_model_pr_logistic_range_ge_100_prob_not_null NOT NULL,
+    score_range_ge_150_probability double precision CONSTRAINT futures_volatility_model_pr_score_range_ge_150_probabi_not_null NOT NULL,
+    logistic_range_ge_150_probability double precision CONSTRAINT futures_volatility_model_pr_logistic_range_ge_150_prob_not_null NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_volatility_model_actual_100 CHECK ((actual_range_ge_100 = ANY (ARRAY[0, 1]))),
+    CONSTRAINT ck_volatility_model_actual_150 CHECK ((actual_range_ge_150 = ANY (ARRAY[0, 1]))),
+    CONSTRAINT ck_volatility_model_dates CHECK ((signal_date < result_date)),
+    CONSTRAINT ck_volatility_model_logistic_prob_100 CHECK (((logistic_range_ge_100_probability >= (0)::double precision) AND (logistic_range_ge_100_probability <= (1)::double precision))),
+    CONSTRAINT ck_volatility_model_logistic_prob_150 CHECK (((logistic_range_ge_150_probability >= (0)::double precision) AND (logistic_range_ge_150_probability <= (1)::double precision))),
+    CONSTRAINT ck_volatility_model_score CHECK (((volatility_score >= 0) AND (volatility_score <= 4))),
+    CONSTRAINT ck_volatility_model_score_prob_100 CHECK (((score_range_ge_100_probability >= (0)::double precision) AND (score_range_ge_100_probability <= (1)::double precision))),
+    CONSTRAINT ck_volatility_model_score_prob_150 CHECK (((score_range_ge_150_probability >= (0)::double precision) AND (score_range_ge_150_probability <= (1)::double precision))),
+    CONSTRAINT ck_volatility_model_test_year CHECK (((test_year >= 2000) AND (test_year <= 2200)))
+);
+
+
+--
+-- Name: TABLE futures_volatility_model_prediction; Type: COMMENT; Schema: research; Owner: -
+--
+
+COMMENT ON TABLE research.futures_volatility_model_prediction IS '每年只用過往年度訓練後產生的隔日日盤波動樣本外預測。';
 
 
 --
@@ -15382,6 +15730,14 @@ ALTER TABLE ONLY report.futures_turning_levels
 
 
 --
+-- Name: report_rule_versions report_rule_versions_pkey; Type: CONSTRAINT; Schema: report; Owner: -
+--
+
+ALTER TABLE ONLY report.report_rule_versions
+    ADD CONSTRAINT report_rule_versions_pkey PRIMARY KEY (rule_name);
+
+
+--
 -- Name: analysis_run analysis_run_pkey; Type: CONSTRAINT; Schema: research; Owner: -
 --
 
@@ -15411,6 +15767,30 @@ ALTER TABLE ONLY research.futures_night_bucket_summary
 
 ALTER TABLE ONLY research.futures_night_bucket_yearly
     ADD CONSTRAINT futures_night_bucket_yearly_pkey PRIMARY KEY (run_id, result_year, bucket_id, metric_name);
+
+
+--
+-- Name: futures_volatility_model_coefficient futures_volatility_model_coefficient_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_model_coefficient
+    ADD CONSTRAINT futures_volatility_model_coefficient_pkey PRIMARY KEY (run_id, test_year, target_name, model_name, feature_name);
+
+
+--
+-- Name: futures_volatility_model_metric futures_volatility_model_metric_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_model_metric
+    ADD CONSTRAINT futures_volatility_model_metric_pkey PRIMARY KEY (run_id, evaluation_period, target_name, model_name);
+
+
+--
+-- Name: futures_volatility_model_prediction futures_volatility_model_prediction_pkey; Type: CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_model_prediction
+    ADD CONSTRAINT futures_volatility_model_prediction_pkey PRIMARY KEY (run_id, signal_date);
 
 
 --
@@ -15791,6 +16171,13 @@ CREATE UNIQUE INDEX uq_mv_futures_report_daily_base_market_date ON report.mv_fut
 
 
 --
+-- Name: uq_taiex_report_dashboard_cache_v2_date; Type: INDEX; Schema: report; Owner: -
+--
+
+CREATE UNIQUE INDEX uq_taiex_report_dashboard_cache_v2_date ON report.taiex_report_dashboard_cache_v2 USING btree ("日期");
+
+
+--
 -- Name: idx_night_retrace_parameter_rank; Type: INDEX; Schema: research; Owner: -
 --
 
@@ -15865,6 +16252,20 @@ CREATE INDEX ix_raw_signal_test_candidate ON research.raw_signal_strength_test U
 --
 
 CREATE INDEX ix_raw_signal_yearly_lookup ON research.raw_signal_strength_yearly USING btree (signal_code, result_year, bucket_id);
+
+
+--
+-- Name: ix_volatility_model_metric_lookup; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_volatility_model_metric_lookup ON research.futures_volatility_model_metric USING btree (evaluation_period, target_name, model_name);
+
+
+--
+-- Name: ix_volatility_model_prediction_date; Type: INDEX; Schema: research; Owner: -
+--
+
+CREATE INDEX ix_volatility_model_prediction_date ON research.futures_volatility_model_prediction USING btree (signal_date, test_year);
 
 
 --
@@ -15994,6 +16395,30 @@ ALTER TABLE ONLY research.futures_night_bucket_summary
 
 ALTER TABLE ONLY research.futures_night_bucket_yearly
     ADD CONSTRAINT futures_night_bucket_yearly_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: futures_volatility_model_coefficient futures_volatility_model_coefficient_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_model_coefficient
+    ADD CONSTRAINT futures_volatility_model_coefficient_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: futures_volatility_model_metric futures_volatility_model_metric_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_model_metric
+    ADD CONSTRAINT futures_volatility_model_metric_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
+
+
+--
+-- Name: futures_volatility_model_prediction futures_volatility_model_prediction_run_id_fkey; Type: FK CONSTRAINT; Schema: research; Owner: -
+--
+
+ALTER TABLE ONLY research.futures_volatility_model_prediction
+    ADD CONSTRAINT futures_volatility_model_prediction_run_id_fkey FOREIGN KEY (run_id) REFERENCES research.analysis_run(run_id) ON DELETE CASCADE;
 
 
 --
@@ -16136,5 +16561,5 @@ ALTER TABLE ONLY research.yu_candidate_zones
 -- PostgreSQL database dump complete
 --
 
-\unrestrict UcKQvz6kTFjqovpkJhLLvkBKdjfax7sQzamfPlH6zSLXAQtI99bD7HogOgqxm0X
+\unrestrict 6FXvRAvkqlMEmw3Nz2pIkaPP7bhIK1TP0XEctFb5IrwcNDLIgqDIryWdQgQHVST
 

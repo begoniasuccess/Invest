@@ -24,7 +24,7 @@ def taiex_daily_report(months: int = 4, eDt: datetime = None):
     return export("TAIEX", sDt, eDt)
 
 
-def export(stock_id, sDt, eDt):
+def export(stock_id, sDt, eDt, *, export_csv: bool = True):
     where_condition = """
         AND target_table LIKE 'fm_%' 
         AND target_table LIKE '%_stock_%'
@@ -46,16 +46,28 @@ def export(stock_id, sDt, eDt):
     SRU.update_is_complete()
 
     # 輸出view表
-    sql = f"""
-        SELECT * FROM v_taiex_report ORDER BY 日期
-    """
-    output = db.query_to_df(sql)
+    from module.taiex_turnover_rule import ensure_turnover_view
+    ensure_turnover_view()
+    from module.taiex_report_cache import CACHE_TABLE, refresh_taiex_dashboard_cache
+
+    # 日常流程永遠只刷新近期快取。全歷史重算只能由
+    # main.rebuild_taiex_turnover_history 明確觸發。
+    refresh_taiex_dashboard_cache()
+    if export_csv:
+        sql = f"SELECT * FROM {CACHE_TABLE} ORDER BY 日期"
+        params = ()
+    else:
+        # Dashboard 更新完成時只需要回傳本次期間，不再讀取／序列化完整歷史。
+        sql = f'SELECT * FROM {CACHE_TABLE} WHERE "日期" BETWEEN ? AND ? ORDER BY "日期"'
+        params = (sDt.strftime("%Y-%m-%d"), eDt.strftime("%Y-%m-%d"))
+    output = db.query_to_df(sql, params)
 
     # 對外報表顯示兩套明確核心欄位；舊「策略_核心」仍留在 View
     # 並固定等同五日價量版，供既有回測與模型相容使用。
     output = output.loc[:, order_taiex_report_columns(list(output.columns))]
 
-    output.to_csv("C:/Users/USER/Desktop/Han/學習/金融策略/Invest/output/stock_report.csv", index=False, encoding="utf-8-sig")
+    if export_csv:
+        output.to_csv("C:/Users/USER/Desktop/Han/學習/金融策略/Invest/output/stock_report.csv", index=False, encoding="utf-8-sig")
     return output
 
 
@@ -299,19 +311,20 @@ def rebuild_percentile_fields(
 
 
 
-def run_report_pipeline():
+def run_report_pipeline(*, export_csv: bool = True):
     """只更新加權指數日報表，不下載分 K。"""
     from module.core_strategy import ensure_core_strategy_rule
 
     if ensure_core_strategy_rule():
         print("[加權報表] 核心策略新判定已套用。")
 
+    # Dashboard 的日常更新只做固定近期區間，絕不因規則版本自動重跑全歷史。
     sDt = datetime(2024, 1, 1)
     eDt = datetime.now()
     stock_id = "TAIEX"
     print(eDt.strftime("%Y-%m-%d"))
 
-    df = export(stock_id, sDt, eDt)
+    df = export(stock_id, sDt, eDt, export_csv=export_csv)
     print(df.tail(5))
     return df
 

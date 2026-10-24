@@ -3,14 +3,14 @@
   "version": 1,
   "date_column": "日期",
   "taiex": {
-    "relation": "report.v_taiex_report",
-    "fields": ["開盤價", "最高價", "最低價", "收盤價", "成交量"],
+    "relation": "report.v_taiex_report_turnover",
+    "fields": ["開盤價", "最高價", "最低價", "收盤價", "成交金額"],
     "column_map": {
       "open": "開盤價",
       "high": "最高價",
       "low": "最低價",
       "close": "收盤價",
-      "volume": "成交量"
+      "volume": "成交金額"
     }
   },
   "futures": {

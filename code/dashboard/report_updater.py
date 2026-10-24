@@ -46,7 +46,8 @@ def _run_module(module: str) -> None:
     if module == "taiex_report":
         from main.stock_report_taiex import run_report_pipeline
 
-        run_report_pipeline()
+        # Dashboard 日常更新不再讀取並輸出整份歷史 CSV。
+        run_report_pipeline(export_csv=False)
     elif module == "taiex_kbar":
         from main.intraday_pipeline import update_taiex_kbar_1m
 

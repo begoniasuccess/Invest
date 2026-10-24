@@ -339,7 +339,11 @@ def _compute_derived(df):
     df["日振幅"] = df["最高價"] - df["最低價"]
     df["漲跌"] = df["收盤價"] - prev_close
     df["漲跌幅_pct"] = (df["收盤價"] - prev_close) / prev_close
-    df["量增率_pct"] = (df["成交量"] - df["成交量"].shift(1)) / df["成交量"].shift(1)
+    # 加權指數的「量」一律指成交金額；成交股數只保留供畫面查閱。
+    # 先轉為億元，以下所有均量、量增率、價量與最大量都使用同一尺度。
+    df["總成交金額_億"] = pd.to_numeric(df["總成交金額_億"], errors="coerce") / 1e8
+    volume_basis = df["總成交金額_億"]
+    df["量增率_pct"] = (volume_basis - volume_basis.shift(1)) / volume_basis.shift(1)
 
     base_range = df["日振幅"] / prev_close.replace(0, np.nan)
     sign = np.sign(df["收盤價"] - prev_close)
@@ -383,7 +387,7 @@ def _compute_derived(df):
     # 均量 / 均價 / 扣抵 / 乖離 / 價量
     # =========================
     for n in [5, 10, 20, 60]:
-        df[f"{n}日均量"] = df["成交量"].rolling(n).mean()
+        df[f"{n}日均量"] = volume_basis.rolling(n).mean()
         df[f"{n}MA"] = df["收盤價"].rolling(n).mean()
         # df[f"{n}日上升幅度"] = df[f"{n}MA"] - df[f"{n}MA"].shift(1)
         # df[f"{n}日扣抵值"] = df["收盤價"].shift(n - 1)
@@ -391,7 +395,7 @@ def _compute_derived(df):
         df[f"{n}日乖離"] = (df["收盤價"] - df[f"{n}MA"]) / df[f"{n}MA"].replace(0, np.nan)
 
         denom_volma = df[f"{n}日均量"].replace(0, np.nan)
-        df[f"{n}日量增率_pct"] = (df["成交量"] - df[f"{n}日均量"]) / denom_volma
+        df[f"{n}日量增率_pct"] = (volume_basis - df[f"{n}日均量"]) / denom_volma
 
         df[f"{n}日行情"] = df[f"{n}日乖離"].apply(_trend_regime)
 
@@ -417,11 +421,6 @@ def _compute_derived(df):
             df["量增率_pct"],
         )
     ]
-
-    # =========================
-    # 金額換算
-    # =========================
-    df["總成交金額_億"] = pd.to_numeric(df["總成交金額_億"], errors="coerce") / 1e8
 
     # =========================
     # 法人
@@ -495,7 +494,7 @@ def _compute_derived(df):
     # =========================
     # 最大量
     # =========================
-    vols = pd.to_numeric(df["成交量"], errors="coerce").fillna(0).to_numpy()
+    vols = pd.to_numeric(volume_basis, errors="coerce").fillna(0).to_numpy()
     dates_arr = pd.to_datetime(df["日期"]).dt.strftime("%Y-%m-%d").to_numpy()
 
     for n in [5, 10, 20, 60]:

@@ -71,7 +71,23 @@ def order_futures_report_columns(columns: list[str] | tuple[str, ...]) -> list[s
 
 def order_taiex_report_columns(columns: list[str] | tuple[str, ...]) -> list[str]:
     """顯示兩套明確核心欄位，資料庫舊欄位僅保留給既有程式相容。"""
-    ordered = [column for column in columns if column != "策略_核心"]
+    has_turnover_alias = "成交金額" in columns
+    ordered = [
+        "成交股數" if column == "成交量" else
+        "成交金額" if column == "總成交金額_億" and not has_turnover_alias else
+        column
+        for column in columns if column != "策略_核心"
+    ]
+    if "成交股數" in ordered and "成交金額" in ordered:
+        ordered.remove("成交金額")
+        ordered.insert(ordered.index("成交股數") + 1, "成交金額")
+    if "總成交金額_億" in ordered:
+        ordered.remove("總成交金額_億")
+        try:
+            insert_at = ordered.index("布林下軌") + 1
+        except ValueError:
+            insert_at = len(ordered)
+        ordered.insert(insert_at, "總成交金額_億")
     moving = [column for column in TAIEX_CORE_COLUMNS if column in ordered]
     if not moving:
         return ordered

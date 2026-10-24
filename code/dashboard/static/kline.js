@@ -324,7 +324,8 @@ function updateLegend(param) {
   const timeText = state.payload?.meta.intraday
     ? formatTaipeiTime(param.time, true)
     : String(param.time);
-  $("ohlcLegend").innerHTML = `<strong>${escapeHtml(timeText)}</strong><span>開 ${formatNumber(bar.open)}</span><span>高 ${formatNumber(bar.high)}</span><span>低 ${formatNumber(bar.low)}</span><span>收 ${formatNumber(bar.close)}</span><span class="${change >= 0 ? "quote-up" : "quote-down"}">${change >= 0 ? "+" : ""}${formatNumber(change)}（${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%）</span><span>量 ${formatNumber(volume, 0)}</span>`;
+  const volumeLabel = state.payload?.meta?.volume_label || "成交量";
+  $("ohlcLegend").innerHTML = `<strong>${escapeHtml(timeText)}</strong><span>開 ${formatNumber(bar.open)}</span><span>高 ${formatNumber(bar.high)}</span><span>低 ${formatNumber(bar.low)}</span><span>收 ${formatNumber(bar.close)}</span><span class="${change >= 0 ? "quote-up" : "quote-down"}">${change >= 0 ? "+" : ""}${formatNumber(change)}（${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%）</span><span>${escapeHtml(volumeLabel)} ${formatNumber(volume, volumeLabel.includes("億元") ? 2 : 0)}</span>`;
   const { layout } = currentLayout();
   $("maLegend").innerHTML = layout.mas.filter(ma => ma.visible && state.maSeries.has(ma.period)).map(ma => {
     const series = state.maSeries.get(ma.period);

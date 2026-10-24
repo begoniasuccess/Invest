@@ -14,7 +14,7 @@
   ],
   "database_sources": {
     "加權": {
-      "relation": "report.v_taiex_report",
+      "relation": "report.v_taiex_report_turnover",
       "fields": [
         "漲跌幅_pct", "實體_昨收_pct", "實體_開盤_pct", "日振幅_昨收_pct", "日振福_開盤_pct",
         "量增率_pct", "5日量增率_pct", "10日量增率_pct", "20日量增率_pct", "60日量增率_pct",

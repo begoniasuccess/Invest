@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
 const SETTINGS_KEY = "investDashboard.rawData.v1";
+const COLUMN_LAYOUT_VERSIONS = { taiex: "2026-10-23-turnover-after-lower-band" };
 const state = { payload: null, offset: 0, allColumns: [], visibleColumns: [], sortColumn: "", sortDirection: "desc", searchColumn: "", searchText: "", pollTimer: null, expanded: false, boundsReport: null, columnsReport: null, tableReport: null, requestId: 0 };
 
 function escapeHtml(value) {
@@ -24,9 +25,15 @@ function saveSettings() {
     $("updateFuturesReport").checked ? "futures_report" : "",
   ].filter(Boolean);
   saved.columns = saved.columns || {};
+  saved.columnSchemas = saved.columnSchemas || {};
+  saved.columnLayoutVersions = saved.columnLayoutVersions || {};
   // 切換報表時 allColumns 會先清空；此時不可用空陣列覆蓋另一張報表
   // 已保存的欄位配置。只有資料已載入後才寫入欄位設定。
-  if (state.allColumns.length && state.columnsReport) saved.columns[state.columnsReport] = [...state.visibleColumns];
+  if (state.allColumns.length && state.columnsReport) {
+    saved.columns[state.columnsReport] = [...state.visibleColumns];
+    saved.columnSchemas[state.columnsReport] = [...state.allColumns];
+    if (COLUMN_LAYOUT_VERSIONS[state.columnsReport]) saved.columnLayoutVersions[state.columnsReport] = COLUMN_LAYOUT_VERSIONS[state.columnsReport];
+  }
   saved.tables ||= {};
   saved.tables[state.tableReport || saved.report] = {
     sortColumn: state.sortColumn,
@@ -133,13 +140,32 @@ function normalizeCell(value) {
 
 function restoreVisibleColumns(columns, report) {
   state.columnsReport = report;
-  const saved = readSettings().columns?.[report];
+  const settings = readSettings();
+  const saved = settings.columns?.[report];
+  const previousSchema = settings.columnSchemas?.[report];
   // 有保存過（包含使用者明確「全部取消」的空陣列）就尊重保存值；
   // 只有從未保存過這張報表時，才預設顯示全部欄位。
   state.visibleColumns = Array.isArray(saved)
     ? [...new Set(saved.filter(column => columns.includes(column)))]
     : [...columns];
   if (Array.isArray(saved) && saved.length && !state.visibleColumns.length) state.visibleColumns = [...columns];
+  // 欄位位置規則改版時，只校正一次既有快取的順序；顯示／隱藏選擇仍保留。
+  if (Array.isArray(saved) && COLUMN_LAYOUT_VERSIONS[report]
+      && settings.columnLayoutVersions?.[report] !== COLUMN_LAYOUT_VERSIONS[report]) {
+    const visible = new Set(state.visibleColumns);
+    state.visibleColumns = columns.filter(column => visible.has(column));
+  }
+  // 舊設定並不知道新加入的欄位；只在 schema 第一次變更時補進顯示清單。
+  // 保存新 schema 後，使用者再次手動隱藏欄位仍會被尊重。
+  const newlyAdded = Array.isArray(previousSchema)
+    ? columns.filter(column => !previousSchema.includes(column))
+    : columns.filter(column => column === "總成交金額_億" && !state.visibleColumns.includes(column));
+  for (const column of newlyAdded) {
+    if (state.visibleColumns.includes(column)) continue;
+    const anchor = column === "總成交金額_億" ? state.visibleColumns.indexOf("布林下軌") : -1;
+    if (anchor >= 0) state.visibleColumns.splice(anchor + 1, 0, column);
+    else state.visibleColumns.push(column);
+  }
 }
 
 function renderTable() {

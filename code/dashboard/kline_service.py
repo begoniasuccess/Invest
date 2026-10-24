@@ -31,7 +31,7 @@ def _daily_bounds_sql(market_key: str) -> str:
 def _daily_sql(market_key: str) -> str:
     if market_key == "taiex":
         return '''SELECT date AS 日期, open AS 開盤, max AS 最高, min AS 最低,
-                  close AS 收盤, "Trading_Volume" AS 成交量 FROM fm_taiwan_stock_daily
+                  close AS 收盤, "Trading_money" / 100000000.0 AS 成交量 FROM fm_taiwan_stock_daily
                   WHERE stock_id = 'TAIEX' AND date <= ? ORDER BY date'''
     if market_key == "tx_day":
         return '''SELECT 日期, 日盤開 AS 開盤, 日盤高 AS 最高, 日盤低 AS 最低,
@@ -189,6 +189,7 @@ def load_kline_data(market: str, interval: str, start_date: str, end_date: str) 
         "market_key": market, "market_name": MARKETS[market],
         "interval_key": interval, "interval_name": KLINE_INTERVALS[interval],
         "intraday": intraday,
+        "volume_label": "成交金額（億元）" if market == "taiex" and not intraday else "成交量",
         "source_min_date": source_min.strftime("%Y-%m-%d"), "source_max_date": source_max.strftime("%Y-%m-%d"),
         "display_start_date": start.strftime("%Y-%m-%dT%H:%M" if intraday else "%Y-%m-%d"), "display_end_date": end.strftime("%Y-%m-%dT%H:%M" if intraday else "%Y-%m-%d"),
     }

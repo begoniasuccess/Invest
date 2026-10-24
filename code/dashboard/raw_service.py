@@ -15,7 +15,8 @@ class RawReportConfig:
 
 
 RAW_REPORTS = {
-    "taiex": RawReportConfig("加權指數報表", "v_taiex_report"),
+    # 讀有日期索引的實體快取，避免每次載入／翻頁都重跑多層策略 View。
+    "taiex": RawReportConfig("加權指數報表", "taiex_report_dashboard_cache_v2"),
     # 直接讀有索引的實體結果快取，避免每次載入重跑 corrected View 的
     # 全歷史 LAG 視窗與策略函式。快取由期貨報表更新流程同步。
     "futures": RawReportConfig("台指期報表", "v_futures_dashboard_turning"),
@@ -53,6 +54,10 @@ def load_raw_report(
     from common import db
 
     config = get_report_config(report)
+    if report == "taiex":
+        from module.taiex_report_cache import taiex_dashboard_cache_available
+        if not taiex_dashboard_cache_available():
+            raise ValueError("加權報表快取尚未初始化；請先按一次「期貨報表更新」並勾選加權報表。")
     if report == "futures" and db.query_single_value("SELECT to_regclass('report.v_futures_dashboard_turning')") is None:
         from module.futures_turning import ensure_turning_views
         ensure_turning_views()
@@ -134,6 +139,10 @@ def export_raw_report(
     from common import db
 
     config = get_report_config(report)
+    if report == "taiex":
+        from module.taiex_report_cache import taiex_dashboard_cache_available
+        if not taiex_dashboard_cache_available():
+            raise ValueError("加權報表快取尚未初始化；請先按一次「期貨報表更新」並勾選加權報表。")
     if report == "futures" and db.query_single_value("SELECT to_regclass('report.v_futures_dashboard_turning')") is None:
         from module.futures_turning import ensure_turning_views
         ensure_turning_views()

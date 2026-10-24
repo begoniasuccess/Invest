@@ -3,14 +3,14 @@
   "version": 3,
   "date_column": "日期",
   "taiex": {
-    "relation": "report.v_taiex_report",
+    "relation": "report.v_taiex_report_turnover",
     "fields": [
-      "開盤價", "最高價", "最低價", "收盤價", "成交量", "跳空缺口",
+      "開盤價", "最高價", "最低價", "收盤價", "成交金額", "跳空缺口",
       "5MA", "10MA", "20MA", "60MA", "布林上軌", "布林下軌"
     ],
     "column_map": {
       "open": "開盤價", "high": "最高價", "low": "最低價",
-      "close": "收盤價", "volume": "成交量"
+      "close": "收盤價", "volume": "成交金額"
     },
     "dynamic_fields": [
       {"field": "5MA", "kind": "5MA", "deviation_ratios": [-0.02, 0.02]},

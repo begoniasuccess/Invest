@@ -116,9 +116,9 @@ def score_taiex_key_dates(history: pd.DataFrame, config: dict[str, Any]) -> pd.D
         return history.assign(關鍵K分數=[], 關鍵K原因=[])
     settings = config["taiex"]
     frame = history.copy().reset_index(drop=True)
-    for column in ("成交量", "20日均量", "實體_pct", "日振幅_昨收_pct", "跳空缺口_昨收_pct", "最高價", "最低價"):
+    for column in ("成交金額", "20日均量", "實體_pct", "日振幅_昨收_pct", "跳空缺口_昨收_pct", "最高價", "最低價"):
         frame[column] = pd.to_numeric(frame[column], errors="coerce")
-    volume_ratio = frame["成交量"] / frame["20日均量"].replace(0, np.nan)
+    volume_ratio = frame["成交金額"] / frame["20日均量"].replace(0, np.nan)
     body = frame["實體_pct"].abs().fillna(0)
     amplitude = frame["日振幅_昨收_pct"].abs().fillna(0)
     gap = frame["跳空缺口_昨收_pct"].abs().fillna(0)
