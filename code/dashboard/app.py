@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from dashboard.config import DEFAULT_START_DATE, INDICATORS, MARKETS
 from dashboard.cycle_service import CYCLE_TYPES, build_cycle_statistics
 from dashboard.data_service import TAIL_MERGE_THRESHOLD_PCT, build_distribution, filter_period, load_market_snapshot
-from dashboard.kline_service import KLINE_INTERVALS, load_kline_data, load_preset_levels
+from dashboard.kline_service import KLINE_INTERVALS, US_KLINE_INTERVALS, US_MARKETS, load_kline_data, load_preset_levels, load_us_kline_data, load_us_quick_view_data
 from dashboard.yu_level_chart_service import load_yu_chart_date_bounds, load_yu_chart_levels
 from dashboard.night_bucket_service import (
     DEFAULT_END_DATE as NIGHT_BUCKET_END_DATE,
@@ -36,8 +36,8 @@ from dashboard.next_day_session_service import (
     NIGHT_TREND_ORDER as NEXT_DAY_TREND_ORDER,
     build_payload as build_next_day_session_payload,
 )
-from dashboard.raw_service import PAGE_SIZES, RAW_REPORTS, export_raw_report, load_raw_report
-from dashboard.report_updater import get_report_update_status, start_report_update
+from dashboard.raw_service import PAGE_SIZES, RAW_REPORTS, TAIWAN_RAW_REPORTS, US_RAW_REPORTS, export_raw_report, load_raw_report
+from dashboard.report_updater import get_report_update_status, get_update_catalog, start_report_update
 from dashboard.updater import update_price_data
 
 
@@ -56,6 +56,7 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 class ReportUpdateRequest(BaseModel):
     modules: list[str] = Field(default_factory=lambda: ["taiex_report", "futures_report"])
+    force: bool = False
 
 
 def _validate_options(market: str, indicator: str) -> None:
@@ -177,7 +178,38 @@ async def raw_data_page(request: Request):
         request=request,
         name="raw_data.html",
         context={
-            "reports": RAW_REPORTS,
+            "reports": TAIWAN_RAW_REPORTS,
+            "page_sizes": PAGE_SIZES,
+            "default_end_date": datetime.now().strftime("%Y-%m-%d"),
+        },
+    )
+
+
+
+
+@app.get("/us/quick-view", response_class=HTMLResponse)
+async def us_quick_view_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="us_quick_view.html",
+        context={
+            "markets": [
+                {"key": key, "name": name, "symbol": symbol}
+                for key, (name, symbol) in US_MARKETS.items()
+            ],
+            "intervals": US_KLINE_INTERVALS,
+            "default_start_date": (pd.Timestamp.now().normalize() - pd.DateOffset(years=1)).strftime("%Y-%m-%d"),
+            "default_end_date": datetime.now().strftime("%Y-%m-%d"),
+        },
+    )
+
+@app.get("/us/raw-data", response_class=HTMLResponse)
+async def us_raw_data_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="us_raw_data.html",
+        context={
+            "reports": US_RAW_REPORTS,
             "page_sizes": PAGE_SIZES,
             "default_end_date": datetime.now().strftime("%Y-%m-%d"),
         },
@@ -192,6 +224,20 @@ async def kline_page(request: Request):
         context={
             "markets": MARKETS,
             "intervals": KLINE_INTERVALS,
+            "default_start_date": DEFAULT_START_DATE,
+            "default_end_date": datetime.now().strftime("%Y-%m-%d"),
+        },
+    )
+
+
+@app.get("/us/kline", response_class=HTMLResponse)
+async def us_kline_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="us_kline.html",
+        context={
+            "markets": {key: value[0] for key, value in US_MARKETS.items()},
+            "intervals": US_KLINE_INTERVALS,
             "default_start_date": DEFAULT_START_DATE,
             "default_end_date": datetime.now().strftime("%Y-%m-%d"),
         },
@@ -345,6 +391,70 @@ async def kline_data(
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
+
+
+@app.get("/api/us/quick-view")
+async def us_quick_view_data(
+    interval: str = Query("day"),
+    start_date: str | None = Query(None),
+    end_date: str | None = Query(None),
+    force: bool = Query(False),
+):
+    try:
+        end_date = end_date or datetime.now().strftime("%Y-%m-%d")
+        start_date = start_date or (pd.Timestamp(end_date) - pd.DateOffset(years=1)).strftime("%Y-%m-%d")
+        datasets = await run_in_threadpool(load_us_quick_view_data, interval, start_date, end_date, force)
+        charts = {}
+        for market_key, (frame, metadata) in datasets.items():
+            bars = [{
+                "time": pd.Timestamp(record["日期"]).strftime("%Y-%m-%d"),
+                "open": float(record["開盤"]),
+                "high": float(record["最高"]),
+                "low": float(record["最低"]),
+                "close": float(record["收盤"]),
+                "volume": float(record["成交量"]),
+            } for record in frame.to_dict(orient="records")]
+            charts[market_key] = {"meta": metadata, "bars": bars}
+        return JSONResponse({
+            "interval": interval,
+            "interval_name": US_KLINE_INTERVALS[interval],
+            "start_date": start_date,
+            "end_date": end_date,
+            "charts": charts,
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+@app.get("/api/us/kline")
+async def us_kline_data(
+    market: str = Query("us_ixic"),
+    interval: str = Query("day"),
+    start_date: str = Query(DEFAULT_START_DATE),
+    end_date: str | None = Query(None),
+):
+    try:
+        end_date = end_date or datetime.now().strftime("%Y-%m-%d")
+        frame, metadata = await run_in_threadpool(
+            load_us_kline_data, market, interval, start_date, end_date
+        )
+        rows = [{
+            "time": pd.Timestamp(record["日期"]).strftime("%Y-%m-%d"),
+            "open": float(record["開盤"]),
+            "high": float(record["最高"]),
+            "low": float(record["最低"]),
+            "close": float(record["收盤"]),
+            "volume": float(record["成交量"]),
+        } for record in frame.to_dict(orient="records")]
+        return JSONResponse({"meta": metadata, "bars": rows})
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
 @app.get("/api/kline/preset-levels")
 async def kline_preset_levels(date: str, start_date: str, end_date: str):
     try:
@@ -405,7 +515,10 @@ async def raw_data(
 @app.post("/api/report-update")
 async def begin_report_update(request: ReportUpdateRequest | None = None):
     try:
-        return start_report_update(request.modules if request else None)
+        return start_report_update(
+            request.modules if request else None,
+            force=request.force if request else False,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -413,6 +526,14 @@ async def begin_report_update(request: ReportUpdateRequest | None = None):
 @app.get("/api/report-update/status")
 async def report_update_status():
     return get_report_update_status()
+
+
+@app.get("/api/report-update/catalog")
+async def report_update_catalog():
+    try:
+        return await run_in_threadpool(get_update_catalog)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.get("/api/raw-data/export.csv")

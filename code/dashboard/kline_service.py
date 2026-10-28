@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections import OrderedDict
+from time import monotonic
+
 import pandas as pd
 
 from dashboard.config import MARKETS
@@ -232,3 +235,194 @@ def load_preset_levels(selected_date: str, start_date: str, end_date: str) -> di
                            name=f'{selected.month}/{selected.day}{short}', color=color,
                            width=width, style=0, visible=True))
     return dict(date=selected.strftime('%Y-%m-%d'), levels=levels, missing=missing)
+
+
+US_MARKETS = {
+    "us_ixic": ("NASDAQ", "^IXIC"),
+    "us_sox": ("費城半導體", "^SOX"),
+    "us_dji": ("道瓊", "^DJI"),
+    "us_gspc": ("S&P 500", "^GSPC"),
+    "us_vix": ("VIX", "^VIX"),
+    "us_tsm": ("TSM ADR", "TSM"),
+}
+US_KLINE_INTERVALS = {key: KLINE_INTERVALS[key] for key in ("day", "week", "month", "year")}
+
+
+US_QUICK_VIEW_CACHE_TTL_SECONDS = 300
+US_QUICK_VIEW_CACHE_MAX_ENTRIES = 24
+_US_QUICK_VIEW_CACHE: OrderedDict[tuple[str, str, str], tuple[float, dict[str, tuple[pd.DataFrame, dict]]]] = OrderedDict()
+
+
+def _copy_us_quick_payload(payload: dict[str, tuple[pd.DataFrame, dict]]) -> dict[str, tuple[pd.DataFrame, dict]]:
+    return {key: (frame.copy(), dict(meta)) for key, (frame, meta) in payload.items()}
+
+
+def _get_us_quick_cache(key: tuple[str, str, str]) -> dict[str, tuple[pd.DataFrame, dict]] | None:
+    cached = _US_QUICK_VIEW_CACHE.get(key)
+    if cached is None:
+        return None
+    created_at, payload = cached
+    if monotonic() - created_at > US_QUICK_VIEW_CACHE_TTL_SECONDS:
+        _US_QUICK_VIEW_CACHE.pop(key, None)
+        return None
+    _US_QUICK_VIEW_CACHE.move_to_end(key)
+    return _copy_us_quick_payload(payload)
+
+
+def _set_us_quick_cache(key: tuple[str, str, str], payload: dict[str, tuple[pd.DataFrame, dict]]) -> None:
+    _US_QUICK_VIEW_CACHE[key] = (monotonic(), _copy_us_quick_payload(payload))
+    _US_QUICK_VIEW_CACHE.move_to_end(key)
+    while len(_US_QUICK_VIEW_CACHE) > US_QUICK_VIEW_CACHE_MAX_ENTRIES:
+        _US_QUICK_VIEW_CACHE.popitem(last=False)
+
+
+def load_us_quick_view_data(
+    interval: str,
+    start_date: str,
+    end_date: str,
+    force_refresh: bool = False,
+) -> dict[str, tuple[pd.DataFrame, dict]]:
+    """一次讀取六個美股標的，供快速閱覽頁使用。
+
+    快取以 (尺度, 開始日期, 結束日期) 分開保存；日、週、月、年不共用資料。
+    重新整理時可 force_refresh=True 強制略過快取。這個頁面只讀本機 PostgreSQL，
+    不呼叫 FinMind。
+    """
+    if interval not in US_KLINE_INTERVALS:
+        raise ValueError("不支援的美股 K 線週期")
+
+    start = pd.Timestamp(start_date).normalize()
+    end = pd.Timestamp(end_date).normalize()
+    if pd.isna(start) or pd.isna(end):
+        raise ValueError("日期格式錯誤")
+    if start > end:
+        raise ValueError("開始日期不可晚於結束日期")
+
+    cache_key = (interval, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+    if not force_refresh:
+        cached = _get_us_quick_cache(cache_key)
+        if cached is not None:
+            return cached
+
+    # 聚合週／月／年 K 時，往前帶入該週期起點，避免第一根 K 棒被切成殘缺週期。
+    if interval == "week":
+        query_start = start - pd.Timedelta(days=6)
+    elif interval == "month":
+        query_start = start.replace(day=1)
+    elif interval == "year":
+        query_start = start.replace(month=1, day=1)
+    else:
+        query_start = start
+
+    from common import db
+
+    symbols = [symbol for _, symbol in US_MARKETS.values()]
+    placeholders = ", ".join("?" for _ in symbols)
+    valid_ohlc = (
+        "open > 0 AND high > 0 AND low > 0 AND close > 0 "
+        "AND high >= GREATEST(open, close, low) AND low <= LEAST(open, close, high)"
+    )
+    raw = db.query_to_df(
+        f"""SELECT stock_id, date AS 日期, open AS 開盤, high AS 最高, low AS 最低,
+                   close AS 收盤, COALESCE(volume, 0) AS 成交量
+            FROM fm_us_stock_daily
+            WHERE stock_id IN ({placeholders})
+              AND date BETWEEN ? AND ?
+              AND {valid_ohlc}
+            ORDER BY stock_id, date""",
+        tuple(symbols) + (query_start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")),
+    )
+    if raw.empty:
+        raise ValueError("所選期間沒有可用的美股 K 線資料")
+
+    result: dict[str, tuple[pd.DataFrame, dict]] = {}
+    for market_key, (market_name, symbol) in US_MARKETS.items():
+        market_raw = raw.loc[raw["stock_id"].eq(symbol), ["日期", "開盤", "最高", "最低", "收盤", "成交量"]].copy()
+        if market_raw.empty:
+            continue
+        bars = prepare_kline_frame(market_raw, interval)
+        bars = bars[(bars["日期"] >= start) & (bars["日期"] <= end)].reset_index(drop=True)
+        if bars.empty:
+            continue
+        latest = bars.iloc[-1]
+        previous_close = float(bars.iloc[-2]["收盤"]) if len(bars) >= 2 else None
+        latest_close = float(latest["收盤"])
+        change = latest_close - previous_close if previous_close not in (None, 0) else None
+        change_pct = change / previous_close * 100 if change is not None and previous_close else None
+        result[market_key] = (
+            bars,
+            {
+                "market_key": market_key,
+                "market_name": market_name,
+                "symbol": symbol,
+                "interval_key": interval,
+                "interval_name": US_KLINE_INTERVALS[interval],
+                "latest_date": pd.Timestamp(latest["日期"]).strftime("%Y-%m-%d"),
+                "latest_close": latest_close,
+                "change": change,
+                "change_pct": change_pct,
+                "bar_count": int(len(bars)),
+                "display_start_date": start.strftime("%Y-%m-%d"),
+                "display_end_date": end.strftime("%Y-%m-%d"),
+            },
+        )
+    if not result:
+        raise ValueError("所選期間沒有可用的美股 K 線資料")
+
+    _set_us_quick_cache(cache_key, result)
+    return _copy_us_quick_payload(result)
+
+
+def load_us_kline_data(market: str, interval: str, start_date: str, end_date: str) -> tuple[pd.DataFrame, dict]:
+    # raw_finmind 保留供應商原值；圖表層排除不合法 OHLC，避免單筆異常拉壞價格軸。
+    if market not in US_MARKETS or interval not in US_KLINE_INTERVALS:
+        raise ValueError("不支援的美股標的或 K 線週期")
+    start, end = pd.Timestamp(start_date).normalize(), pd.Timestamp(end_date).normalize()
+    if pd.isna(start) or pd.isna(end) or start > end:
+        raise ValueError("開始日期不可晚於結束日期")
+
+    from common import db
+
+    market_name, symbol = US_MARKETS[market]
+    valid_ohlc = "open > 0 AND high > 0 AND low > 0 AND close > 0 AND high >= GREATEST(open, close, low) AND low <= LEAST(open, close, high)"
+    bounds = db.query_to_df(
+        f"SELECT MIN(date) AS min_date, MAX(date) AS max_date FROM fm_us_stock_daily WHERE stock_id = ? AND {valid_ohlc}",
+        (symbol,),
+    )
+    if bounds.empty or pd.isna(bounds.iloc[0]["min_date"]) or pd.isna(bounds.iloc[0]["max_date"]):
+        raise ValueError("所選美股目前沒有可用的 K 線資料")
+    source_min = pd.Timestamp(bounds.iloc[0]["min_date"]).normalize()
+    source_max = pd.Timestamp(bounds.iloc[0]["max_date"]).normalize()
+    start, end = max(start, source_min), min(end, source_max)
+    if start > end:
+        raise ValueError("所選期間沒有 K 線資料")
+
+    raw = db.query_to_df(
+        f"""SELECT date AS 日期, open AS 開盤, high AS 最高, low AS 最低,
+                   close AS 收盤, COALESCE(volume, 0) AS 成交量
+            FROM fm_us_stock_daily
+            WHERE stock_id = ? AND date <= ? AND {valid_ohlc}
+            ORDER BY date""",
+        (symbol, end.strftime("%Y-%m-%d")),
+    )
+    bars = prepare_kline_frame(raw, interval)
+    first = bars.index[bars["日期"] >= start]
+    if not len(first):
+        raise ValueError("所選期間沒有 K 線資料")
+    first_position = int(first[0])
+    output = bars.iloc[max(0, first_position - MAX_MA_PERIOD):]
+    output = output[output["日期"] <= end].reset_index(drop=True)
+    return output, {
+        "market_key": market,
+        "market_name": market_name,
+        "symbol": symbol,
+        "interval_key": interval,
+        "interval_name": US_KLINE_INTERVALS[interval],
+        "intraday": False,
+        "volume_label": "成交量",
+        "price_precision": 2,
+        "source_min_date": source_min.strftime("%Y-%m-%d"),
+        "source_max_date": source_max.strftime("%Y-%m-%d"),
+        "display_start_date": start.strftime("%Y-%m-%d"),
+        "display_end_date": end.strftime("%Y-%m-%d"),
+    }

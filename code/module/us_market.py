@@ -242,6 +242,61 @@ def upsert_us_stock_daily(df: pd.DataFrame) -> int:
     return len(rows)
 
 
+
+def update_us_stock_daily_incremental(
+    stock_ids: Sequence[str],
+    end_date: str | date | datetime | None = None,
+    *,
+    lookback_days: int = 7,
+    floor_date: str | date | datetime = "2000-01-01",
+) -> dict[str, dict]:
+    """Dashboard 日常用的美股日資料增量更新。
+
+    每個代碼只從資料庫最新日期往前少量回看，避免每次從歷史起點重抓；
+    多個代碼共用同一個 requests.Session，且不輸出 CSV。
+    """
+    from common import db
+
+    end = _as_date(end_date or date.today())
+    floor = _as_date(floor_date)
+    lookback = max(1, int(lookback_days))
+    results: dict[str, dict] = {}
+
+    with requests.Session() as sess:
+        for stock_id in stock_ids:
+            sid = str(stock_id).strip()
+            latest = db.query_single_value(
+                f"SELECT MAX(date) FROM {TARGET_TABLE} WHERE stock_id = ?",
+                (sid,),
+            )
+            if latest is None:
+                start = floor
+            else:
+                latest_date = pd.Timestamp(latest).date()
+                start = max(floor, latest_date - timedelta(days=lookback))
+            if start > end:
+                start = end
+
+            print(f"[美股日資料] {sid} 增量更新：{start}～{end}")
+            frame = fetch_us_stock_daily(
+                sid,
+                start,
+                end,
+                chunk_years=1,
+                session=sess,
+            )
+            written = upsert_us_stock_daily(frame) if not frame.empty else 0
+            results[sid] = {
+                "stock_id": sid,
+                "requested_start": start.isoformat(),
+                "requested_end": end.isoformat(),
+                "rows": int(len(frame)),
+                "written_rows": int(written),
+                "first_date": None if frame.empty else frame["date"].min().isoformat(),
+                "last_date": None if frame.empty else frame["date"].max().isoformat(),
+            }
+    return results
+
 def export_us_stock_daily_csv(
     df: pd.DataFrame,
     output_dir: str | Path = DEFAULT_EXPORT_DIR,

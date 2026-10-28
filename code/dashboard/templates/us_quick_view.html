@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invest Dashboard｜美股快速閱覽</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}?v=20260815-1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20261027-us-quick-v2" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20261027-nav-groups-v2"></script>
+</head>
+<body data-page="us-quick-view">
+  <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="開啟選單"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
+  <div class="app-layout">
+    <aside id="appSidebar" class="sidebar flex-column">
+      <div class="brand"><a class="brand-home" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span class="brand-text">Yu Invest</span></a><button id="sidebarCollapseBtn" class="sidebar-collapse-btn" type="button" aria-label="收合側欄"><i class="bi bi-layout-sidebar-inset"></i></button></div>
+      <div class="sidebar-label">台股</div>
+      <nav id="sidebarNav" class="sidebar-nav"></nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-foot"><span class="status-dot"></span>本機資料庫</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <main class="main-content us-quick-page">
+      <header class="topbar">
+        <div><div class="eyebrow">US MARKET QUICK VIEW</div><h1>美股快速閱覽</h1><p>同步比較多個美股標的；尺度、日期區間與顯示設定會套用到頁面上的所有圖表。</p></div>
+        <div class="topbar-actions"><span id="sourceBadge" class="source-badge"><i class="bi bi-database-check"></i> 本機 PostgreSQL</span></div>
+      </header>
+
+      <section class="panel-card us-quick-controls">
+        <div class="us-quick-control-main">
+          <div class="us-quick-primary-controls">
+            <div>
+              <div class="filter-section-title mb-2"><i class="bi bi-clock-history"></i>全部圖表顯示尺度</div>
+              <div id="intervalTabs" class="us-quick-interval-tabs" role="group" aria-label="美股快速閱覽 K 線尺度">
+                {% for key, name in intervals.items() %}
+                <button type="button" class="us-quick-interval-btn{% if key == 'day' %} active{% endif %}" data-interval="{{ key }}">{{ name }}</button>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="us-quick-date-filter">
+              <div class="filter-section-title mb-2"><i class="bi bi-calendar-range"></i>全部圖表日期區間</div>
+              <div class="us-quick-date-row">
+                <label><span>開始</span><input id="quickStartDate" class="form-control form-control-sm" type="date" value="{{ default_start_date }}"></label>
+                <span class="us-quick-date-separator">～</span>
+                <label><span>結束</span><input id="quickEndDate" class="form-control form-control-sm" type="date" value="{{ default_end_date }}"></label>
+                <button id="applyQuickDates" class="btn btn-outline-primary btn-sm" type="button"><i class="bi bi-funnel me-1"></i>套用</button>
+              </div>
+            </div>
+          </div>
+          <div class="us-quick-control-actions">
+            <span id="selectionSummary" class="us-quick-selection-summary">顯示 6 / 6</span>
+            <button id="marketSettingsToggle" class="btn btn-outline-secondary" type="button" aria-expanded="false" aria-controls="marketSettingsPanel"><i class="bi bi-sliders me-2"></i>顯示設定</button>
+            <button id="refreshQuickBtn" class="btn btn-dark" type="button"><i class="bi bi-arrow-clockwise me-2"></i>重新整理</button>
+          </div>
+        </div>
+        <div id="marketSettingsPanel" class="us-quick-market-settings" hidden>
+          <div class="us-quick-settings-toolbar">
+            <div>
+              <strong>版面與圖表設定</strong>
+              <small>設定會保存在這台瀏覽器；圖表順序可用箭頭調整，也可直接拖曳圖卡。</small>
+            </div>
+            <div class="us-quick-columns-setting">
+              <span>每列最多</span>
+              <div id="columnButtons" class="us-quick-column-buttons" role="group" aria-label="每列最多顯示圖表數">
+                <button type="button" data-columns="1">1</button>
+                <button type="button" data-columns="2">2</button>
+                <button type="button" data-columns="3">3</button>
+              </div>
+            </div>
+          </div>
+          <div class="us-quick-market-settings-head">
+            <div><strong>要顯示的圖表與順序</strong><small>上下移動會同步改變快速閱覽頁面的圖表順序。</small></div>
+            <div class="us-quick-market-actions"><button id="selectAllMarkets" type="button">全選</button><button id="clearAllMarkets" type="button">全取消</button></div>
+          </div>
+          <div id="marketOptionsGrid" class="us-quick-market-grid">
+            {% for market in markets %}
+            <div class="us-quick-market-option-wrap" data-market-option="{{ market.key }}">
+              <label class="us-quick-market-option">
+                <input class="form-check-input us-quick-market-check" type="checkbox" value="{{ market.key }}" checked>
+                <span><strong>{{ market.name }}</strong><small>{{ market.symbol }}</small></span>
+              </label>
+              <div class="us-quick-market-order-controls" aria-label="調整 {{ market.name }} 顯示順序">
+                <button type="button" data-order-move="up" data-market="{{ market.key }}" title="向前移動"><i class="bi bi-chevron-up"></i></button>
+                <button type="button" data-order-move="down" data-market="{{ market.key }}" title="向後移動"><i class="bi bi-chevron-down"></i></button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <div id="alertBox" class="alert app-alert d-none" role="alert"></div>
+      <div id="quickEmptyState" class="panel-card us-quick-empty d-none"><i class="bi bi-eye-slash"></i><strong>目前沒有選擇任何圖表</strong><span>請打開「顯示設定」勾選至少一個美股標的。</span></div>
+      <section id="quickGrid" class="us-quick-grid" data-columns="3" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <script>
+    window.US_QUICK_MARKETS = {{ markets | tojson }};
+    window.US_QUICK_DEFAULT_START_DATE = {{ default_start_date | tojson }};
+    window.US_QUICK_DEFAULT_END_DATE = {{ default_end_date | tojson }};
+  </script>
+  <script src="{{ url_for('static', path='/us_quick_view.js') }}?v=20261027-us-quick-v2"></script>
+</body>
+</html>

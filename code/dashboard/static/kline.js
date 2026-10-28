@@ -802,7 +802,7 @@ new ResizeObserver(() => {
   const saved = readStorage(); saved.chartHeight = height; writeStorage(saved);
   state.levelLabels?.schedule();
 }).observe(chartFrame);
-setSettingsCollapsed(Boolean(readStorage().settingsCollapsed), false); loadChart(); pollKbarUpdateStatus();
+setSettingsCollapsed(Boolean(readStorage().settingsCollapsed), false); loadChart();
 
 function updatePresetControls() {
   const enabled = $('market').value === 'tx_full' && $('interval').value === 'day';

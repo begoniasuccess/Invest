@@ -363,4 +363,4 @@ $("updateFuturesReport").addEventListener("change", saveSettings);
 $("updateReportBtn").addEventListener("click", startUpdate);
 document.addEventListener("keydown", event => { if (event.key === "Escape" && state.expanded) toggleExpanded(); });
 
-const restoredSettings = restoreSettings(); restoreTableSettings($("reportType").value); bootstrapSavedYears(restoredSettings); togglePeriodMode(); loadRawData(true); pollUpdateStatus();
+const restoredSettings = restoreSettings(); restoreTableSettings($("reportType").value); bootstrapSavedYears(restoredSettings); togglePeriodMode(); loadRawData(true);

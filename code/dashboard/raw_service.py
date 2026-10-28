@@ -12,15 +12,28 @@ class RawReportConfig:
     name: str
     view: str
     date_column: str = "日期"
+    where_sql: str = ""
+    where_params: tuple = ()
 
 
-RAW_REPORTS = {
+TAIWAN_RAW_REPORTS = {
     # 讀有日期索引的實體快取，避免每次載入／翻頁都重跑多層策略 View。
     "taiex": RawReportConfig("加權指數報表", "taiex_report_dashboard_cache_v2"),
     # 直接讀有索引的實體結果快取，避免每次載入重跑 corrected View 的
     # 全歷史 LAG 視窗與策略函式。快取由期貨報表更新流程同步。
     "futures": RawReportConfig("台指期報表", "v_futures_dashboard_turning"),
 }
+
+US_RAW_REPORTS = {
+    "us_ixic": RawReportConfig("NASDAQ 原始資料", "fm_us_stock_daily", "date", "stock_id = ?", ("^IXIC",)),
+    "us_sox": RawReportConfig("費城半導體原始資料", "fm_us_stock_daily", "date", "stock_id = ?", ("^SOX",)),
+    "us_dji": RawReportConfig("道瓊原始資料", "fm_us_stock_daily", "date", "stock_id = ?", ("^DJI",)),
+    "us_gspc": RawReportConfig("S&P 500 原始資料", "fm_us_stock_daily", "date", "stock_id = ?", ("^GSPC",)),
+    "us_vix": RawReportConfig("VIX 原始資料", "fm_us_stock_daily", "date", "stock_id = ?", ("^VIX",)),
+    "us_tsm": RawReportConfig("TSM ADR 原始資料", "fm_us_stock_daily", "date", "stock_id = ?", ("TSM",)),
+}
+
+RAW_REPORTS = {**TAIWAN_RAW_REPORTS, **US_RAW_REPORTS}
 
 PAGE_SIZES = (10, 30, 60, 120, 240)
 
@@ -84,9 +97,11 @@ def load_raw_report(
     if search_text and search_column not in columns:
         raise ValueError("找不到指定的搜尋欄位")
 
+    source_where = f"WHERE {config.where_sql}" if config.where_sql else ""
     bounds = db.query_to_df(
         f'SELECT MIN("{config.date_column}") AS min_date, MAX("{config.date_column}") AS max_date '
-        f'FROM "{config.view}"'
+        f'FROM "{config.view}" {source_where}',
+        config.where_params,
     )
     min_date = pd.Timestamp(bounds.iloc[0]["min_date"]).strftime("%Y-%m-%d")
     max_date = pd.Timestamp(bounds.iloc[0]["max_date"]).strftime("%Y-%m-%d")
@@ -95,8 +110,13 @@ def load_raw_report(
     if pd.Timestamp(start_date) > pd.Timestamp(end_date):
         raise ValueError("開始日期不可晚於結束日期")
 
-    conditions = [f'"{config.date_column}" BETWEEN ? AND ?']
-    params: list = [start_date, end_date]
+    conditions = []
+    params: list = []
+    if config.where_sql:
+        conditions.append(config.where_sql)
+        params.extend(config.where_params)
+    conditions.append(f'"{config.date_column}" BETWEEN ? AND ?')
+    params.extend([start_date, end_date])
     if search_text:
         conditions.append(
             f'CAST({_quote_identifier(search_column)} AS TEXT) ILIKE ? ESCAPE \'\\\''
@@ -146,18 +166,27 @@ def export_raw_report(
     if report == "futures" and db.query_single_value("SELECT to_regclass('report.v_futures_dashboard_turning')") is None:
         from module.futures_turning import ensure_turning_views
         ensure_turning_views()
+    source_where = f"WHERE {config.where_sql}" if config.where_sql else ""
     bounds = db.query_to_df(
         f'SELECT MIN("{config.date_column}") AS min_date, MAX("{config.date_column}") AS max_date '
-        f'FROM "{config.view}"'
+        f'FROM "{config.view}" {source_where}',
+        config.where_params,
     )
     min_date = pd.Timestamp(bounds.iloc[0]["min_date"]).strftime("%Y-%m-%d")
     max_date = pd.Timestamp(bounds.iloc[0]["max_date"]).strftime("%Y-%m-%d")
     start_date = start_date or min_date
     end_date = end_date or max_date
+    conditions = []
+    params: list = []
+    if config.where_sql:
+        conditions.append(config.where_sql)
+        params.extend(config.where_params)
+    conditions.append(f'"{config.date_column}" BETWEEN ? AND ?')
+    params.extend([start_date, end_date])
     frame = db.query_to_df(
-        f'SELECT * FROM "{config.view}" WHERE "{config.date_column}" BETWEEN ? AND ? '
+        f'SELECT * FROM "{config.view}" WHERE {" AND ".join(conditions)} '
         f'ORDER BY "{config.date_column}" DESC',
-        (start_date, end_date),
+        params,
     )
     if report == "taiex":
         frame = frame.loc[:, order_taiex_report_columns(list(frame.columns))]
