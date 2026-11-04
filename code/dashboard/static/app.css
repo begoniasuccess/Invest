@@ -621,3 +621,140 @@ body.sidebar-collapsed .nav-section-body { gap: 3px; }
   .us-quick-columns-setting { justify-content: space-between; }
   .us-quick-grid[data-columns="1"], .us-quick-grid[data-columns="2"], .us-quick-grid[data-columns="3"] { grid-template-columns: 1fr; }
 }
+
+
+/* ===== 美股快速閱覽 v4：收合設定與排版修正（2026-10-28） ===== */
+.sidebar, .sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148,163,184,.34) var(--sidebar);
+}
+.sidebar::-webkit-scrollbar, .sidebar-nav::-webkit-scrollbar { width: 10px; }
+.sidebar::-webkit-scrollbar-track, .sidebar-nav::-webkit-scrollbar-track { background: var(--sidebar); }
+.sidebar::-webkit-scrollbar-thumb, .sidebar-nav::-webkit-scrollbar-thumb {
+  border: 2px solid var(--sidebar);
+  border-radius: 999px;
+  background: rgba(148,163,184,.34);
+}
+.sidebar::-webkit-scrollbar-thumb:hover, .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,.5); }
+
+.us-quick-controls { padding: 16px 18px 18px; }
+.us-quick-control-main {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(320px, 420px);
+  align-items: center;
+  gap: 16px 22px;
+}
+.us-quick-control-summary { min-width: 0; }
+.us-quick-control-summary small {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: .72rem;
+}
+.us-quick-control-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.us-quick-control-actions .btn { min-width: 132px; }
+.us-quick-market-settings {
+  margin-top: 14px;
+  padding-top: 16px;
+  border-top: 1px solid #e5eaf1;
+}
+.us-quick-settings-section + .us-quick-settings-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #e2e8f0;
+}
+.us-quick-settings-toolbar {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.us-quick-settings-block-heading strong,
+.us-quick-settings-block-heading small {
+  display: block;
+}
+.us-quick-settings-block-heading strong { color: #334155; font-size: .82rem; }
+.us-quick-settings-block-heading small { margin-top: 2px; color: #94a3b8; font-size: .7rem; }
+.us-quick-scale-date-section {
+  display: grid;
+  gap: 12px;
+}
+.us-quick-primary-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, auto) minmax(360px, 1fr);
+  align-items: end;
+  gap: 16px 24px;
+}
+.us-quick-date-filter { min-width: 0; width: 100%; }
+.us-quick-date-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+.us-quick-date-row label { display: grid; gap: 3px; min-width: 0; }
+.us-quick-date-row label > span { color: #8490a3; font-size: .67rem; font-weight: 700; }
+.us-quick-date-separator { padding-bottom: 10px; color: #94a3b8; font-size: .8rem; }
+.us-quick-date-row .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: end;
+  min-width: 92px;
+  height: 38px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+.us-quick-market-settings-head { margin-bottom: 10px; }
+
+@media (max-width: 1199.98px) {
+  .us-quick-control-main { grid-template-columns: 1fr; }
+  .us-quick-control-actions { max-width: 420px; }
+  .us-quick-primary-controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 767.98px) {
+  .us-quick-control-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .us-quick-control-actions .btn { width: 100%; }
+  .us-quick-date-row {
+    grid-template-columns: minmax(0,1fr);
+    gap: 10px;
+  }
+  .us-quick-date-separator { display: none; }
+  .us-quick-date-row .btn { width: 100%; }
+}
+
+
+/* ===== 美股快速閱覽 v5：工具列左右對齊（2026-10-28） ===== */
+.us-quick-control-main {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+.us-quick-settings-btn { justify-self: start; min-width: 132px; }
+.us-quick-refresh-btn { justify-self: end; min-width: 132px; }
+.us-quick-control-summary { text-align: center; }
+
+@media (max-width: 991.98px) {
+  .us-quick-control-main {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+  .us-quick-control-summary small { display: none; }
+}
+@media (max-width: 767.98px) {
+  .us-quick-control-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .us-quick-settings-btn, .us-quick-refresh-btn { width: 100%; min-width: 0; }
+  .us-quick-control-summary { grid-column: 1 / -1; grid-row: 2; text-align: left; }
+}

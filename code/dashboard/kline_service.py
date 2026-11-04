@@ -6,6 +6,7 @@ from time import monotonic
 import pandas as pd
 
 from dashboard.config import MARKETS
+from module.futures_kline_contract import TX_FIXED_CONTRACT_CTES
 
 
 KLINE_INTERVALS = {
@@ -74,19 +75,20 @@ def _load_intraday_raw(market_key: str, query_start: pd.Timestamp, end: pd.Times
     session_filter = "trading_session = 'position'" if market_key == "tx_day" else "trading_session = 'after_market'" if market_key == "tx_night" else "trading_session IN ('position', 'after_market')"
     return db.query_to_df(
         f'''
-        WITH ranked AS (
-            SELECT bar_datetime AS 時間, open AS 開盤, high AS 最高, low AS 最低,
-                   close AS 收盤, volume AS 成交量, trading_session,
-                   row_number() OVER (
-                       PARTITION BY bar_datetime, trading_session
-                       ORDER BY volume DESC, contract_date ASC
-                   ) AS contract_rank
+        WITH tx_contract_candidates AS (
+            SELECT bar_datetime, trading_date, trading_session, contract_date,
+                   open, high, low, close, volume
             FROM fm_taiwan_futures_kbar_1m
             WHERE futures_id = 'TX' AND {session_filter}
+              AND contract_date ~ '^[0-9]{{6}}$'
               AND bar_datetime BETWEEN ? AND ?
         )
-        SELECT 時間, 開盤, 最高, 最低, 收盤, 成交量, trading_session
-        FROM ranked WHERE contract_rank = 1 ORDER BY 時間
+        {TX_FIXED_CONTRACT_CTES}
+        SELECT bar_datetime AS 時間, open AS 開盤, high AS 最高,
+               low AS 最低, close AS 收盤, volume AS 成交量,
+               trading_session
+        FROM tx_selected_minutes
+        ORDER BY bar_datetime
         ''',
         (query_start.to_pydatetime(), end.to_pydatetime()),
     )

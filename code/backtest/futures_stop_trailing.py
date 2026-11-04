@@ -334,52 +334,144 @@ def load_day_ticks(settings: BacktestSettings, trade_date: date,
             for row in frame.itertuples(index=False)]
 
 
+def load_day_ticks_bulk(
+    settings: BacktestSettings,
+    day_contract_pairs: Sequence[tuple[date, str]],
+) -> dict[tuple[date, str], list[Tick]]:
+    """一次載入一批交易日的 Tick，避免逐日查詢資料庫。"""
+    from common import db
+
+    unique_pairs = list(dict.fromkeys(day_contract_pairs))
+    if not unique_pairs:
+        return {}
+
+    values_sql = ", ".join(["(?, ?, ?, ?)"] * len(unique_pairs))
+    params: list[object] = []
+    for trade_date, contract_date in unique_pairs:
+        params.extend([
+            trade_date,
+            contract_date,
+            datetime.combine(trade_date, settings.entry_time),
+            datetime.combine(trade_date, settings.forced_exit_time),
+        ])
+    params.append(settings.futures_id)
+    sql = f'''
+        WITH wanted(source_date, contract_date, start_at, end_at) AS (
+            VALUES {values_sql}
+        )
+        SELECT t.source_date, t.contract_date,
+               t.trade_datetime, t.price, t.source_row_no
+        FROM raw_finmind.fm_taiwan_futures_tick t
+        JOIN wanted w
+          ON w.source_date = t.source_date
+         AND w.contract_date = t.contract_date
+         AND t.trade_datetime >= w.start_at
+         AND t.trade_datetime <= w.end_at
+        WHERE t.futures_id = ?
+        ORDER BY t.source_date, t.contract_date,
+                 t.trade_datetime, t.source_row_no
+    '''
+    frame = db.sql_to_df(
+        sql,
+        params=tuple(params),
+        parse_dates=["source_date", "trade_datetime"],
+    )
+    result = {pair: [] for pair in unique_pairs}
+    for row in frame.itertuples(index=False):
+        key = (pd.Timestamp(row.source_date).date(), str(row.contract_date))
+        result.setdefault(key, []).append(
+            Tick(
+                row.trade_datetime.to_pydatetime(),
+                float(row.price),
+                int(row.source_row_no),
+            )
+        )
+    return result
+
+
+def _candidate_needs_ticks(item: object, parameters: Sequence[StrategyParameters]) -> bool:
+    if pd.isna(item.contract_date) or pd.isna(item.day_open):
+        return False
+    direction = "LONG" if item.signal_direction == "多" else "SHORT"
+    return any(
+        gap_allows_entry(
+            direction,
+            float(item.day_open),
+            float(item.previous_full_close),
+            value.gap_limit,
+        )
+        for value in parameters
+    )
+
+
 def run_backtests(settings: BacktestSettings,
-                  candidates: pd.DataFrame | None = None) -> pd.DataFrame:
-    """行情逐日載入一次，同時執行全部參數組合。"""
+                  candidates: pd.DataFrame | None = None,
+                  batch_size: int = 20) -> pd.DataFrame:
+    """行情分批載入，同時執行全部參數組合。"""
+    if batch_size < 1:
+        raise ValueError("batch_size 必須大於 0")
     source = load_candidates(settings) if candidates is None else candidates.copy()
     rows: list[dict] = []
-    for item in source.itertuples(index=False):
-        direction = "LONG" if item.signal_direction == "多" else "SHORT"
-        parameter_pool = (
-            settings.long_parameters if direction == "LONG" else settings.short_parameters
-        )
-        missing_contract = pd.isna(item.contract_date) or pd.isna(item.day_open)
-        ticks: list[Tick] | None = None
-        execution_cache: dict[tuple, dict] = {}
+    total = len(source)
+    for batch_start in range(0, total, batch_size):
+        batch = source.iloc[batch_start:batch_start + batch_size]
+        wanted: list[tuple[date, str]] = []
+        for item in batch.itertuples(index=False):
+            direction = "LONG" if item.signal_direction == "多" else "SHORT"
+            parameter_pool = (
+                settings.long_parameters if direction == "LONG" else settings.short_parameters
+            )
+            if _candidate_needs_ticks(item, parameter_pool):
+                wanted.append((pd.Timestamp(item.trade_date).date(), str(item.contract_date)))
+        tick_map = load_day_ticks_bulk(settings, wanted)
 
-        for parameters in parameter_pool:
-            base = {
-                "parameter_id": f"{direction.lower()}_{parameters.parameter_id}",
-                "signal_date": pd.Timestamp(item.signal_date).date(),
-                "trade_date": pd.Timestamp(item.trade_date).date(),
-                "signal_direction": item.signal_direction,
-                "direction": direction,
-                "previous_full_close": float(item.previous_full_close),
-                "day_open": None if pd.isna(item.day_open) else float(item.day_open),
-                "contract_date": None if pd.isna(item.contract_date) else str(item.contract_date),
-                "parameters": json.dumps(parameters.canonical_dict(), ensure_ascii=False),
-            }
-            if missing_contract:
-                rows.append({**base, "entry_status": "MISSING_DATA",
-                             "exit_reason": "MISSING_DATA", "net_points": None,
-                             "data_quality_status": "MISSING"})
-                continue
-            if not gap_allows_entry(direction, float(item.day_open),
-                                    float(item.previous_full_close), parameters.gap_limit):
-                rows.append({**base, "entry_status": "GAP_FILTERED",
-                             "exit_reason": "NO_ENTRY", "net_points": 0.0,
-                             "data_quality_status": "OK"})
-                continue
-            if ticks is None:
-                ticks = load_day_ticks(settings, pd.Timestamp(item.trade_date).date(),
-                                       str(item.contract_date))
-            result = execution_cache.get(parameters.execution_key)
-            if result is None:
-                result = simulate_ticks(ticks, direction, parameters,
-                                        theoretical_open=float(item.day_open))
-                execution_cache[parameters.execution_key] = result
-            rows.append({**base, "entry_status": "ENTERED", **result})
+        for item in batch.itertuples(index=False):
+            direction = "LONG" if item.signal_direction == "多" else "SHORT"
+            parameter_pool = (
+                settings.long_parameters if direction == "LONG" else settings.short_parameters
+            )
+            missing_contract = pd.isna(item.contract_date) or pd.isna(item.day_open)
+            trade_date = pd.Timestamp(item.trade_date).date()
+            contract_date = None if pd.isna(item.contract_date) else str(item.contract_date)
+            ticks = [] if contract_date is None else tick_map.get((trade_date, contract_date), [])
+            execution_cache: dict[tuple, dict] = {}
+
+            for parameters in parameter_pool:
+                base = {
+                    "parameter_id": f"{direction.lower()}_{parameters.parameter_id}",
+                    "signal_date": pd.Timestamp(item.signal_date).date(),
+                    "trade_date": trade_date,
+                    "signal_direction": item.signal_direction,
+                    "direction": direction,
+                    "previous_full_close": float(item.previous_full_close),
+                    "day_open": None if pd.isna(item.day_open) else float(item.day_open),
+                    "contract_date": contract_date,
+                    "parameters": json.dumps(parameters.canonical_dict(), ensure_ascii=False),
+                }
+                if missing_contract:
+                    rows.append({**base, "entry_status": "MISSING_DATA",
+                                 "exit_reason": "MISSING_DATA", "net_points": None,
+                                 "data_quality_status": "MISSING"})
+                    continue
+                if not gap_allows_entry(direction, float(item.day_open),
+                                        float(item.previous_full_close), parameters.gap_limit):
+                    rows.append({**base, "entry_status": "GAP_FILTERED",
+                                 "exit_reason": "NO_ENTRY", "net_points": 0.0,
+                                 "data_quality_status": "OK"})
+                    continue
+                result = execution_cache.get(parameters.execution_key)
+                if result is None:
+                    result = simulate_ticks(ticks, direction, parameters,
+                                            theoretical_open=float(item.day_open))
+                    execution_cache[parameters.execution_key] = result
+                rows.append({**base, "entry_status": "ENTERED", **result})
+
+        processed = min(batch_start + len(batch), total)
+        print(
+            f"[2-1] 已處理 {processed:,}/{total:,} 個交易日；"
+            f"本批讀取 {len(wanted):,} 個日契約",
+            flush=True,
+        )
     return pd.DataFrame(rows)
 
 

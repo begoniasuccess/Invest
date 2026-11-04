@@ -1,0 +1,44 @@
+{
+  "run_id": "ec34b95a-8ab0-4df9-a39f-4f8f129ffc14",
+  "analysis": "futures_combination_signal_backtest",
+  "version": "1.1.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-11-02",
+    "futures_id": "TX",
+    "core_column": "策略_核心_五日價量",
+    "history_window": 252,
+    "minimum_history": 60,
+    "extreme_low_pct": 20.0,
+    "extreme_high_pct": 80.0,
+    "night_close_low_pct": 25.0,
+    "night_close_high_pct": 75.0,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0,
+    "minimum_group_size": 30
+  },
+  "alignment": "訊號日收盤及其夜盤完成後產生訊號；下一交易日日盤開盤進、收盤出",
+  "cost_model": "每筆固定來回成本；未模擬盤中停損停利與滑價時序",
+  "anti_lookahead": "夜盤、散戶、主力與MA5乖離的 rolling 百分位僅使用當日前 history_window 筆；隔日行情只作結果",
+  "families": [
+    "A核心×夜盤反向",
+    "B夜盤極端反轉",
+    "C夜盤收盤位置確認",
+    "D核心×位置",
+    "E核心×純微台散戶極端",
+    "E核心×綜合散戶極端",
+    "F籌碼共振",
+    "G核心×MA20×位置",
+    "H核心×主力×位置",
+    "I核心×夜盤×轉折",
+    "J保留組合×排除追價",
+    "K保留組合×極端乖離",
+    "L保留組合×非極端乖離",
+    "M夜盤極端×極端乖離"
+  ],
+  "output_rows": {
+    "detail": 8839,
+    "summary": 34,
+    "yearly": 251
+  }
+}

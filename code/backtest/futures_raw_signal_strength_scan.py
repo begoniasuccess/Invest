@@ -21,7 +21,7 @@ from backtest.futures_strategy_next_day_field_scan import (
 
 SOURCE_VIEW = "report.v_futures_report_daily_corrected_turning"
 ANALYSIS_NAME = "raw_signal_strength_scan"
-METRIC_VERSION = "1.1.0"
+METRIC_VERSION = "1.2.0"
 BUCKET_LABELS = ("Q1最低20%", "Q2偏低", "Q3中間", "Q4偏高", "Q5最高20%")
 BUCKET_IDS = {label: index for index, label in enumerate(BUCKET_LABELS, start=1)}
 OUTCOMES = {
@@ -42,7 +42,8 @@ SOURCE_COLUMNS = (
     "法人總買超_億", "散戶多空比_微台", "散戶多空比_小台",
     "主力新建多單", "主力新建空單", "未沖銷_全",
     "call_月選", "put_月選", "call_週三", "put_週三", "call_週五", "put_週五",
-    "日盤開", "日盤高", "日盤低", "日盤收", "夜盤收",
+    "日盤開", "日盤高", "日盤低", "日盤收",
+    "夜盤開", "夜盤高", "夜盤低", "夜盤收",
 )
 
 
@@ -180,6 +181,7 @@ def build_signal_features(source: pd.DataFrame) -> tuple[pd.DataFrame, dict[str,
         "MA5乖離": _numeric(frame, "全5MA乖離率"),
         "布林通道位置": bollinger_position,
         "法人總買超": _numeric(frame, "法人總買超_億"),
+        "散戶多空比_微台": retail_micro,
         "散戶多空比": retail_micro.combine_first(retail_small),
         "主力新建多單": main_long,
         "主力新建空單": main_short,
@@ -201,6 +203,7 @@ def build_signal_features(source: pd.DataFrame) -> tuple[pd.DataFrame, dict[str,
         "MA5乖離": {"類別": "位置", "公式": "全5MA乖離率", "天然方向": True},
         "布林通道位置": {"類別": "位置", "公式": "(全日收-下軌)/(上軌-下軌)*100", "天然方向": True},
         "法人總買超": {"類別": "法人散戶", "公式": "法人總買超_億", "天然方向": True},
+        "散戶多空比_微台": {"類別": "法人散戶", "公式": "散戶多空比_微台（不以小台補值）", "天然方向": False},
         "散戶多空比": {"類別": "法人散戶", "公式": "微台優先，缺值用小台", "天然方向": False},
         "主力新建多單": {"類別": "期貨主力", "公式": "主力新建多單", "天然方向": False},
         "主力新建空單": {"類別": "期貨主力", "公式": "主力新建空單", "天然方向": False},

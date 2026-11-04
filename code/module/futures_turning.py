@@ -6,6 +6,8 @@ from zoneinfo import ZoneInfo
 import json
 import math
 
+from module.futures_kline_contract import TX_FIXED_CONTRACT_CTES
+
 COLUMNS = ('日盤轉折支撐', '日盤轉折壓力', '夜盤轉折支撐', '夜盤轉折壓力')
 TURNING_RULE_VERSION = '2026-10-20-v2-last-extreme-time'
 
@@ -95,19 +97,32 @@ def session_trend(bars):
     return None
 
 
-def _session_window(day, session):
+def _is_settlement_session(items, session):
+    """Whether the selected day-session contract expires on this trading day."""
+    return session == 'position' and any(
+        bool(item.get('is_settlement_day', False)) for item in items
+    )
+
+
+def _session_window(day, session, settlement_day=False):
     start = datetime.combine(day, datetime.min.time()) + (
         timedelta(hours=8, minutes=45)
         if session == 'position'
         else timedelta(hours=15)
     )
+    # The expiring TX contract stops at 13:30 on its final settlement day.
+    # Other day sessions still have to cover the normal 13:45 close.
+    if session == 'position' and settlement_day:
+        return start, datetime.combine(day, datetime.min.time()) + timedelta(hours=13, minutes=30)
     return start, start + (
         timedelta(hours=5) if session == 'position' else timedelta(hours=14)
     )
 
 
 def _session_is_complete(items, day, session, now):
-    start, end = _session_window(day, session)
+    start, end = _session_window(
+        day, session, _is_settlement_session(items, session)
+    )
     return (
         now >= end
         and items[0]['time'] <= start + timedelta(minutes=5)
@@ -138,9 +153,14 @@ def session_results(bars, now=None, previous_direction=None, previous_close=None
 DDL = '''
 CREATE TABLE IF NOT EXISTS report.futures_turning_5m_bars (
  bar_time timestamp PRIMARY KEY, session_date date NOT NULL, session text NOT NULL,
+ contract_date text, is_settlement_day boolean NOT NULL DEFAULT false,
  high numeric NOT NULL, low numeric NOT NULL, close numeric NOT NULL,
  last_time timestamp NOT NULL, dif double precision, direction smallint, ema_state jsonb NOT NULL
 );
+ALTER TABLE report.futures_turning_5m_bars
+ ADD COLUMN IF NOT EXISTS contract_date text;
+ALTER TABLE report.futures_turning_5m_bars
+ ADD COLUMN IF NOT EXISTS is_settlement_day boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS report.futures_turning_levels (
  futures_id text NOT NULL DEFAULT 'TX', "日期" date NOT NULL,
  "日盤轉折支撐" numeric, "日盤轉折壓力" numeric,
@@ -234,15 +254,31 @@ END $turning$;
     return rule_changed
 
 
-SOURCE_SQL = '''
-WITH ranked AS (
- SELECT *, row_number() OVER (PARTITION BY bar_datetime,trading_session ORDER BY volume DESC,contract_date ASC) AS rk
+SOURCE_SQL = f'''
+WITH tx_contract_candidates AS (
+ SELECT bar_datetime, trading_date, trading_session, contract_date,
+        open, high, low, close, volume
  FROM fm_taiwan_futures_kbar_1m
- WHERE futures_id='TX' AND trading_session IN ('position','after_market') AND bar_datetime >= ?
-), sessions AS (
- SELECT *, CASE WHEN trading_session='position' THEN bar_datetime::date
+ WHERE futures_id='TX'
+   AND trading_session IN ('position','after_market')
+   AND contract_date ~ '^[0-9]{{6}}$'
+   AND bar_datetime >= ?
+)
+{TX_FIXED_CONTRACT_CTES}
+, sessions AS (
+ SELECT selected.*,
+   CASE WHEN trading_session='position' THEN bar_datetime::date
    WHEN bar_datetime::time >= TIME '15:00' THEN bar_datetime::date ELSE bar_datetime::date-1 END AS session_date
- FROM ranked WHERE rk=1
+  , EXISTS (
+      SELECT 1
+      FROM fm_taiwan_futures_final_settlement_price settlement
+      WHERE settlement.futures_id = 'TX'
+        AND settlement.futures_type = 'index'
+        AND settlement.contract_month = selected.contract_date
+        AND settlement.date = selected.trading_date
+    ) AS is_settlement_day
+ FROM tx_selected_minutes selected
+ WHERE TRUE
  AND ((trading_session='position' AND bar_datetime::time BETWEEN TIME '08:45' AND TIME '13:45')
  OR (trading_session='after_market' AND (bar_datetime::time>=TIME '15:00' OR bar_datetime::time<=TIME '05:00')))
 ), buckets AS (
@@ -253,6 +289,8 @@ WITH ranked AS (
  FROM buckets
 )
 SELECT min(bar_datetime) AS time, session_date, trading_session AS session,
+ min(contract_date) AS contract_date,
+ bool_or(is_settlement_day) AS is_settlement_day,
  max(high) AS high, min(low) AS low,
  (array_agg(bar_datetime ORDER BY high DESC, bar_datetime DESC))[1] AS high_time,
  (array_agg(bar_datetime ORDER BY low ASC, bar_datetime DESC))[1] AS low_time,
@@ -261,7 +299,7 @@ FROM grouped GROUP BY session_date,trading_session,bar_time ORDER BY time
 '''
 
 
-AUDIT_FIELDS = ['日期', '時段', '欄位', '轉折值', '狀態', '規則', '候選順位',
+AUDIT_FIELDS = ['日期', '時段', '選用契約', '是否結算日', '欄位', '轉折值', '狀態', '規則', '候選順位',
     '候選K時間', '候選高', '候選低', '候選收', '候選DIF', '候選前DIF', '候選DIF方向',
     '取價K時間', '取價K最後1分時間', '取價K收', '取價DIF', '取價前DIF', '取價DIF方向',
     '左側K時間', '左側DIF', '左側DIF方向', '區間開始', '區間結束', '實際首K時間', '實際末1分時間', '是否首根極值例外', '左側K收盤']
@@ -281,12 +319,13 @@ def turning_audit_rows(bars, now=None):
     output = []
     direction_name = lambda value: {1: '上', -1: '下', 0: '平'}.get(value, '不足')
     for (day, session), (items, prior) in groups.items():
-        start = datetime.combine(day, datetime.min.time()) + (timedelta(hours=8, minutes=45) if session == 'position' else timedelta(hours=15))
-        end = start + (timedelta(hours=5) if session == 'position' else timedelta(hours=14))
+        settlement_day = _is_settlement_session(items, session)
+        start, end = _session_window(day, session, settlement_day)
         status = '尚未收盤' if now < end else ('區間資料不完整' if items[0]['time'] > start + timedelta(minutes=5) or items[-1]['last_time'] < end - timedelta(minutes=5) else '完整')
         for support, field in zip((True, False), COLUMNS[:2] if session == 'position' else COLUMNS[2:]):
             row = dict.fromkeys(AUDIT_FIELDS, '')
-            row.update({'日期': day, '時段': '日盤' if session == 'position' else '夜盤', '欄位': field,
+            row.update({'日期': day, '時段': '日盤' if session == 'position' else '夜盤',
+                '選用契約': items[0].get('contract_date', ''), '是否結算日': '是' if settlement_day else '否', '欄位': field,
                 '狀態': status, '區間開始': start, '區間結束': end,
                 '實際首K時間': items[0]['time'], '實際末1分時間': items[-1]['last_time']})
             match = find_turning_match(items, support, prior.get('direction') if prior else None, prior.get('close') if prior else None) if status == '完整' else None
@@ -317,7 +356,7 @@ def export_turning_audit(output_path=None):
     from common import db
     path = Path(output_path) if output_path else Path(__file__).resolve().parents[2] / 'output' / 'futures_turning_debug.csv'
     path.parent.mkdir(parents=True, exist_ok=True)
-    frame = db.query_to_df('SELECT bar_time AS time, session_date, session, high, low, close, last_time, dif, direction FROM report.futures_turning_5m_bars ORDER BY bar_time')
+    frame = db.query_to_df('SELECT bar_time AS time, session_date, session, contract_date, is_settlement_day, high, low, close, last_time, dif, direction FROM report.futures_turning_5m_bars ORDER BY bar_time')
     bars = frame.to_dict('records')
     for bar in bars:
         for key in ('dif', 'direction'):
@@ -376,8 +415,13 @@ def _refresh_turning_levels(*, full=False, start_date=None):
         conn.execute('DELETE FROM report.futures_turning_5m_bars WHERE bar_time >= %s', (start,))
         conn.execute('DELETE FROM report.futures_turning_levels WHERE "日期" >= %s', (start.date(),))
         with conn.cursor() as cur:
-            cur.executemany('INSERT INTO report.futures_turning_5m_bars VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb)',
-                [(b['time'],b['session_date'],b['session'],float(b['high']),float(b['low']),float(b['close']),b['last_time'],b['dif'],b['direction'],json.dumps(b['ema_state'])) for b in bars])
+            cur.executemany('''
+                INSERT INTO report.futures_turning_5m_bars
+                    (bar_time, session_date, session, contract_date, is_settlement_day,
+                     high, low, close, last_time, dif, direction, ema_state)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb)
+            ''',
+                [(b['time'],b['session_date'],b['session'],b.get('contract_date'),bool(b.get('is_settlement_day',False)),float(b['high']),float(b['low']),float(b['close']),b['last_time'],b['dif'],b['direction'],json.dumps(b['ema_state'])) for b in bars])
             for date, session, support, resistance in results:
                 names = COLUMNS[:2] if session=='position' else COLUMNS[2:]
                 trend_name = '日盤走勢' if session == 'position' else '夜盤走勢'

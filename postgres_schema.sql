@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 8r3jPAdboe4JZZ2bMEfeWxFUEXTCSaRUIsRMXgOhgjL6xVx4ao3iBplfRoqoAVB
+\restrict geEWOYHdtnqqBXg8mNXNQeCnl8RRivh7TzMN2OZcFGOdmhw7WDAdzYVtxvb0md2
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -2485,7 +2485,9 @@ CREATE TABLE report.futures_turning_5m_bars (
     last_time timestamp without time zone NOT NULL,
     dif double precision,
     direction smallint,
-    ema_state jsonb NOT NULL
+    ema_state jsonb NOT NULL,
+    contract_date text,
+    is_settlement_day boolean DEFAULT false NOT NULL
 );
 
 
@@ -16653,5 +16655,5 @@ ALTER TABLE ONLY research.yu_candidate_zones
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 8r3jPAdboe4JZZ2bMEfeWxFUEXTCSaRUIsRMXgOhgjL6xVx4ao3iBplfRoqoAVB
+\unrestrict geEWOYHdtnqqBXg8mNXNQeCnl8RRivh7TzMN2OZcFGOdmhw7WDAdzYVtxvb0md2
 

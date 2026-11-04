@@ -10,6 +10,16 @@ class AuditTests(unittest.TestCase):
   self.assertEqual(r['轉折值'],session_results(b,now)[0][2]);self.assertEqual(r['候選K時間'],b[0]['time']);self.assertEqual(r['取價K時間'],b[2]['time']);self.assertEqual(r['日期'],date(2026,5,8))
  def test_incomplete(self):
   r=turning_audit_rows(self.bars()[:1],datetime(2026,5,10))[0];self.assertEqual(r['狀態'],'區間資料不完整');self.assertEqual(r['轉折值'],'')
+ def test_settlement_day_uses_1330_end(self):
+  start=datetime(2026,5,20,8,45)
+  b=[
+   dict(time=start,last_time=start+timedelta(minutes=4),session_date=date(2026,5,20),session='position',contract_date='202605',is_settlement_day=True,high=20,low=10,close=15,dif=1,direction=1),
+   dict(time=datetime(2026,5,20,13,25),last_time=datetime(2026,5,20,13,29),session_date=date(2026,5,20),session='position',contract_date='202605',is_settlement_day=True,high=21,low=11,close=16,dif=0,direction=-1),
+  ]
+  r=turning_audit_rows(b,datetime(2026,5,20,13,31))[0]
+  self.assertNotEqual(r['狀態'],'區間資料不完整')
+  self.assertEqual(r['區間結束'],datetime(2026,5,20,13,30))
+  self.assertEqual(r['是否結算日'],'是')
  def test_left_outside(self):
   b=self.bars();b[0]['direction']=1
   prior=dict(b[0],time=datetime(2026,5,8,13,40),last_time=datetime(2026,5,8,13,44),session='position',direction=-1)

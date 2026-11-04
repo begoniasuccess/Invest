@@ -35,4 +35,20 @@ class TimeFilterTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '開始日期'):
             self.load('2026-10-05T15:30','2026-10-05T15:20')
 
+    def test_tx_query_selects_one_contract_for_whole_session(self):
+        captured = {}
+        def query(sql, params):
+            captured['sql'] = sql
+            captured['params'] = params
+            return pd.DataFrame()
+        common = types.ModuleType('common')
+        common.db = types.SimpleNamespace(query_to_df=query)
+        with patch.dict(sys.modules, {'common': common}):
+            service._load_intraday_raw(
+                'tx_day', pd.Timestamp('2026-10-05'), pd.Timestamp('2026-10-05 23:59')
+            )
+        self.assertIn('PARTITION BY totals.trading_date, totals.trading_session', captured['sql'])
+        self.assertIn('selected.contract_date = candidates.contract_date', captured['sql'])
+        self.assertNotIn('PARTITION BY bar_datetime', captured['sql'])
+
 if __name__ == '__main__': unittest.main()

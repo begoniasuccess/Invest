@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+import pandas as pd
 
 from backtest.futures_stop_trailing import (
     StrategyParameters,
@@ -10,6 +11,7 @@ from backtest.futures_stop_trailing import (
     Tick,
     gap_allows_entry,
     load_config,
+    run_backtests,
     simulate_ticks,
 )
 
@@ -95,6 +97,40 @@ def test_directional_grid_is_split() -> None:
     settings, _ = load_config(
         Path(__file__).parents[1] / "configs" / "futures_stop_trailing_2_1.json"
     )
-    assert len(settings.long_parameters) == 162
-    assert len(settings.short_parameters) == 162
-    assert settings.parameter_count == 324
+    assert len(settings.long_parameters) == 1
+    assert len(settings.short_parameters) == 1
+    assert settings.parameter_count == 2
+
+
+def test_run_backtests_bulk_loads_one_batch(monkeypatch) -> None:
+    settings, _ = load_config(
+        Path(__file__).parents[1] / "configs" / "futures_stop_trailing_2_1.json"
+    )
+    candidates = pd.DataFrame([
+        {
+            "signal_date": "2026-09-09", "trade_date": "2026-09-10",
+            "signal_direction": "多", "previous_full_close": 47000,
+            "contract_date": "202609", "day_open": 47000,
+        },
+        {
+            "signal_date": "2026-09-10", "trade_date": "2026-09-11",
+            "signal_direction": "空", "previous_full_close": 47000,
+            "contract_date": "202609", "day_open": 47000,
+        },
+    ])
+    calls = []
+
+    def fake_bulk(_settings, pairs):
+        calls.append(list(pairs))
+        return {
+            (pd.Timestamp(day).date(), contract): ticks(47000, 47020)
+            for day, contract in pairs
+        }
+
+    monkeypatch.setattr(
+        "backtest.futures_stop_trailing.load_day_ticks_bulk", fake_bulk
+    )
+    result = run_backtests(settings, candidates, batch_size=100)
+    assert len(calls) == 1
+    assert len(calls[0]) == 2
+    assert len(result) == 2

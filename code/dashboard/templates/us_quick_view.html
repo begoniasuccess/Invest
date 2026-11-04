@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}?v=20260815-1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="{{ url_for('static', path='/app.css') }}?v=20261027-us-quick-v2" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20261028-us-quick-v5" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
   <script src="{{ url_for('static', path='/navigation.js') }}?v=20261027-nav-groups-v2"></script>
 </head>
@@ -31,33 +31,15 @@
 
       <section class="panel-card us-quick-controls">
         <div class="us-quick-control-main">
-          <div class="us-quick-primary-controls">
-            <div>
-              <div class="filter-section-title mb-2"><i class="bi bi-clock-history"></i>全部圖表顯示尺度</div>
-              <div id="intervalTabs" class="us-quick-interval-tabs" role="group" aria-label="美股快速閱覽 K 線尺度">
-                {% for key, name in intervals.items() %}
-                <button type="button" class="us-quick-interval-btn{% if key == 'day' %} active{% endif %}" data-interval="{{ key }}">{{ name }}</button>
-                {% endfor %}
-              </div>
-            </div>
-            <div class="us-quick-date-filter">
-              <div class="filter-section-title mb-2"><i class="bi bi-calendar-range"></i>全部圖表日期區間</div>
-              <div class="us-quick-date-row">
-                <label><span>開始</span><input id="quickStartDate" class="form-control form-control-sm" type="date" value="{{ default_start_date }}"></label>
-                <span class="us-quick-date-separator">～</span>
-                <label><span>結束</span><input id="quickEndDate" class="form-control form-control-sm" type="date" value="{{ default_end_date }}"></label>
-                <button id="applyQuickDates" class="btn btn-outline-primary btn-sm" type="button"><i class="bi bi-funnel me-1"></i>套用</button>
-              </div>
-            </div>
+          <button id="marketSettingsToggle" class="btn btn-outline-secondary us-quick-settings-btn" type="button" aria-expanded="false" aria-controls="marketSettingsPanel"><i class="bi bi-sliders me-2"></i>顯示設定</button>
+          <div class="us-quick-control-summary">
+            <span id="selectionSummary" class="us-quick-selection-summary">顯示 6 / 6｜每列最多 3</span>
+            <small>常用設定已收納到「顯示設定」，套用後會同步影響本頁所有圖表。</small>
           </div>
-          <div class="us-quick-control-actions">
-            <span id="selectionSummary" class="us-quick-selection-summary">顯示 6 / 6</span>
-            <button id="marketSettingsToggle" class="btn btn-outline-secondary" type="button" aria-expanded="false" aria-controls="marketSettingsPanel"><i class="bi bi-sliders me-2"></i>顯示設定</button>
-            <button id="refreshQuickBtn" class="btn btn-dark" type="button"><i class="bi bi-arrow-clockwise me-2"></i>重新整理</button>
-          </div>
+          <button id="refreshQuickBtn" class="btn btn-dark us-quick-refresh-btn" type="button"><i class="bi bi-arrow-clockwise me-2"></i>重新整理</button>
         </div>
         <div id="marketSettingsPanel" class="us-quick-market-settings" hidden>
-          <div class="us-quick-settings-toolbar">
+          <div class="us-quick-settings-section us-quick-settings-toolbar">
             <div>
               <strong>版面與圖表設定</strong>
               <small>設定會保存在這台瀏覽器；圖表順序可用箭頭調整，也可直接拖曳圖卡。</small>
@@ -71,23 +53,52 @@
               </div>
             </div>
           </div>
-          <div class="us-quick-market-settings-head">
-            <div><strong>要顯示的圖表與順序</strong><small>上下移動會同步改變快速閱覽頁面的圖表順序。</small></div>
-            <div class="us-quick-market-actions"><button id="selectAllMarkets" type="button">全選</button><button id="clearAllMarkets" type="button">全取消</button></div>
-          </div>
-          <div id="marketOptionsGrid" class="us-quick-market-grid">
-            {% for market in markets %}
-            <div class="us-quick-market-option-wrap" data-market-option="{{ market.key }}">
-              <label class="us-quick-market-option">
-                <input class="form-check-input us-quick-market-check" type="checkbox" value="{{ market.key }}" checked>
-                <span><strong>{{ market.name }}</strong><small>{{ market.symbol }}</small></span>
-              </label>
-              <div class="us-quick-market-order-controls" aria-label="調整 {{ market.name }} 顯示順序">
-                <button type="button" data-order-move="up" data-market="{{ market.key }}" title="向前移動"><i class="bi bi-chevron-up"></i></button>
-                <button type="button" data-order-move="down" data-market="{{ market.key }}" title="向後移動"><i class="bi bi-chevron-down"></i></button>
+
+          <div class="us-quick-settings-section us-quick-scale-date-section">
+            <div class="us-quick-settings-block-heading">
+              <strong>圖表顯示尺度與日期區間</strong>
+              <small>日 K、週 K、月 K、年 K 以及日期區間會一次套用到所有圖表。</small>
+            </div>
+            <div class="us-quick-primary-controls">
+              <div>
+                <div class="filter-section-title mb-2"><i class="bi bi-clock-history"></i>全部圖表顯示尺度</div>
+                <div id="intervalTabs" class="us-quick-interval-tabs" role="group" aria-label="美股快速閱覽 K 線尺度">
+                  {% for key, name in intervals.items() %}
+                  <button type="button" class="us-quick-interval-btn{% if key == 'day' %} active{% endif %}" data-interval="{{ key }}">{{ name }}</button>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="us-quick-date-filter">
+                <div class="filter-section-title mb-2"><i class="bi bi-calendar-range"></i>全部圖表日期區間</div>
+                <div class="us-quick-date-row">
+                  <label><span>開始</span><input id="quickStartDate" class="form-control form-control-sm" type="date" value="{{ default_start_date }}"></label>
+                  <span class="us-quick-date-separator">～</span>
+                  <label><span>結束</span><input id="quickEndDate" class="form-control form-control-sm" type="date" value="{{ default_end_date }}"></label>
+                  <button id="applyQuickDates" class="btn btn-outline-primary btn-sm" type="button"><i class="bi bi-funnel me-1"></i>套用</button>
+                </div>
               </div>
             </div>
-            {% endfor %}
+          </div>
+
+          <div class="us-quick-settings-section">
+            <div class="us-quick-market-settings-head">
+              <div><strong>要顯示的圖表與順序</strong><small>上下移動會同步改變快速閱覽頁面的圖表順序。</small></div>
+              <div class="us-quick-market-actions"><button id="selectAllMarkets" type="button">全選</button><button id="clearAllMarkets" type="button">全取消</button></div>
+            </div>
+            <div id="marketOptionsGrid" class="us-quick-market-grid">
+              {% for market in markets %}
+              <div class="us-quick-market-option-wrap" data-market-option="{{ market.key }}">
+                <label class="us-quick-market-option">
+                  <input class="form-check-input us-quick-market-check" type="checkbox" value="{{ market.key }}" checked>
+                  <span><strong>{{ market.name }}</strong><small>{{ market.symbol }}</small></span>
+                </label>
+                <div class="us-quick-market-order-controls" aria-label="調整 {{ market.name }} 顯示順序">
+                  <button type="button" data-order-move="up" data-market="{{ market.key }}" title="向前移動"><i class="bi bi-chevron-up"></i></button>
+                  <button type="button" data-order-move="down" data-market="{{ market.key }}" title="向後移動"><i class="bi bi-chevron-down"></i></button>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
       </section>
@@ -103,6 +114,6 @@
     window.US_QUICK_DEFAULT_START_DATE = {{ default_start_date | tojson }};
     window.US_QUICK_DEFAULT_END_DATE = {{ default_end_date | tojson }};
   </script>
-  <script src="{{ url_for('static', path='/us_quick_view.js') }}?v=20261027-us-quick-v2"></script>
+  <script src="{{ url_for('static', path='/us_quick_view.js') }}?v=20261028-us-quick-v5"></script>
 </body>
 </html>

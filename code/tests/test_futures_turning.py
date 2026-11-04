@@ -58,6 +58,24 @@ class TurningTests(unittest.TestCase):
         self.assertEqual(session_results(rows[:1],datetime(2026,10,3),-1)[0][2:],(None,None))
         self.assertEqual(session_results(rows,datetime(2026,10,2,14),-1)[0][2],17)
 
+    def test_settlement_day_1330_close_is_complete(self):
+        rows=[bar(0,10,20,17,1),bar(56,11,21,18,-1)]
+        for row in rows:
+            row['contract_date']='202610'
+            row['is_settlement_day']=True
+        result=session_results(rows,datetime(2026,10,2,13,31),-1)
+        self.assertIsNotNone(result[0][2])
+        self.assertIsNotNone(result[0][3])
+
+    def test_regular_day_1330_stop_remains_incomplete(self):
+        rows=[bar(0,10,20,17,1),bar(56,11,21,18,-1)]
+        for row in rows:
+            row['is_settlement_day']=False
+        self.assertEqual(
+            session_results(rows,datetime(2026,10,2,14),-1)[0][2:],
+            (None,None),
+        )
+
     def test_night_date_and_boundary(self):
         rows=[bar(0,10,20,17,1,session='after_market'),bar(1,11,21,18,-1,session='after_market')]
         rows[0]['time']=datetime(2026,10,2,15);rows[0]['last_time']=datetime(2026,10,2,15,4)
@@ -105,11 +123,17 @@ class TurningTests(unittest.TestCase):
         from module.futures_turning import ensure_turning_views
         constants = ensure_turning_views.__code__.co_consts
         statement = next(value for value in constants if isinstance(value, str) and 'DO $turning$' in value)
-        self.assertLess(statement.index('AS "日盤走勢"'), statement.index('t."日盤轉折支撐"'))
-        self.assertLess(statement.index('AS "夜盤走勢"'), statement.index('t."夜盤轉折支撐"'))
-        self.assertIn("THEN ''漲勢盤''", statement)
-        self.assertIn("ELSE ''跌勢盤''", statement)
+        self.assertLess(statement.index('t."日盤走勢"'), statement.index('t."日盤轉折支撐"'))
+        self.assertLess(statement.index('t."夜盤走勢"'), statement.index('t."夜盤轉折支撐"'))
         self.assertNotIn('DROP VIEW report.v_futures_report_daily', statement)
         self.assertIn('RENAME TO v_futures_report_daily_without_session_trend', statement)
+
+    def test_source_selects_one_contract_per_session_not_per_minute(self):
+        from module.futures_turning import SOURCE_SQL
+        self.assertIn('PARTITION BY totals.trading_date, totals.trading_session', SOURCE_SQL)
+        self.assertIn('selected.contract_date = candidates.contract_date', SOURCE_SQL)
+        self.assertNotIn('PARTITION BY bar_datetime', SOURCE_SQL)
+        self.assertIn('settlement.date = selected.trading_date', SOURCE_SQL)
+        self.assertIn('bool_or(is_settlement_day)', SOURCE_SQL)
 
 if __name__=='__main__':unittest.main()

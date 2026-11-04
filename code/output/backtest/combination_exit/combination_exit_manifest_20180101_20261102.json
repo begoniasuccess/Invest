@@ -1,0 +1,66 @@
+{
+  "run_id": "4fd6a4d0-3d7e-4638-9a7e-0df01506ad31",
+  "analysis": "futures_combination_exit_backtest",
+  "version": "1.1.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-11-02",
+    "futures_id": "TX",
+    "entry_time": "08:45:00",
+    "entry_allowed_time": "09:15:00",
+    "forced_exit_time": "13:45:00",
+    "range_days": 30,
+    "entry_distance_ratio": 0.5,
+    "stop_loss_ratio": 0.25,
+    "new_activation_ratio": 0.3333333333333333,
+    "new_drawdown_ratio": 0.16666666666666666,
+    "old_activation_ratio": 0.25,
+    "old_drawdown_ratio": 0.2,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0,
+    "contracts": 1
+  },
+  "target_signals": [
+    "核心多＋法人買＋散戶偏空＋排除正乖離過大",
+    "核心多＋綜合散戶極度偏空＋排除正乖離過大",
+    "核心空＋夜盤漲＋正乖離Q80",
+    "核心空＋夜盤極端跌＋負乖離Q20",
+    "核心多＋夜盤極端漲＋正乖離Q80"
+  ],
+  "variants": {
+    "A_CLOSE_ONLY": {
+      "stop": false,
+      "activation": null,
+      "drawdown": null
+    },
+    "B_STOP_ONLY": {
+      "stop": true,
+      "activation": null,
+      "drawdown": null
+    },
+    "C_OLD_2_1": {
+      "stop": true,
+      "activation": 0.25,
+      "drawdown": 0.2
+    },
+    "D_NEW_1_3_1_6": {
+      "stop": true,
+      "activation": 0.3333333333333333,
+      "drawdown": 0.16666666666666666
+    }
+  },
+  "definitions": {
+    "range": "訊號日含當日往回30個完整交易日的(日盤高-日盤低)平均",
+    "entry": "以夜盤收為基準，做多向下1/2R、做空向上1/2R；08:45至09:15只觀察，09:15後才以第一筆實際觸價成交",
+    "pre_entry_cancel": "前30分鐘若先觸及理論掛價再延伸1/4R的預定停損價，當日取消進場",
+    "new_exit": "停損1/4R；獲利達1/3R後，從進場後最佳價固定回撤1/6R出場；否則尾盤出場",
+    "anti_lookahead": "訊號、夜盤收及平均振幅只使用進場日前資料；進出場依逐筆成交時間順序",
+    "fill": "停損與保利以第一筆穿越門檻的實際成交價計算，固定來回成本另扣"
+  },
+  "output_rows": {
+    "detail": 1952,
+    "summary": 20,
+    "yearly": 156,
+    "diagnostics": 43
+  }
+}

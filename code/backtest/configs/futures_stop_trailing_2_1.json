@@ -1,6 +1,6 @@
 {
-  "start": "2020-01-01",
-  "end": "2026-09-10",
+  "start": "2018-01-01",
+  "end": "2026-10-28",
   "signal_column": "策略_核心_五日價量",
   "futures_id": "TX",
   "entry_time": "08:45:00",
@@ -8,22 +8,16 @@
   "output_dir": "../output/backtest",
   "parameter_grid": {
     "long": {
-      "gap_limit": {"PRICE_PERCENT": [0.8, 1.0, 1.2]},
-      "trailing_activation": {"POINTS": [100, 125, 150]},
-      "trailing_drawdown": {
-        "POINTS": [75, 100, 125],
-        "PRICE_PERCENT": [0.15, 0.2, 0.25]
-      },
-      "stop_loss": {"POINTS": [100, 125, 150]}
+      "gap_limit": {"POINTS": [500]},
+      "trailing_activation": {"POINTS": [125]},
+      "trailing_drawdown": {"POINTS": [100]},
+      "stop_loss": {"POINTS": [125]}
     },
     "short": {
-      "gap_limit": {"PRICE_PERCENT": [0.8, 1.0, 1.2]},
-      "trailing_activation": {"POINTS": [100, 125, 150]},
-      "trailing_drawdown": {
-        "POINTS": [75, 100, 125],
-        "PRICE_PERCENT": [0.15, 0.2, 0.25]
-      },
-      "stop_loss": {"POINTS": [100, 125, 150]}
+      "gap_limit": {"POINTS": [500]},
+      "trailing_activation": {"POINTS": [125]},
+      "trailing_drawdown": {"POINTS": [100]},
+      "stop_loss": {"POINTS": [125]}
     }
   },
   "costs": {

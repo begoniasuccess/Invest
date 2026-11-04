@@ -41,3 +41,10 @@ python -m backtest.futures_stop_trailing --config backtest/configs/futures_stop_
 
 `parameter_id` 會帶 `long_` 或 `short_` 前綴，是方向與參數內容的穩定識別碼，
 可用來連結摘要和明細。
+
+## 執行效能
+
+- 程式會先套用開盤濾網，只有需要交易的日期才讀取 Tick。
+- Tick 改為每批 20 個交易日一次查詢，不再逐日往返資料庫；避免一次載入多年
+  Tick 耗盡記憶體。
+- Terminal 會在每批完成後顯示已處理交易日數，長期間回測時可確認進度。
