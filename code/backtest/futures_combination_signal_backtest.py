@@ -374,7 +374,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--futures-id", default="TX")
     parser.add_argument("--core-column", default="策略_核心_五日價量")
     parser.add_argument("--cost-points", type=float, default=3.0)
-    parser.add_argument("--output-dir", type=Path, default=Path("output/backtest"))
+    parser.add_argument("--output-dir", type=Path, default=Path("../output/backtest"))
     return parser.parse_args()
 
 

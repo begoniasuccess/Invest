@@ -82,7 +82,7 @@ def export_outputs(detail: pd.DataFrame, settings: Settings, output_dir: Path):
     return paths
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument("--start",type=date.fromisoformat,default=date(2018,1,1)); p.add_argument("--end",type=date.fromisoformat); p.add_argument("--cost-points",type=float,default=3.); p.add_argument("--output-dir",type=Path,default=Path("output/backtest/retail_expansion")); a=p.parse_args()
+    p=argparse.ArgumentParser(); p.add_argument("--start",type=date.fromisoformat,default=date(2018,1,1)); p.add_argument("--end",type=date.fromisoformat); p.add_argument("--cost-points",type=float,default=3.); p.add_argument("--output-dir",type=Path,default=Path("../output/backtest/retail_expansion")); a=p.parse_args()
     s=Settings(start=a.start,end=a.end,round_trip_cost_points=a.cost_points); detail=run_backtest(s); paths=export_outputs(detail,s,a.output_dir); print(summarize(detail,["study","scenario","entry_distance_ratio","retail_threshold_pct"]).to_string(index=False)); [print(f"[retail_expansion] {k}: {v.resolve()}") for k,v in paths.items()]
 
 if __name__=="__main__": main()

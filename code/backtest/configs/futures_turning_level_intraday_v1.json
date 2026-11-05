@@ -11,5 +11,5 @@
   "round_trip_cost_points": 3.0,
   "point_value_twd": 200.0,
   "contracts": 1,
-  "output_dir": "backtest_output/futures_turning_level"
+  "output_dir": "../output/backtest/futures_turning_level"
 }

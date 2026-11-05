@@ -398,7 +398,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--strong-share-threshold", type=float, default=0.80)
     parser.add_argument(
         "--output-dir", type=Path,
-        default=Path("backtest_output/futures_daily_amplitude_pattern"),
+        default=Path("../output/analysis/futures_daily_amplitude_pattern"),
     )
     parser.add_argument("--save-db", action="store_true")
     return parser.parse_args()

@@ -1,6 +1,7 @@
 from module import finMind as fm, futures_utils as FU
 from common import db, utils
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import perf_counter
 
 import pandas as pd
@@ -969,7 +970,10 @@ def output_csv(
         df.drop(columns=drop_cols, inplace=True)
     
     if csv_dir == "" or csv_dir is None:
-        csv_dir = "output.csv"
+        csv_dir = Path(__file__).resolve().parents[2] / "output" / "output.csv"
+
+    csv_dir = Path(csv_dir)
+    csv_dir.parent.mkdir(parents=True, exist_ok=True)
     
     df.to_csv(csv_dir, index=False, encoding="utf-8-sig")
     return df

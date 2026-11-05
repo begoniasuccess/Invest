@@ -22,5 +22,5 @@ python -m backtest.futures_session_trend_night
 輸出位於：
 
 ```text
-backtest_output\futures_session_trend_night
+..\output\backtest\futures_session_trend_night
 ```

@@ -200,7 +200,7 @@ def main() -> None:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("output/backtest/retail_wait_window"),
+        default=Path("../output/backtest/retail_wait_window"),
     )
     args = parser.parse_args()
     settings = Settings(start=args.start, end=args.end, round_trip_cost_points=args.cost_points)

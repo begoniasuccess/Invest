@@ -4,7 +4,7 @@
 
     python -m machine_learning.yu_key_k_classifier compare `
       --config machine_learning/configs/yu_key_k_classifier.json `
-      --training ../output/machine_learningyu_key_k_formation/yu_k_formation_training_20260102_20260828.csv
+      --training ../output/machine_learning/yu_key_k_formation/yu_k_formation_training_20260102_20260828.csv
 
 評估嚴格依日期向前展開；某一測試 K 的模型只會接觸更早的 K 棒特徵。
 標籤是回顧性標籤（截至 Yu 標註檔結束日是否曾被引用），輸出會明示此限制。
@@ -310,7 +310,7 @@ def build_parser() -> argparse.ArgumentParser:
     compare_parser = sub.add_parser("compare", help="比較多組input及模型的時間序列樣本外表現")
     compare_parser.add_argument("--config", required=True)
     compare_parser.add_argument("--training", required=True)
-    compare_parser.add_argument("--output-dir", default="../output/machine_learningyu_key_k_classifier")
+    compare_parser.add_argument("--output-dir", default="../output/machine_learning/yu_key_k_classifier")
     compare_parser.set_defaults(func=run_compare)
     return parser
 

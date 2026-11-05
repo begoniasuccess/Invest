@@ -449,7 +449,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--winsor-tail", type=float, default=0.005)
     parser.add_argument(
         "--output-dir", type=Path,
-        default=Path("backtest_output/futures_direction_signal_strength_scan"),
+        default=Path("../output/backtest/futures_direction_signal_strength_scan"),
     )
     return parser.parse_args()
 

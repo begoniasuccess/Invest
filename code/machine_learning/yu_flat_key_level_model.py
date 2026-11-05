@@ -237,7 +237,7 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--sheet", default=0)
     build.add_argument("--start", required=True)
     build.add_argument("--end", required=True)
-    build.add_argument("--output-dir", default="../output/machine_learningyu_flat_key_level")
+    build.add_argument("--output-dir", default="../output/machine_learning/yu_flat_key_level")
     build.set_defaults(func=run_build)
     return parser
 

@@ -303,7 +303,7 @@ def load_config(path: Path) -> tuple[Settings, Path]:
         range_days=int(raw.get("range_days", 30)),
         minimum_sample_size=int(raw.get("minimum_sample_size", 100)),
     )
-    return settings, Path(raw.get("output_dir", "backtest_output/futures_next_day_session_statistics"))
+    return settings, Path(raw.get("output_dir", "../output/backtest/futures_next_day_session_statistics"))
 
 
 def main() -> None:

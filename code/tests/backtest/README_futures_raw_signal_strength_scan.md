@@ -46,7 +46,7 @@ Q5最高20%
 
 ## 輸出
 
-預設輸出至 `backtest_output/futures_raw_signal_strength_scan/`：
+預設輸出至 `../output/backtest/futures_raw_signal_strength_scan/`：
 
 - `raw_signal_strength_detail_*.csv`：逐日、逐指標的原始值、無前視分位與隔日結果
 - `raw_signal_strength_by_bucket_*.csv`：五層完整統計

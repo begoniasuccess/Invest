@@ -419,7 +419,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Yu 關鍵K第一階段")
     parser.add_argument("--config", required=True)
     parser.add_argument("--date", required=True, help="資料截止日；程式禁止讀取此日之後資料")
-    parser.add_argument("--output-dir", default="../output/machine_learningyu_key_k_stage1")
+    parser.add_argument("--output-dir", default="../output/machine_learning/yu_key_k_stage1")
     parser.set_defaults(func=run)
     return parser
 

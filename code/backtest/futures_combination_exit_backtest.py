@@ -470,7 +470,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--start", type=date.fromisoformat, default=date(2018, 1, 1))
     parser.add_argument("--end", type=date.fromisoformat, default=None)
     parser.add_argument("--cost-points", type=float, default=3.0)
-    parser.add_argument("--output-dir", type=Path, default=Path("output/backtest/combination_exit"))
+    parser.add_argument("--output-dir", type=Path, default=Path("../output/backtest/combination_exit"))
     return parser.parse_args()
 
 

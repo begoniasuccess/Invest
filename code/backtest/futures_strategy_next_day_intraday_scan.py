@@ -280,7 +280,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--futures-id", default="TX")
     parser.add_argument("--minimum-group-size", type=int, default=100)
     parser.add_argument("--output-dir", type=Path,
-                        default=Path("backtest_output/futures_strategy_next_day_intraday_scan"))
+                        default=Path("../output/backtest/futures_strategy_next_day_intraday_scan"))
     return parser.parse_args()
 
 

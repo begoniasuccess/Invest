@@ -31,7 +31,7 @@ python -m backtest.futures_next_day_session_statistics
 輸出目錄：
 
 ```text
-backtest_output\futures_next_day_session_statistics
+..\output\backtest\futures_next_day_session_statistics
 ```
 
 完成後請將該目錄的七個檔案一起壓縮回傳。

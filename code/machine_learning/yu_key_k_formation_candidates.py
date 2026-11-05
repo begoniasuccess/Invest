@@ -249,12 +249,12 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     candidates = sub.add_parser("candidates")
     candidates.add_argument("--config", required=True); candidates.add_argument("--date", required=True)
-    candidates.add_argument("--output-dir", default="../output/machine_learningyu_key_k_formation")
+    candidates.add_argument("--output-dir", default="../output/machine_learning/yu_key_k_formation")
     candidates.set_defaults(func=run_candidates)
     labels = sub.add_parser("build-labels")
     labels.add_argument("--config", required=True); labels.add_argument("--labels", required=True)
     labels.add_argument("--sheet", default=0); labels.add_argument("--start", required=True); labels.add_argument("--end", required=True)
-    labels.add_argument("--output-dir", default="../output/machine_learningyu_key_k_formation")
+    labels.add_argument("--output-dir", default="../output/machine_learning/yu_key_k_formation")
     labels.set_defaults(func=run_build_labels)
     return parser
 

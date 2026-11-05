@@ -422,7 +422,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--alpha", type=float, default=0.05)
     parser.add_argument(
         "--output-dir", type=Path,
-        default=Path("backtest_output/futures_open_to_night_close_convergence"),
+        default=Path("../output/backtest/futures_open_to_night_close_convergence"),
     )
     return parser.parse_args()
 

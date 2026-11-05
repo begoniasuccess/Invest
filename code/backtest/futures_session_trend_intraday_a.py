@@ -423,7 +423,7 @@ def load_config(path: Path) -> tuple[Settings, Path]:
         point_value_twd=float(raw.get("point_value_twd", 200.0)),
         contracts=int(raw.get("contracts", 1)),
     )
-    return settings, Path(raw.get("output_dir", "backtest_output/futures_session_trend_a"))
+    return settings, Path(raw.get("output_dir", "../output/backtest/futures_session_trend_a"))
 
 
 def main() -> None:

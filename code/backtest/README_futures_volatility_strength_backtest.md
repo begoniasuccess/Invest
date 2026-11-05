@@ -39,7 +39,7 @@ PowerShell 多行使用反引號 `` ` ``。不加 `--save-db` 時只輸出 CSV�
 
 ## 輸出
 
-預設位於 `backtest_output/futures_volatility_strength/`：
+預設位於 `../output/backtest/futures_volatility_strength/`：
 
 - `volatility_strength_daily_*.csv`：每天四個條件、分數、等級與隔日實際結果
 - `volatility_strength_summary_*.csv`：全期、探索期、驗證期的分數及等級統計

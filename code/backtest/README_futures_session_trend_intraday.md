@@ -24,7 +24,7 @@ python -m backtest.futures_session_trend_intraday
 輸出位於：
 
 ```text
-backtest_output\futures_session_trend
+..\output\backtest\futures_session_trend
 ```
 
 請回傳該資料夾內同一次執行產生的六個檔案，以便分析整體、年度、盤勢分組及開盤／盤中成交績效。

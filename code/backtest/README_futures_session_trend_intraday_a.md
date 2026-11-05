@@ -32,7 +32,7 @@ python -m backtest.futures_session_trend_intraday_a
 結果輸出至：
 
 ```text
-backtest_output\futures_session_trend_a
+..\output\backtest\futures_session_trend_a
 ```
 
 請將該目錄產生的六個檔案一起回傳，以便分析總績效、年度穩定性、盤勢分組、

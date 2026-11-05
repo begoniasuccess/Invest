@@ -1,4 +1,0 @@
-﻿variant,variant_description,entry_distance_ratio,retail_threshold_pct,signal_count,entry_count,missing_count,win_rate_pct,total_net_points,average_net_points,median_net_points,profit_factor,max_drawdown_points,max_losing_streak,stop_loss_count,trailing_activation_count,trailing_activation_rate_pct,trailing_exit_count,close_exit_count,average_mfe_points,average_mae_points,trailing_exit_then_new_extreme_count,vs_close_exit_total_points
-BOUNCE_1_6R,破失效價後，由動態低點反彈1/6R，再延遲1分鐘進場,0.4167,20.0,185,92,93,59.7826,1476.0,16.0435,14.5,1.7052,-506.0,3,0,0,0.0,0,92,73.6848,54.5109,0,0.0
-CANCEL_DAY,原規則：前30分鐘破失效價則取消當日交易,0.4167,20.0,185,76,109,61.8421,1693.0,22.2763,16.5,2.3609,-271.0,3,0,0,0.0,0,76,71.4474,50.0658,0,0.0
-DIRECT_ENTRY,08:45起觸及5/12R即進場，不做破價過濾,0.4167,20.0,185,97,88,59.7938,1272.0,13.1134,14.0,1.5016,-579.0,3,0,0,0.0,0,97,77.0309,60.4536,0,0.0

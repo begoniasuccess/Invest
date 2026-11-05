@@ -315,7 +315,7 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--sheet", default=0)
     compare.add_argument("--start", required=True)
     compare.add_argument("--end", required=True)
-    compare.add_argument("--output-dir", default="../output/machine_learningyu_key_k_stage2")
+    compare.add_argument("--output-dir", default="../output/machine_learning/yu_key_k_stage2")
     compare.set_defaults(func=run_compare)
     return parser
 

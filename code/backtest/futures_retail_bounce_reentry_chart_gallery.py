@@ -207,7 +207,7 @@ def main() -> None:
     parser.add_argument("--start", type=date.fromisoformat, default=date(2018, 1, 1))
     parser.add_argument("--end", type=date.fromisoformat)
     parser.add_argument("--cost-points", type=float, default=3.0)
-    parser.add_argument("--output", type=Path, default=Path("output/backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html"))
+    parser.add_argument("--output", type=Path, default=Path("../output/backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html"))
     args = parser.parse_args()
     settings = Settings(start=args.start, end=args.end, round_trip_cost_points=args.cost_points)
     detail = run_backtest(settings)

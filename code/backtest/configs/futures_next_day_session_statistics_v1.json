@@ -4,5 +4,5 @@
   "futures_id": "TX",
   "range_days": 30,
   "minimum_sample_size": 100,
-  "output_dir": "backtest_output/futures_next_day_session_statistics"
+  "output_dir": "../output/backtest/futures_next_day_session_statistics"
 }

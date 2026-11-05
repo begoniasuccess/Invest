@@ -609,13 +609,13 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--labels", required=True)
     analyze.add_argument("--start", required=True)
     analyze.add_argument("--end", required=True)
-    analyze.add_argument("--output-dir", default="../output/machine_learningyu_strategy_v2")
+    analyze.add_argument("--output-dir", default="../output/machine_learning/yu_strategy_v2")
     analyze.set_defaults(func=run_analyze)
     predict = subparsers.add_parser("predict", help="指定日期方向與四情境候選區")
     predict.add_argument("--config", required=True)
     predict.add_argument("--labels", required=True)
     predict.add_argument("--date", required=True)
-    predict.add_argument("--output-dir", default="../output/machine_learningyu_strategy_v2")
+    predict.add_argument("--output-dir", default="../output/machine_learning/yu_strategy_v2")
     predict.set_defaults(func=run_predict)
     return parser
 

@@ -24,7 +24,7 @@ G～L 的條件為 `abs(進場點－昨日夜盤收) >= 30日平均振幅 × 30%
 
 30日振幅採前一報表交易日（含當日）往回30個交易日的 `日盤高－日盤低` 平均。成交後用 Tick 依序判斷15%停損、50%停利；兩者皆未觸發，以13:45前最後一筆 Tick 出場。預設每筆來回成本3點、TX每點200元、1口。
 
-報告輸出到 `backtest_output/futures_turning_level`：
+報告輸出到 `../output/backtest/futures_turning_level`：
 
 - `turning_level_detail_*.csv`：逐日逐策略完整明細。
 - `turning_level_summary_*.csv`：全期間績效及多空分列。

@@ -373,7 +373,7 @@ def load_config(path: Path) -> tuple[Settings, Path]:
         entry_filter_ratio=float(raw.get("entry_filter_ratio", 0.30)),
         round_trip_cost_points=float(raw.get("round_trip_cost_points", 3.0)),
         point_value_twd=float(raw.get("point_value_twd", 200.0)), contracts=int(raw.get("contracts", 1)))
-    return settings, Path(raw.get("output_dir", "backtest_output/futures_turning_level"))
+    return settings, Path(raw.get("output_dir", "../output/backtest/futures_turning_level"))
 
 
 def main() -> None:

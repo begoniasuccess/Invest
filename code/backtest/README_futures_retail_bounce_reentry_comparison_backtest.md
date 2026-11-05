@@ -22,7 +22,7 @@ python -m backtest.futures_retail_bounce_reentry_chart_gallery --end 2026-11-02
 
 預設輸出：
 
-`output/backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html`
+`../output/backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html`
 
 圖庫包含原規則、直接進場、反彈 1/6R 三組的預設進場價、失效價、實際進出場與每日損益，並可按年份、是否跌破失效價、是否救援進場篩選。寬螢幕每列 3 天、中型螢幕 2 天、手機 1 天。
 

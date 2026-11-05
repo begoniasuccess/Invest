@@ -258,7 +258,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--alpha", type=float, default=0.05)
     parser.add_argument(
         "--output-dir", type=Path,
-        default=Path("backtest_output/futures_core_five_day_next_day_statistics"),
+        default=Path("../output/backtest/futures_core_five_day_next_day_statistics"),
     )
     return parser.parse_args()
 

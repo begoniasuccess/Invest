@@ -548,14 +548,14 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--labels", required=True)
     analyze.add_argument("--start", required=True)
     analyze.add_argument("--end", required=True)
-    analyze.add_argument("--output-dir", default="../output/machine_learningyu_point_selector_v3")
+    analyze.add_argument("--output-dir", default="../output/machine_learning/yu_point_selector_v3")
     analyze.set_defaults(func=run_analyze)
     candidates = commands.add_parser("candidates", help="產生指定資料截止日的四情境候選點位")
     candidates.add_argument("--config", required=True)
     candidates.add_argument("--labels", required=True)
     candidates.add_argument("--date", required=True)
     candidates.add_argument("--feature-set")
-    candidates.add_argument("--output-dir", default="../output/machine_learningyu_point_selector_v3")
+    candidates.add_argument("--output-dir", default="../output/machine_learning/yu_point_selector_v3")
     candidates.set_defaults(func=run_candidates)
     return parser
 

@@ -13,7 +13,7 @@
     python -m machine_learning.yu_key_level_rule_discovery predict `
       --config machine_learning/configs/yu_key_level_rule_discovery.json `
       --date 2026-09-08 `
-      --thresholds ../output/machine_learningyu_key_level_rule_discovery/yu_rule_thresholds_20251103_20260831.csv
+      --thresholds ../output/machine_learning/yu_key_level_rule_discovery/yu_rule_thresholds_20251103_20260831.csv
 
 所有行情特徵只使用該根 K 形成日及更早資料；歷史配對也會逐分析日裁切，
 不允許截止日後行情參與計算。Yu 未引用的 K 只稱「未標記」，不當作已證實負例。
@@ -1185,12 +1185,12 @@ def build_parser() -> argparse.ArgumentParser:
     analyze = sub.add_parser("analyze")
     analyze.add_argument("--config", required=True); analyze.add_argument("--taiex-labels", nargs="+", required=True)
     analyze.add_argument("--futures-labels"); analyze.add_argument("--start", required=True); analyze.add_argument("--end", required=True)
-    analyze.add_argument("--output-dir", default="../output/machine_learningyu_key_level_rule_discovery")
+    analyze.add_argument("--output-dir", default="../output/machine_learning/yu_key_level_rule_discovery")
     analyze.set_defaults(func=run_analyze)
     predict = sub.add_parser("predict")
     predict.add_argument("--config", required=True); predict.add_argument("--date", required=True); predict.add_argument("--thresholds", required=True)
     predict.add_argument("--mapping-summary", help="analyze輸出的期現貨映射摘要；提供後會輸出TX候選點")
-    predict.add_argument("--output-dir", default="../output/machine_learningyu_key_level_rule_discovery")
+    predict.add_argument("--output-dir", default="../output/machine_learning/yu_key_level_rule_discovery")
     predict.set_defaults(func=run_predict)
     return parser
 

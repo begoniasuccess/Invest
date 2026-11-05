@@ -375,7 +375,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--minimum-year-size", type=int, default=10)
     parser.add_argument("--alpha", type=float, default=0.05)
     parser.add_argument("--winsor-tail", type=float, default=0.005)
-    parser.add_argument("--output-dir", type=Path, default=Path("backtest_output/futures_volatility_strength"))
+    parser.add_argument("--output-dir", type=Path, default=Path("../output/backtest/futures_volatility_strength"))
     parser.add_argument("--save-db", action="store_true")
     return parser.parse_args()
 
