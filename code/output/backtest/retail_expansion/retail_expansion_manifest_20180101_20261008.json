@@ -1,0 +1,30 @@
+{
+  "run_id": "f1605029-fac5-42bc-9564-e3404a08d96f",
+  "analysis": "futures_retail_extreme_expansion_backtest",
+  "version": "1.0.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-11-02",
+    "futures_id": "TX",
+    "history_window": 252,
+    "minimum_history": 60,
+    "range_days": 30,
+    "ma5_exclude_percentile": 80.0,
+    "stop_loss_ratio": 0.25,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0
+  },
+  "study_a": {
+    "A_ENTRY_1_4R": 0.25,
+    "A_ENTRY_1_3R": 0.3333333333333333,
+    "A_ENTRY_5_12R": 0.4166666666666667,
+    "A_BASE_ENTRY_1_2R": 0.5
+  },
+  "study_b": {
+    "B_RETAIL_Q10": 10.0,
+    "B_BASE_RETAIL_Q20": 20.0,
+    "B_RETAIL_Q25": 25.0,
+    "B_RETAIL_Q30": 30.0
+  },
+  "baseline_check": "A_BASE_ENTRY_1_2R與B_BASE_RETAIL_Q20應相同，並接近前次187訊號、64筆進場"
+}

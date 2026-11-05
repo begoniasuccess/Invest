@@ -1,0 +1,54 @@
+{
+  "run_id": "5a94cc4f-f79e-4e99-a151-c8c554fca4a8",
+  "analysis": "futures_retail_night_gap_adaptive_entry_backtest",
+  "version": "1.0.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-11-02",
+    "futures_id": "TX",
+    "history_window": 252,
+    "minimum_history": 60,
+    "range_days": 30,
+    "ma5_exclude_percentile": 80.0,
+    "retail_threshold_pct": 20.0,
+    "gap_threshold_ratio": 0.16666666666666666,
+    "pre_entry_stop_ratio": 0.25,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0
+  },
+  "night_gap_definition": "(夜盤收－昨日日盤收)／近30日平均日盤振幅",
+  "gap_groups": {
+    "NIGHT_DOWN": "夜盤跌（≤-1/6R）",
+    "NIGHT_FLAT": "夜盤平（-1/6R～+1/6R）",
+    "NIGHT_UP": "夜盤漲（≥+1/6R）"
+  },
+  "distance_matrix": {
+    "ENTRY_1_3R": 0.3333333333333333,
+    "ENTRY_5_12R": 0.4166666666666667,
+    "ENTRY_1_2R": 0.5,
+    "ENTRY_7_12R": 0.5833333333333334
+  },
+  "policies": {
+    "FIXED_5_12R": {
+      "label": "固定5/12R",
+      "NIGHT_DOWN": 0.4166666666666667,
+      "NIGHT_FLAT": 0.4166666666666667,
+      "NIGHT_UP": 0.4166666666666667
+    },
+    "ADAPTIVE_LINEAR": {
+      "label": "線性調整：跌1/3R、平5/12R、漲1/2R",
+      "NIGHT_DOWN": 0.3333333333333333,
+      "NIGHT_FLAT": 0.4166666666666667,
+      "NIGHT_UP": 0.5
+    },
+    "ADAPTIVE_UP_CONSERVATIVE": {
+      "label": "只對夜盤漲保守：跌平5/12R、漲7/12R",
+      "NIGHT_DOWN": 0.4166666666666667,
+      "NIGHT_FLAT": 0.4166666666666667,
+      "NIGHT_UP": 0.5833333333333334
+    }
+  },
+  "entry_rule": "08:45～09:15不進場；若前30分鐘先穿越該距離對應失效價，當日取消；否則09:15後等待實際觸價",
+  "exit_rule": "進場後持有至日盤收盤；每筆扣固定來回成本",
+  "anti_lookahead": "夜盤位移、昨收與平均振幅皆在隔日日盤開盤前已知"
+}

@@ -1,0 +1,29 @@
+{
+  "run_id": "5e2a3b96-5168-4d69-a8e5-c7305afd1753",
+  "analysis": "futures_retail_bounce_reentry_comparison_backtest",
+  "version": "1.0.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-11-02",
+    "futures_id": "TX",
+    "history_window": 252,
+    "minimum_history": 60,
+    "range_days": 30,
+    "ma5_exclude_percentile": 80.0,
+    "entry_distance_ratio": 0.4166666666666667,
+    "retail_threshold_pct": 20.0,
+    "pre_entry_stop_ratio": 0.25,
+    "bounce_ratio": 0.16666666666666666,
+    "execution_delay_minutes": 1.0,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0
+  },
+  "variants": {
+    "CANCEL_DAY": "原規則：前30分鐘破失效價則取消當日交易",
+    "DIRECT_ENTRY": "08:45起觸及5/12R即進場，不做破價過濾",
+    "BOUNCE_1_6R": "破失效價後，由動態低點反彈1/6R，再延遲1分鐘進場"
+  },
+  "bounce_rule": "前30分鐘破失效價後，自跌破以來動態最低價反彈1/6R即觸發；創新低則重算",
+  "execution_rule": "觸發後等待完整1分鐘，以觸發時刻+1分鐘後第一筆成交價進場",
+  "exit_rule": "進場後不設停損停利，持有至日盤收盤；每筆扣3點成本"
+}

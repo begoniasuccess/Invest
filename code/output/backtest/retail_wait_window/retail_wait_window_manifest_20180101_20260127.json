@@ -1,0 +1,24 @@
+{
+  "run_id": "6d3e2ebd-abef-4ef3-b517-594f6bff8f7f",
+  "analysis": "futures_retail_wait_window_comparison_backtest",
+  "version": "1.0.0",
+  "settings": {
+    "start": "2018-01-01",
+    "end": "2026-11-02",
+    "futures_id": "TX",
+    "history_window": 252,
+    "minimum_history": 60,
+    "range_days": 30,
+    "ma5_exclude_percentile": 80.0,
+    "entry_distance_ratio": 0.4166666666666667,
+    "retail_threshold_pct": 20.0,
+    "pre_entry_stop_ratio": 0.25,
+    "round_trip_cost_points": 3.0,
+    "point_value_twd": 200.0
+  },
+  "variants": {
+    "WAIT_30M": "前30分鐘不進場；先破失效價則取消",
+    "NO_WAIT": "08:45起觸及進場價即進場；無前30分鐘取消"
+  },
+  "control_rule": "除前30分鐘入場限制外，其餘訊號、5/12R進場、收盤出場及3點成本完全相同"
+}
