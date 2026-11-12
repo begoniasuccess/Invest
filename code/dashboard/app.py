@@ -6,6 +6,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -19,6 +20,9 @@ from dashboard.config import DEFAULT_START_DATE, INDICATORS, MARKETS
 from dashboard.cycle_service import CYCLE_TYPES, build_cycle_statistics
 from dashboard.data_service import TAIL_MERGE_THRESHOLD_PCT, build_distribution, filter_period, load_market_snapshot
 from dashboard.kline_service import KLINE_INTERVALS, US_KLINE_INTERVALS, US_MARKETS, load_kline_data, load_preset_levels, load_us_kline_data, load_us_quick_view_data
+from dashboard import replay_service
+from dashboard.paper_trade_api import router as paper_trade_router
+from dashboard.margin_maintenance_service import build_margin_maintenance_payload
 from dashboard.yu_level_chart_service import load_yu_chart_date_bounds, load_yu_chart_levels
 from dashboard.night_bucket_service import (
     DEFAULT_END_DATE as NIGHT_BUCKET_END_DATE,
@@ -29,11 +33,8 @@ from dashboard.night_bucket_service import (
     export_frame as export_night_bucket_frame,
 )
 from dashboard.next_day_session_service import (
-    CORE_ORDER as NEXT_DAY_CORE_ORDER,
     DEFAULT_END_DATE as NEXT_DAY_END_DATE,
     DEFAULT_START_DATE as NEXT_DAY_START_DATE,
-    NIGHT_BUCKET_ORDER as NEXT_DAY_BUCKET_ORDER,
-    NIGHT_TREND_ORDER as NEXT_DAY_TREND_ORDER,
     build_payload as build_next_day_session_payload,
 )
 from dashboard.raw_service import PAGE_SIZES, RAW_REPORTS, TAIWAN_RAW_REPORTS, US_RAW_REPORTS, export_raw_report, load_raw_report
@@ -52,6 +53,11 @@ app = FastAPI(
     redoc_url=None,
 )
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+app.include_router(paper_trade_router)
+
+@app.get("/paper-trade", response_class=HTMLResponse)
+async def paper_trade_page(request: Request):
+    return templates.TemplateResponse(request=request, name="paper_trade.html", context={})
 
 
 class ReportUpdateRequest(BaseModel):
@@ -185,6 +191,18 @@ async def raw_data_page(request: Request):
     )
 
 
+@app.get("/margin-maintenance", response_class=HTMLResponse)
+async def margin_maintenance_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="margin_maintenance.html",
+        context={
+            "default_start_date": (pd.Timestamp.now().normalize() - pd.DateOffset(years=1)).strftime("%Y-%m-%d"),
+            "default_end_date": datetime.now().strftime("%Y-%m-%d"),
+        },
+    )
+
+
 
 
 @app.get("/us/quick-view", response_class=HTMLResponse)
@@ -214,6 +232,36 @@ async def us_raw_data_page(request: Request):
             "default_end_date": datetime.now().strftime("%Y-%m-%d"),
         },
     )
+
+
+@app.get("/replay", response_class=HTMLResponse)
+async def replay_page(request: Request):
+    return templates.TemplateResponse(request=request, name="replay.html", context={
+        "default_date": datetime.now(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d")})
+
+
+@app.get("/api/replay/contracts")
+async def replay_contracts(market: str, start: str, end: str):
+    try:
+        return await run_in_threadpool(replay_service.contracts, market, start, end)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/replay/init")
+async def replay_init(market: str, start: str, end: str, symbol: str = "TAIEX", contract: str = "", period: int = 5):
+    try:
+        return await run_in_threadpool(replay_service.initialize, market, symbol, contract, period, start, end)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/replay/events")
+async def replay_events(market: str, start: str, end: str, symbol: str = "TAIEX", contract: str = "", period: int = 5, final: bool = False):
+    try:
+        return await run_in_threadpool(replay_service.events, market, symbol, contract, period, start, end, final)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
 
 
 @app.get("/kline", response_class=HTMLResponse)
@@ -267,21 +315,6 @@ async def night_bucket_page(request: Request):
             "default_metric": NIGHT_BUCKET_DEFAULT_METRIC,
             "default_start_date": NIGHT_BUCKET_START_DATE,
             "default_end_date": NIGHT_BUCKET_END_DATE,
-        },
-    )
-
-
-@app.get("/next-day-session", response_class=HTMLResponse)
-async def next_day_session_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="next_day_session.html",
-        context={
-            "core_options": NEXT_DAY_CORE_ORDER,
-            "night_bucket_options": NEXT_DAY_BUCKET_ORDER,
-            "night_trend_options": NEXT_DAY_TREND_ORDER,
-            "default_start_date": NEXT_DAY_START_DATE,
-            "default_end_date": datetime.now().strftime("%Y-%m-%d"),
         },
     )
 
@@ -391,6 +424,21 @@ async def kline_data(
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
+@app.get("/api/margin-maintenance")
+async def margin_maintenance_data(
+    start_date: str = Query(...),
+    end_date: str = Query(...),
+):
+    try:
+        return JSONResponse(await run_in_threadpool(
+            build_margin_maintenance_payload, start_date, end_date
+        ))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
 
 
 @app.get("/api/us/quick-view")
@@ -420,8 +468,10 @@ async def us_quick_view_data(
             "interval_name": US_KLINE_INTERVALS[interval],
             "start_date": start_date,
             "end_date": end_date,
+            "market_timezone": "America/New_York",
             "charts": charts,
-            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "generated_at": datetime.now(ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d %H:%M:%S"),
+            "generated_at_timezone": "Asia/Taipei",
         })
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -448,7 +498,10 @@ async def us_kline_data(
             "close": float(record["收盤"]),
             "volume": float(record["成交量"]),
         } for record in frame.to_dict(orient="records")]
-        return JSONResponse({"meta": metadata, "bars": rows})
+        return JSONResponse({
+            "meta": {**metadata, "market_timezone": "America/New_York"},
+            "bars": rows,
+        })
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

@@ -171,12 +171,22 @@ function restoreVisibleColumns(columns, report) {
 function renderTable() {
   const payload = state.payload; const columns = state.visibleColumns;
   const table = $("rawTable");
+  const isUsPage = document.body.dataset.page === "us-raw-data";
   table.querySelector("thead").innerHTML = `<tr>${columns.map(column => {
     const active = column === state.sortColumn;
     const icon = active ? (state.sortDirection === "asc" ? "bi-sort-up" : "bi-sort-down") : "bi-arrow-down-up";
-    return `<th class="raw-sortable" aria-sort="${active ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none"}"><button type="button" class="raw-sort-button ${active ? "active" : ""}" data-column="${escapeHtml(column)}" title="依 ${escapeHtml(column)} 排序"><span>${escapeHtml(column)}</span><i class="bi ${icon}"></i></button></th>`;
+    const timezoneIcon = isUsPage && column === "日期"
+      ? (window.USMarketTime?.icon("日期採美東交易日；移到日期內容上查看對應台灣收盤時間。") || "")
+      : "";
+    return `<th class="raw-sortable" aria-sort="${active ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none"}"><button type="button" class="raw-sort-button ${active ? "active" : ""}" data-column="${escapeHtml(column)}" title="依 ${escapeHtml(column)} 排序"><span>${escapeHtml(column)}${timezoneIcon}</span><i class="bi ${icon}"></i></button></th>`;
   }).join("")}</tr>`;
-  table.querySelector("tbody").innerHTML = payload.rows.map(row => `<tr>${columns.map(column => `<td>${escapeHtml(normalizeCell(row[column]))}</td>`).join("")}</tr>`).join("");
+  table.querySelector("tbody").innerHTML = payload.rows.map(row => `<tr>${columns.map(column => {
+    const value = normalizeCell(row[column]);
+    const title = isUsPage && column === "日期"
+      ? ` title="${escapeHtml(window.USMarketTime?.marketDateTooltip(String(value).slice(0, 10)) || "美東交易日")}"`
+      : "";
+    return `<td${title}>${escapeHtml(value)}</td>`;
+  }).join("")}</tr>`).join("");
   $("tableTitle").textContent = payload.report.name;
   const first = payload.report.total ? payload.report.offset + 1 : 0;
   const last = Math.min(payload.report.offset + payload.rows.length, payload.report.total);

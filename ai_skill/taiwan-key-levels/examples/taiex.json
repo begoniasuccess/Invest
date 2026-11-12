@@ -1,0 +1,20 @@
+{
+  "close": 39702,
+  "records": [
+    {"price": 39702, "label": "今日收盤"},
+    {"price": 38916, "label": "今日開盤"},
+    {"price": 40436, "label": "今日最高"},
+    {"price": 37837, "label": "今日最低"},
+    {"price": 41641, "label": "五日均乖離下限 -2.0%"},
+    {"price": 43340, "label": "五日均乖離上限 +2.0%"},
+    {"price": 42491, "label": "5MA"},
+    {"price": 44321, "label": "10MA"},
+    {"price": 46134, "label": "20MA"},
+    {"price": 46415, "label": "60MA"},
+    {"price": 38500, "label": "選權支撐"},
+    {"price": 38700, "label": "選權支撐"},
+    {"price": 39000, "label": "選權支撐"},
+    {"price": 39500, "label": "選權支撐"},
+    {"price": 40000, "label": "選權壓力"}
+  ]
+}

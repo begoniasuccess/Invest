@@ -1,0 +1,14 @@
+{
+  "start": "2018-01-01",
+  "end": "2026-10-28",
+  "futures_id": "TX",
+  "signal_column": "策略_核心_五日價量",
+  "average_range_days": 30,
+  "amplitude_mode": "NIGHT_CLOSE_MINUS_OPEN",
+  "sl_ratio": 0.25,
+  "tp_ratio": 0.50,
+  "cost_points": 0.0,
+  "gap_limit_points": null,
+  "batch_days": 5,
+  "output_dir": "../output/backtest"
+}

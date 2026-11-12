@@ -1,0 +1,16 @@
+{
+  "start": "2018-01-01",
+  "end": "2026-11-06",
+  "split_date": "2024-01-01",
+  "futures_id": "TX",
+  "output_dir": "../output/backtest/intraday_reversal",
+  "thresholds": {
+    "points": [50, 100, 150, 200, 250, 300, 400, 500, 600, 800, 1000],
+    "percents": [0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 4],
+    "vol_multiples": [0.25, 0.5, 0.75, 1, 1.5, 2]
+  },
+  "reversal_targets": [50, 100, 150, 200, 300],
+  "continuation_targets": [50, 100, 150, 200],
+  "min_tick_coverage_minutes": 295,
+  "max_tick_gap_minutes": 15
+}

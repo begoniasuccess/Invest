@@ -45,6 +45,19 @@ UPDATE_SECTIONS = (
             {"id": "us_tsm", "name": "TSM ADR", "symbol": "TSM", "ttl_minutes": 360},
         ),
     },
+    {
+        "id": "other",
+        "name": "其他資料",
+        "icon": "bi-collection",
+        "description": "獨立更新尚未併入報表總表的研究資料。",
+        "items": (
+            {
+                "id": "tw_margin_maintenance",
+                "name": "大盤融資維持率",
+                "ttl_minutes": 360,
+            },
+        ),
+    },
 )
 
 UPDATE_ITEMS = {
@@ -234,6 +247,17 @@ def _run_module(module: str, *, selected_modules: set[str]) -> tuple[int, dict]:
             refresh_turning="futures_report" not in selected_modules,
         )
         return _row_count_from_result(result), {}
+
+    if module == "tw_margin_maintenance":
+        from module.margin_maintenance import update_taiwan_total_margin_maintenance
+
+        result = update_taiwan_total_margin_maintenance(datetime.now())
+        return int(result.written_rows), {
+            "requested_start": result.requested_start.isoformat(),
+            "requested_end": result.requested_end.isoformat(),
+            "first_date": None if result.first_date is None else result.first_date.isoformat(),
+            "last_date": None if result.last_date is None else result.last_date.isoformat(),
+        }
 
     raise ValueError(f"模組 {module} 必須由批次更新器處理")
 

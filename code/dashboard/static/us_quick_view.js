@@ -12,6 +12,10 @@
   let dragMarketKey = null;
 
   const $ = id => document.getElementById(id);
+  const escapeHtml = value => String(value ?? "").replace(
+    /[&<>"']/g,
+    character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character],
+  );
   const formatPrice = value => Number(value).toLocaleString("zh-TW", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const formatPct = value => `${value >= 0 ? "+" : ""}${Number(value).toFixed(2)}%`;
   const today = () => new Date().toISOString().slice(0, 10);
@@ -150,9 +154,9 @@
           <span class="us-quick-drag-handle" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
           <div class="us-quick-card-title"><span class="panel-kicker">${market.symbol}</span><h2>${market.name}</h2></div>
         </div>
-        <div class="us-quick-last ${changeClass}"><strong>${formatPrice(meta.latest_close)}</strong><span>${changeText}</span><small>${meta.latest_date}</small></div>
+        <div class="us-quick-last ${changeClass}"><strong>${formatPrice(meta.latest_close)}</strong><span>${changeText}</span><small title="${escapeHtml(window.USMarketTime?.marketDateTooltip(meta.latest_date) || "美東交易日")}">${meta.latest_date}${window.USMarketTime?.icon("日期採美東交易日；移到日期上查看對應台灣收盤時間。") || ""}</small></div>
       </header>
-      <div class="us-quick-ohlc">最新：O ${formatPrice(dataset.bars.at(-1).open)}　H ${formatPrice(dataset.bars.at(-1).high)}　L ${formatPrice(dataset.bars.at(-1).low)}　C ${formatPrice(dataset.bars.at(-1).close)}</div>
+      <div class="us-quick-ohlc" title="${escapeHtml(window.USMarketTime?.marketDateTooltip(meta.latest_date) || "美東交易日")}">最新：O ${formatPrice(dataset.bars.at(-1).open)}　H ${formatPrice(dataset.bars.at(-1).high)}　L ${formatPrice(dataset.bars.at(-1).low)}　C ${formatPrice(dataset.bars.at(-1).close)}</div>
       <div class="us-quick-chart" data-chart></div>`;
 
     const dragHeader = card.querySelector(".us-quick-card-head");
@@ -212,11 +216,13 @@
       if (!param?.time) {
         const last = dataset.bars.at(-1);
         ohlc.textContent = `最新：O ${formatPrice(last.open)}　H ${formatPrice(last.high)}　L ${formatPrice(last.low)}　C ${formatPrice(last.close)}`;
+        ohlc.title = window.USMarketTime?.marketDateTooltip(last.time) || "美東交易日";
         return;
       }
       const row = param.seriesData.get(candle);
       if (!row) return;
       ohlc.textContent = `${param.time}：O ${formatPrice(row.open)}　H ${formatPrice(row.high)}　L ${formatPrice(row.low)}　C ${formatPrice(row.close)}`;
+      ohlc.title = window.USMarketTime?.marketDateTooltip(param.time) || "美東交易日";
     });
 
     const observer = new ResizeObserver(entries => {
@@ -261,6 +267,7 @@
     if (!force && responseCache.has(key)) {
       payload = responseCache.get(key);
       $("sourceBadge").innerHTML = `<i class="bi bi-lightning-charge"></i> ${payload.interval_name}｜頁面快取｜${state.startDate}～${state.endDate}`;
+      $("sourceBadge").title = "日期區間採美東交易日（America/New_York）。";
       hideAlert();
       render();
       return;
@@ -282,6 +289,7 @@
       payload = data;
       responseCache.set(key, data);
       $("sourceBadge").innerHTML = `<i class="bi bi-database-check"></i> ${data.interval_name}｜${data.start_date}～${data.end_date}｜更新 ${data.generated_at}`;
+      $("sourceBadge").title = window.USMarketTime?.taipeiTimestampTooltip(data.generated_at) || "更新時間採台灣時間";
       render();
     } catch (error) {
       if (currentRequest === requestId) showAlert(`讀取失敗：${error.message}`);

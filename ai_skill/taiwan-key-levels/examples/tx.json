@@ -1,0 +1,31 @@
+{
+  "close": 39652,
+  "records": [
+    {"price": 39652, "label": "全日收盤"},
+    {"price": 41990, "label": "全日開盤"},
+    {"price": 42298, "label": "全日最高"},
+    {"price": 37694, "label": "全日最低"},
+    {"price": 41810, "label": "五日均乖離下限 -2.0%"},
+    {"price": 43517, "label": "五日均乖離上限 +2.0%"},
+    {"price": 42663, "label": "5MA"},
+    {"price": 44478, "label": "10MA"},
+    {"price": 46230, "label": "20MA"},
+    {"price": 46493, "label": "60MA"},
+    {"price": 38888, "label": "日盤開"},
+    {"price": 39786, "label": "日盤收"},
+    {"price": 40690, "label": "日盤高"},
+    {"price": 37694, "label": "日盤低"},
+    {"price": 42707, "label": "日盤05MA"},
+    {"price": 44501, "label": "日盤10MA"},
+    {"price": 46244, "label": "日盤20MA"},
+    {"price": 46501, "label": "日盤60MA"},
+    {"price": 38471, "label": "日盤轉折支撐"},
+    {"price": 40454, "label": "日盤轉折壓力"},
+    {"price": 39742, "label": "夜盤開"},
+    {"price": 40298, "label": "夜盤收"},
+    {"price": 40845, "label": "夜盤高"},
+    {"price": 39129, "label": "夜盤低"},
+    {"price": 39384, "label": "夜盤轉折支撐"},
+    {"price": 40587, "label": "夜盤轉折壓力"}
+  ]
+}

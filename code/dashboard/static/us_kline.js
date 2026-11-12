@@ -316,6 +316,9 @@ function updateLegend(param) {
     : String(param.time);
   const volumeLabel = state.payload?.meta?.volume_label || "成交量";
   $("ohlcLegend").innerHTML = `<strong>${escapeHtml(timeText)}</strong><span>開 ${formatNumber(bar.open)}</span><span>高 ${formatNumber(bar.high)}</span><span>低 ${formatNumber(bar.low)}</span><span>收 ${formatNumber(bar.close)}</span><span class="${change >= 0 ? "quote-up" : "quote-down"}">${change >= 0 ? "+" : ""}${formatNumber(change)}（${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%）</span><span>${escapeHtml(volumeLabel)} ${formatNumber(volume, volumeLabel.includes("億元") ? 2 : 0)}</span>`;
+  $("ohlcLegend").title = state.payload?.meta.intraday
+    ? "分時資料依頁面標示時區顯示。"
+    : (window.USMarketTime?.marketDateTooltip(timeText) || "日期採美東交易日");
   const { layout } = currentLayout();
   $("maLegend").innerHTML = layout.mas.filter(ma => ma.visible && state.maSeries.has(ma.period)).map(ma => {
     const series = state.maSeries.get(ma.period);
@@ -647,6 +650,7 @@ async function loadChart(success = false) {
     resetLineEditor(); resetVerticalEditor();
     saveSelectors(); createChart(payload); renderDif(); renderMas(); renderPriceLines(); renderVerticalLines(); applyVisibleRange();
     $("sourceBadge").innerHTML = `<i class="bi bi-database-check"></i> ${payload.meta.source_min_date} ～ ${payload.meta.source_max_date}`;
+    $("sourceBadge").title = "資料日期採美東交易日（America/New_York）；行情日期上可查看對應台灣收盤時間。";
     $("chartTitle").textContent = `${payload.meta.market_name}｜${payload.meta.interval_name}`;
     updateLatestLegend();
     updatePresetControls();

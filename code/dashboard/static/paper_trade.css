@@ -1,0 +1,14 @@
+.paper-ticket{padding:16px 20px;border-top:1px solid #e0e7ef;border-bottom:1px solid #e0e7ef;background:#f9fbfe}
+.paper-ticket summary{font-weight:700;color:#294060;cursor:pointer;list-style-position:inside}
+.paper-ticket label,.paper-field label{display:block;color:#536782;font-size:.79rem;margin-bottom:4px;font-weight:600}
+.paper-fields{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px;margin-top:12px}
+.paper-fields>div{flex:1 1 125px;min-width:0}.paper-fields>div.paper-wide{flex:2 1 220px}.paper-fields>div.paper-action{flex:0 0 auto}
+.paper-fields .form-control,.paper-fields .form-select{min-height:38px}.paper-fields .btn{white-space:nowrap}
+.paper-buy{background:#c92d3a!important;color:#fff!important;border-color:#c92d3a!important}.paper-sell{background:#07834e!important;color:#fff!important;border-color:#07834e!important}
+.paper-buy:disabled,.paper-sell:disabled{opacity:.5}
+.paper-gain{color:#bc2637!important;font-weight:650}.paper-loss{color:#08774a!important;font-weight:650}
+.paper-table{font-size:.84rem;white-space:nowrap;margin-bottom:0}.paper-table th{font-weight:650;color:#536782;background:#f3f6fb}.paper-table td{vertical-align:middle}.paper-table .paper-note-cell{min-width:220px;max-width:360px;white-space:normal;overflow-wrap:anywhere}
+.paper-table .paper-note-cell textarea{min-width:200px;font-size:.85rem}.paper-status{min-height:1.3em;font-size:.84rem;margin-top:8px;color:#536782;overflow-wrap:anywhere}
+.paper-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.paper-stat{padding:13px;border:1px solid #dce5ef;background:#fff;border-radius:10px}.paper-stat small{display:block;color:#536782}.paper-stat strong{display:block;font-size:1.25rem;margin-top:4px;font-variant-numeric:tabular-nums}
+.paper-section{padding:18px}.paper-section h2{font-size:1.05rem;margin-bottom:12px}.paper-curve{width:100%;min-height:180px;max-height:260px;background:#fff;border:1px solid #e0e7ef;border-radius:8px}.paper-muted{font-size:.8rem;color:#667891}.paper-scroll{overflow:auto}.paper-ticket [hidden]{display:none!important}
+@media(max-width:600px){.paper-fields>div{flex-basis:calc(50% - 10px)}.paper-ticket{padding:12px}.paper-section{padding:12px}.paper-fields>div.paper-wide{flex-basis:100%}}

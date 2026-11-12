@@ -9,9 +9,11 @@
     { id: "distribution", href: "/distribution", icon: "bi-bar-chart-line", label: "級距統計", group: "tw" },
     { id: "cycles", href: "/cycles", icon: "bi-calendar3", label: "週期統計", group: "tw" },
     { id: "night-bucket", href: "/night-bucket", icon: "bi-moon-stars", label: "夜盤分層分析", group: "tw" },
-    { id: "next-day-session", href: "/next-day-session", icon: "bi-grid-3x3-gap", label: "隔日日盤研究", group: "tw" },
+    { id: "margin-maintenance", href: "/margin-maintenance", icon: "bi-percent", label: "融資維持率", group: "tw" },
     { id: "raw-data", href: "/raw-data", icon: "bi-table", label: "原始資料", group: "tw" },
     { id: "kline", href: "/kline", icon: "bi-graph-up", label: "K 線分析", group: "tw" },
+    { id: "replay", href: "/replay", icon: "bi-play-circle", label: "台股行情回放", group: "tw" },
+    { id: "paper-trade", href: "/paper-trade", icon: "bi-journal-check", label: "模擬交易績效", group: "tw" },
     { id: "yu-key-levels", href: "/yu-key-levels", icon: "bi-bullseye", label: "Yu 點位審核", group: "tw" },
     { id: "us-quick-view", href: "/us/quick-view", icon: "bi-grid-1x2", label: "快速閱覽", group: "us" },
     { id: "us-raw-data", href: "/us/raw-data", icon: "bi-table", label: "美股原始資料", group: "us" },
@@ -33,12 +35,18 @@
     const valid = new Set(ITEMS.map(item => item.id));
     const order = [...new Set(Array.isArray(raw.order) ? raw.order.filter(id => valid.has(id)) : [])];
     const quickViewWasMissing = !order.includes("us-quick-view");
+    const replayWasMissing = !order.includes("replay");
     ITEMS.forEach(item => { if (!order.includes(item.id)) order.push(item.id); });
     if (quickViewWasMissing) {
       const quickIndex = order.indexOf("us-quick-view");
       if (quickIndex >= 0) order.splice(quickIndex, 1);
       const firstUsIndex = order.findIndex(id => ITEMS.find(item => item.id === id)?.group === "us");
       order.splice(firstUsIndex >= 0 ? firstUsIndex : order.length, 0, "us-quick-view");
+    }
+    if (replayWasMissing) {
+      const replayIndex = order.indexOf("replay");
+      if (replayIndex >= 0) order.splice(replayIndex, 1);
+      order.splice(order.indexOf("kline") + 1, 0, "replay");
     }
     const groupCollapsed = {
       tw: Boolean(raw.groupCollapsed?.tw),

@@ -80,6 +80,18 @@ body.sidebar-collapsed .nav-item { justify-content: center; padding-inline: 0; }
 .bin-width-field .input-group-text { min-width: 42px; justify-content: center; color: #536178; background: #f8fafc; }
 .bin-width-field .btn { border-color: #d7dee9; }
 .filter-actions .btn { height: 40px; border-radius: 8px; white-space: nowrap; }
+.margin-filter-grid { display: grid; grid-template-columns: minmax(170px, 240px) minmax(170px, 240px) auto; gap: 14px; align-items: end; }
+.margin-summary { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+.margin-chart-card { margin-bottom: 18px; }
+.margin-chart { width: 100%; min-height: 560px; padding: 4px 8px 0; }
+.margin-empty { display: grid; min-height: 360px; place-items: center; color: var(--muted); }
+.margin-table-card { margin-bottom: 18px; }
+.margin-table-wrap { max-height: 560px; }
+@media (max-width: 767.98px) {
+  .margin-filter-grid { grid-template-columns: 1fr; }
+  .margin-summary { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+  .margin-chart { padding-inline: 0; }
+}
 .app-alert { margin: 0 0 18px; border-radius: 10px; font-size: .88rem; }
 .summary-grid { display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 13px; margin-bottom: 18px; }
 .metric-card { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 15px; background: white; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 5px 18px rgba(15,23,42,.04); }
@@ -758,3 +770,25 @@ body.sidebar-collapsed .nav-section-body { gap: 3px; }
   .us-quick-settings-btn, .us-quick-refresh-btn { width: 100%; min-width: 0; }
   .us-quick-control-summary { grid-column: 1 / -1; grid-row: 2; text-align: left; }
 }
+.timezone-hint {
+  color: #64748b;
+  cursor: help;
+  font-size: .82em;
+  margin-left: .28rem;
+  vertical-align: .04em;
+}
+
+.timezone-hint:focus-visible {
+  color: #2563eb;
+  outline: 2px solid rgba(37, 99, 235, .35);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* Replay controls above the drawing toolbar; outside-the-plot price labels. */
+#replayPanel > .panel-heading { flex-wrap: wrap; align-items: center; gap: 16px; }
+#replayPanel .replay-player { flex: 1 1 560px; min-width: 0; }
+#replayPanel .replay-tools-bar { display: flex; justify-content: flex-end; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+#replayPanel .replay-labels-hidden > .level-label-rail,
+#replayPanel .replay-labels-hidden > .level-label-resizer { display: none !important; }
+#replayPanel #levelLabelsToggle.active { background: #e8f0fe; color: #2563eb; }
