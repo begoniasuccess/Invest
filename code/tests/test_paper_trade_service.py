@@ -88,3 +88,80 @@ def test_api_validation_immutable_payload_and_product():
 def test_historical_and_wall_time_are_distinct():
     assert p.client_time('2026-11-12T22:00:00+08:00').utcoffset().total_seconds()==28800
     with pytest.raises(ValueError): p.client_time('2026-11-12T22:00:00')
+
+
+def test_position_effect_allocation_fifo_and_reversal():
+    first={'quantity':2,'trade_id':1}; second={'quantity':3,'trade_id':2}
+    assert p.allocation_plan([first,second],1,'OPEN')==([],1)
+    assert p.allocation_plan([first,second],3,'CLOSE')==([(first,2),(second,1)],0)
+    assert p.allocation_plan([first,second],6,'AUTO')==([(first,2),(second,3)],1)
+    with pytest.raises(ValueError,match='不足'):p.allocation_plan([first],3,'CLOSE')
+
+
+def test_partial_close_retains_open_lot_and_copies_entry():
+    c=Mock();w=datetime.now(timezone.utc)
+    trade=dict(trade_id=10,quantity=3,direction='LONG',slippage=1)
+    with patch.object(p,'one',return_value={'id':11}) as insert:
+        p.close_trade(c,trade,tick(2,110),w,'MANUAL',quantity=1,price=D(110),exit_order_id=20)
+    assert 'entry_price' in insert.call_args.args[1]
+    assert insert.call_args.args[2]==(1,10)
+    assert c.execute.call_args_list[0].args[1]==(2,10)
+    assert c.execute.call_args_list[1].args[1][-2:]==(20,11)
+
+
+def test_close_order_never_opens_and_auto_reverses():
+    c=Mock();w=datetime.now(timezone.utc); t1=tick(2,110)
+    o=dict(id=20,run_id=1,product='TX',direction='SHORT',quantity=3,slippage=2,position_effect='AUTO')
+    pos=dict(trade_id=10,quantity=2,direction='LONG',slippage=0)
+    with patch.object(p,'opposite_positions',return_value=[pos]),patch.object(p,'close_trade') as close:
+        p.fill(c,o,t1,w)
+        assert close.call_args.kwargs==dict(quantity=2,price=D(108),exit_order_id=20)
+        assert c.execute.call_args_list[0].args[1][-1]==1
+    c.reset_mock()
+    with patch.object(p,'opposite_positions',return_value=[pos]),patch.object(p,'close_trade') as close:
+        p.fill(c,{**o,'position_effect':'CLOSE'},t1,w)
+        close.assert_not_called()
+        assert "status='CANCELLED'" in c.execute.call_args.args[0]
+
+
+def test_close_limit_uses_no_adverse_slippage():
+    c=Mock();w=datetime.now(timezone.utc); t1=tick(2,110)
+    o=dict(id=20,run_id=1,product='TX',direction='SHORT',quantity=1,slippage=2,position_effect='CLOSE')
+    pos=dict(trade_id=10,quantity=2,direction='LONG',slippage=0)
+    with patch.object(p,'opposite_positions',return_value=[pos]),patch.object(p,'close_trade') as close:
+        p.fill(c,o,t1,w,limit=True)
+        assert close.call_args.kwargs['price']==D(110)
+        assert c.execute.call_count==1
+
+@pytest.mark.parametrize('kind,side,target,price,tif,expected',[
+    ('LIMIT','LONG',100,101,'ROD','WAIT'),
+    ('LIMIT','LONG',100,101,'IOC','CANCEL'),
+    ('LIMIT','LONG',100,101,'FOK','CANCEL'),
+    ('LIMIT','LONG',100,99,'IOC','FILL'),
+    ('LIMIT','SHORT',100,101,'FOK','FILL'),
+    ('LIMIT','SHORT',100,99,'IOC','CANCEL'),
+    ('MARKET','LONG',None,100,'IOC','FILL'),
+    ('STOP','LONG',105,100,'IOC','WAIT'),
+    ('STOP','SHORT',95,100,'FOK','WAIT'),
+    ('STOP','LONG',105,106,'FOK','FILL'),
+])
+def test_initial_tif_decision(kind,side,target,price,tif,expected):
+    assert p.initial_order_decision(kind,side,target,price,tif)==expected
+
+
+def test_tif_compatibility():
+    assert p.normalize_tif('LIMIT')=='ROD'
+    assert p.normalize_tif('MARKET')=='IOC'
+    assert p.normalize_tif('STOP')=='IOC'
+    for kind in ('MARKET','STOP'):
+        with pytest.raises(ValueError): p.normalize_tif(kind,'ROD')
+    with pytest.raises(ValueError): p.normalize_tif('LIMIT','ROC')
+
+
+def test_run_end_cancels_only_pending():
+    c=Mock(); r=run(); wall=datetime.now(timezone.utc)
+    p.expire_run_orders(c,r,t(58),wall); c.execute.assert_not_called()
+    p.expire_run_orders(c,r,t(59),wall)
+    sql,args=c.execute.call_args.args
+    assert "status='PENDING'" in sql and 'run_id=%s' in sql
+    assert args==(r['end_at'],wall,'回放時段結束',r['id'])

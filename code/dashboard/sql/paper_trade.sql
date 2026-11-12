@@ -53,12 +53,28 @@ CREATE TABLE IF NOT EXISTS paper_trade.trades (
  CHECK ((exit_time IS NULL AND exit_tick_id IS NULL AND exit_price IS NULL AND exit_raw_price IS NULL AND exit_client_at IS NULL AND exit_server_at IS NULL AND exit_reason IS NULL) OR
  (exit_time IS NOT NULL AND exit_time>=entry_time AND exit_tick_id IS NOT NULL AND exit_price IS NOT NULL AND exit_price>0 AND exit_raw_price IS NOT NULL AND exit_raw_price>0 AND exit_client_at IS NOT NULL AND exit_server_at IS NOT NULL AND exit_reason IS NOT NULL AND exit_reason IN ('MANUAL','STOP_LOSS','TAKE_PROFIT')))
 );
+-- Position effect migration: legacy orders remain explicit new positions.
+ALTER TABLE paper_trade.orders ADD COLUMN IF NOT EXISTS position_effect text NOT NULL DEFAULT 'OPEN' CHECK(position_effect IN ('AUTO','OPEN','CLOSE'));
+ALTER TABLE paper_trade.orders ADD COLUMN IF NOT EXISTS cancel_reason text;
+-- Backfill legacy semantics before reinstalling the immutability trigger.
+DROP TRIGGER IF EXISTS guard_order_update ON paper_trade.orders;
+ALTER TABLE paper_trade.orders ADD COLUMN IF NOT EXISTS time_in_force text;
+UPDATE paper_trade.orders SET time_in_force=CASE WHEN order_type='LIMIT' THEN 'ROD' ELSE 'IOC' END WHERE time_in_force IS NULL;
+ALTER TABLE paper_trade.orders ALTER COLUMN time_in_force SET DEFAULT 'ROD';
+ALTER TABLE paper_trade.orders ALTER COLUMN time_in_force SET NOT NULL;
+ALTER TABLE paper_trade.orders DROP CONSTRAINT IF EXISTS paper_orders_tif_check;
+ALTER TABLE paper_trade.orders ADD CONSTRAINT paper_orders_tif_check CHECK(time_in_force IN ('ROD','IOC','FOK') AND (order_type='LIMIT' OR time_in_force<>'ROD'));
+
+ALTER TABLE paper_trade.trades ADD COLUMN IF NOT EXISTS position_quantity integer CHECK(position_quantity > 0);
+ALTER TABLE paper_trade.trades ADD COLUMN IF NOT EXISTS exit_order_id bigint REFERENCES paper_trade.orders(id);
+ALTER TABLE paper_trade.trades DROP CONSTRAINT IF EXISTS trades_order_id_key;
+CREATE INDEX IF NOT EXISTS paper_trades_order_idx ON paper_trade.trades(order_id);
 CREATE INDEX IF NOT EXISTS paper_runs_account_idx ON paper_trade.runs(account_id, id DESC);
 CREATE INDEX IF NOT EXISTS paper_orders_run_idx ON paper_trade.orders(run_id,status,id);
 -- Prevent changes to fixed execution facts, even through an accidental UPDATE.
 CREATE OR REPLACE FUNCTION paper_trade.guard_order_update() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
- IF (to_jsonb(NEW)-ARRAY['status','cancelled_at','cancelled_client_at']) IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['status','cancelled_at','cancelled_client_at']) THEN
+ IF (to_jsonb(NEW)-ARRAY['status','cancelled_at','cancelled_client_at','cancel_reason']) IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['status','cancelled_at','cancelled_client_at','cancel_reason']) THEN
   RAISE EXCEPTION 'Immutable simulated order details';
  END IF;
  IF OLD.status <> 'PENDING' AND NEW IS DISTINCT FROM OLD THEN RAISE EXCEPTION 'Finalized simulated order cannot be changed'; END IF;
@@ -68,9 +84,12 @@ DROP TRIGGER IF EXISTS guard_order_update ON paper_trade.orders;
 CREATE TRIGGER guard_order_update BEFORE UPDATE ON paper_trade.orders FOR EACH ROW EXECUTE FUNCTION paper_trade.guard_order_update();
 CREATE OR REPLACE FUNCTION paper_trade.guard_trade_update() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
- IF (to_jsonb(NEW)-ARRAY['note','note_updated_at','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) IS DISTINCT FROM
-    (to_jsonb(OLD)-ARRAY['note','note_updated_at','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) THEN
+ IF (to_jsonb(NEW)-ARRAY['note','note_updated_at','position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) IS DISTINCT FROM
+    (to_jsonb(OLD)-ARRAY['note','note_updated_at','position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) THEN
   RAISE EXCEPTION 'Immutable simulated entry details';
+ END IF;
+ IF NEW.position_quantity IS DISTINCT FROM OLD.position_quantity AND (OLD.exit_time IS NOT NULL OR NEW.position_quantity IS NULL OR NEW.position_quantity >= COALESCE(OLD.position_quantity,(SELECT quantity FROM paper_trade.orders WHERE id=OLD.order_id))) THEN
+  RAISE EXCEPTION 'Position quantity may only decrease during a split';
  END IF;
  IF OLD.exit_time IS NOT NULL AND (to_jsonb(NEW)-ARRAY['note','note_updated_at']) IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['note','note_updated_at']) THEN
   RAISE EXCEPTION 'Finalized simulated trade cannot be changed';
