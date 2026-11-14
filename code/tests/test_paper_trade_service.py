@@ -3,7 +3,7 @@ from decimal import Decimal as D
 from unittest.mock import Mock,patch
 import pytest
 from dashboard import paper_trade_service as p
-from dashboard.paper_trade_api import Action,Note,Account
+from dashboard.paper_trade_api import Action,Account
 from pydantic import ValidationError
 
 
@@ -81,7 +81,7 @@ def test_api_validation_immutable_payload_and_product():
     assert Action(**base).tick_id=='9007199254740993'
     for changes in ({'quantity':0},{'product':'fake'},{'tick_id':'invalid'},{'clock_ms':float('nan')},{'target':-1}):
         with pytest.raises(ValidationError): Action(**(base|changes))
-    with pytest.raises(ValidationError): Note(note='test',entry_price=200)
+    with pytest.raises(ValidationError): Action(**(base|{'entry_price':200}))
     with pytest.raises(ValidationError): Account(name='test',fee_tx=-1)
 
 
@@ -104,6 +104,7 @@ def test_partial_close_retains_open_lot_and_copies_entry():
     with patch.object(p,'one',return_value={'id':11}) as insert:
         p.close_trade(c,trade,tick(2,110),w,'MANUAL',quantity=1,price=D(110),exit_order_id=20)
     assert 'entry_price' in insert.call_args.args[1]
+    assert 'note' not in insert.call_args.args[1]
     assert insert.call_args.args[2]==(1,10)
     assert c.execute.call_args_list[0].args[1]==(2,10)
     assert c.execute.call_args_list[1].args[1][-2:]==(20,11)

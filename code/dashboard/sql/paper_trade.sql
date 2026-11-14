@@ -49,7 +49,6 @@ CREATE TABLE IF NOT EXISTS paper_trade.trades (
  entry_client_at timestamptz NOT NULL, entry_server_at timestamptz NOT NULL DEFAULT now(),
  exit_time timestamp, exit_tick_id bigint, exit_price numeric(18,4), exit_raw_price numeric(18,4),
  exit_client_at timestamptz, exit_server_at timestamptz, exit_reason text,
- note text NOT NULL DEFAULT '' CHECK(length(note)<=10000), note_updated_at timestamptz,
  CHECK ((exit_time IS NULL AND exit_tick_id IS NULL AND exit_price IS NULL AND exit_raw_price IS NULL AND exit_client_at IS NULL AND exit_server_at IS NULL AND exit_reason IS NULL) OR
  (exit_time IS NOT NULL AND exit_time>=entry_time AND exit_tick_id IS NOT NULL AND exit_price IS NOT NULL AND exit_price>0 AND exit_raw_price IS NOT NULL AND exit_raw_price>0 AND exit_client_at IS NOT NULL AND exit_server_at IS NOT NULL AND exit_reason IS NOT NULL AND exit_reason IN ('MANUAL','STOP_LOSS','TAKE_PROFIT')))
 );
@@ -84,18 +83,70 @@ DROP TRIGGER IF EXISTS guard_order_update ON paper_trade.orders;
 CREATE TRIGGER guard_order_update BEFORE UPDATE ON paper_trade.orders FOR EACH ROW EXECUTE FUNCTION paper_trade.guard_order_update();
 CREATE OR REPLACE FUNCTION paper_trade.guard_trade_update() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
- IF (to_jsonb(NEW)-ARRAY['note','note_updated_at','position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) IS DISTINCT FROM
-    (to_jsonb(OLD)-ARRAY['note','note_updated_at','position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) THEN
+ IF (to_jsonb(NEW)-ARRAY['position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) IS DISTINCT FROM
+    (to_jsonb(OLD)-ARRAY['position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) THEN
   RAISE EXCEPTION 'Immutable simulated entry details';
  END IF;
  IF NEW.position_quantity IS DISTINCT FROM OLD.position_quantity AND (OLD.exit_time IS NOT NULL OR NEW.position_quantity IS NULL OR NEW.position_quantity >= COALESCE(OLD.position_quantity,(SELECT quantity FROM paper_trade.orders WHERE id=OLD.order_id))) THEN
   RAISE EXCEPTION 'Position quantity may only decrease during a split';
  END IF;
- IF OLD.exit_time IS NOT NULL AND (to_jsonb(NEW)-ARRAY['note','note_updated_at']) IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['note','note_updated_at']) THEN
+ IF OLD.exit_time IS NOT NULL AND NEW IS DISTINCT FROM OLD THEN
   RAISE EXCEPTION 'Finalized simulated trade cannot be changed';
  END IF;
  RETURN NEW;
 END $$;
 DROP TRIGGER IF EXISTS guard_trade_update ON paper_trade.trades;
 CREATE TRIGGER guard_trade_update BEFORE UPDATE ON paper_trade.trades FOR EACH ROW EXECUTE FUNCTION paper_trade.guard_trade_update();
+-- Independent journals and typed many-to-many references.
+CREATE TABLE IF NOT EXISTS paper_trade.journals (
+ id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ title text NOT NULL CHECK(length(btrim(title)) BETWEEN 1 AND 200),
+ body text NOT NULL DEFAULT '' CHECK(length(body)<=100000),
+ journal_date date NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS paper_trade.journal_links (
+ id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ journal_id bigint NOT NULL REFERENCES paper_trade.journals(id) ON DELETE CASCADE,
+ account_id bigint REFERENCES paper_trade.accounts(id) ON DELETE CASCADE,
+ run_id bigint REFERENCES paper_trade.runs(id) ON DELETE CASCADE,
+ trade_id bigint REFERENCES paper_trade.trades(id) ON DELETE CASCADE,
+ historical_date date,
+ CHECK(num_nonnulls(account_id,run_id,trade_id,historical_date)=1),
+ UNIQUE(journal_id,account_id), UNIQUE(journal_id,run_id), UNIQUE(journal_id,trade_id), UNIQUE(journal_id,historical_date)
+);
+CREATE INDEX IF NOT EXISTS journal_date_idx ON paper_trade.journals(journal_date DESC,id DESC);
+CREATE INDEX IF NOT EXISTS journal_link_account_idx ON paper_trade.journal_links(account_id);
+CREATE INDEX IF NOT EXISTS journal_link_run_idx ON paper_trade.journal_links(run_id);
+CREATE INDEX IF NOT EXISTS journal_link_trade_idx ON paper_trade.journal_links(trade_id);
+CREATE INDEX IF NOT EXISTS journal_link_history_idx ON paper_trade.journal_links(historical_date);
+CREATE OR REPLACE VIEW paper_trade.journal_link_details AS
+ SELECT l.id,l.journal_id,
+ CASE WHEN l.trade_id IS NOT NULL THEN 'trade' WHEN l.run_id IS NOT NULL THEN 'run' WHEN l.account_id IS NOT NULL THEN 'account' ELSE 'date' END AS kind,
+ COALESCE(l.trade_id,l.run_id,l.account_id) AS target_id,
+ COALESCE(l.account_id,r.account_id) AS account_id,a.name AS account_name,
+ COALESCE(l.run_id,o.run_id) AS run_id,l.trade_id,
+ COALESCE(l.historical_date,t.entry_time::date,r.start_at::date) AS historical_date,
+ l.historical_date AS linked_date,r.market,r.contract,r.start_at,r.end_at,o.product,o.direction,
+ t.entry_price,t.exit_price,t.entry_time,t.exit_time
+ FROM paper_trade.journal_links l
+ LEFT JOIN paper_trade.trades t ON t.id=l.trade_id
+ LEFT JOIN paper_trade.orders o ON o.id=t.order_id
+ LEFT JOIN paper_trade.runs r ON r.id=COALESCE(l.run_id,o.run_id)
+ LEFT JOIN paper_trade.accounts a ON a.id=COALESCE(l.account_id,r.account_id);
+-- User confirmed legacy notes were never used. Guard against unexpected nonblank data.
+DO $$
+DECLARE tbl text; has_notes boolean;
+BEGIN
+ FOREACH tbl IN ARRAY ARRAY['runs','trades'] LOOP
+   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='paper_trade' AND table_name=tbl AND column_name='note') THEN
+      EXECUTE format('SELECT EXISTS (SELECT 1 FROM paper_trade.%I WHERE length(btrim(note))>0)',tbl) INTO has_notes;
+      IF has_notes THEN RAISE EXCEPTION 'Legacy notes in % are not empty; export them before removing columns',tbl; END IF;
+   END IF;
+ END LOOP;
+END $$;
+ALTER TABLE paper_trade.runs DROP COLUMN IF EXISTS note, DROP COLUMN IF EXISTS note_updated_at;
+ALTER TABLE paper_trade.trades DROP COLUMN IF EXISTS note, DROP COLUMN IF EXISTS note_updated_at;
+DROP TABLE IF EXISTS paper_trade.journal_migrations;
 COMMIT;

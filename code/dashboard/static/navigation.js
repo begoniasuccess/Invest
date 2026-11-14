@@ -11,14 +11,37 @@
     { id: "night-bucket", href: "/night-bucket", icon: "bi-moon-stars", label: "夜盤分層分析", group: "tw" },
     { id: "margin-maintenance", href: "/margin-maintenance", icon: "bi-percent", label: "融資維持率", group: "tw" },
     { id: "raw-data", href: "/raw-data", icon: "bi-table", label: "原始資料", group: "tw" },
-    { id: "kline", href: "/kline", icon: "bi-graph-up", label: "K 線分析", group: "tw" },
+    { id: "kline", href: "/kline", icon: "bi-graph-up", label: "K 線圖", group: "tw" },
     { id: "replay", href: "/replay", icon: "bi-play-circle", label: "台股行情回放", group: "tw" },
     { id: "paper-trade", href: "/paper-trade", icon: "bi-journal-check", label: "模擬交易績效", group: "tw" },
-    { id: "yu-key-levels", href: "/yu-key-levels", icon: "bi-bullseye", label: "Yu 點位審核", group: "tw" },
+    { id: "yu-key-levels", href: "/yu-key-levels", icon: "bi-bullseye", label: "Yu 點位分析", group: "tw" },
+    { id: "paper-journal", href: "/paper-journal", icon: "bi-journal-text", label: "交易日記", group: "tw" },
     { id: "us-quick-view", href: "/us/quick-view", icon: "bi-grid-1x2", label: "快速閱覽", group: "us" },
     { id: "us-raw-data", href: "/us/raw-data", icon: "bi-table", label: "美股原始資料", group: "us" },
     { id: "us-kline", href: "/us/kline", icon: "bi-graph-up", label: "美股 K 線", group: "us" },
   ];
+
+  const SUBGROUPS = [
+    {id:"basic-analysis",label:"基礎分析",icon:"bi-bar-chart-line",children:["distribution","cycles","night-bucket"]},
+    {id:"strategy-sim",label:"策略模擬",icon:"bi-diagram-3",children:["replay","paper-trade","paper-journal","yu-key-levels"]},
+  ];
+  const parentOf = id => SUBGROUPS.find(g=>g.children.includes(id));
+  const navId = id => parentOf(id)?.id || id;
+  const rowIds = group => [...new Set(settings.order.filter(id=>ITEMS.find(i=>i.id===id)?.group===group).map(navId))];
+  const submenuCSS = document.createElement("style");
+  submenuCSS.textContent = `
+    .nav-subgroup-toggle { width:100%; border:0; background:none; text-align:left; }
+    .nav-subgroup-toggle.active, .nav-subgroup-toggle:hover { background:rgba(59,130,246,.17); color:white; }
+    body.sidebar-collapsed .nav-subgroup-toggle .sub-chevron { display:none; }
+    .nav-subgroup-toggle .sub-chevron { margin-left:auto; flex:0 0 auto; font-size:.7rem; }
+    .nav-subgroup-menu { display:none; position:fixed; z-index:80; width:220px; background:#172336; padding:7px; border:1px solid #35445b; border-radius:10px; box-shadow:0 8px 22px #0005; }
+    .nav-subgroup.is-open .nav-subgroup-menu { display:block; }
+    .nav-subgroup-menu .nav-item { padding:9px 12px; font-size:.86rem; }
+    body.sidebar-collapsed .nav-subgroup-menu .nav-item span { display:inline; }
+    body.sidebar-collapsed .nav-subgroup-menu .nav-item { justify-content:flex-start; padding:9px 12px; }
+    @media(max-width:991.98px){body.sidebar-collapsed .nav-subgroup-toggle .sub-chevron{display:block;}.nav-subgroup-menu{position:static;width:auto;grid-column:1/-1;margin:2px 0 5px 12px;box-shadow:none;}.nav-subgroup.is-open .nav-subgroup-menu{display:block;}}
+  `;
+  document.head.append(submenuCSS);
 
   function parseStored() {
     for (const key of [STORAGE_KEY, LEGACY_STORAGE_KEY]) {
@@ -82,14 +105,15 @@
 
     function renderGroup(group) {
       const config = GROUPS.find(item => item.id === group);
-      const ids = settings.order.filter(id => ITEMS.find(item => item.id === id)?.group === group);
+      const ids = rowIds(group);
       const collapsed = Boolean(settings.groupCollapsed[group]);
       const rows = ids.map((id, index) => {
-        const item = ITEMS.find(candidate => candidate.id === id);
-        return `<div class="nav-row">
-          <a class="nav-item${id === currentPage ? " active" : ""}" href="${item.href}" title="${item.label}">
-            <i class="bi ${item.icon}"></i><span>${item.label}</span>
-          </a>
+        const sub=SUBGROUPS.find(g=>g.id===id);
+        const item = sub || ITEMS.find(candidate => candidate.id === id);
+        const links = sub ? `<button type="button" class="nav-item nav-subgroup-toggle${sub.children.includes(currentPage)?" active":""}" aria-expanded="false" title="${sub.label}"><i class="bi ${sub.icon}"></i><span>${sub.label}</span><i class="bi bi-chevron-right sub-chevron"></i></button><div class="nav-subgroup-menu" aria-label="${sub.label}">${sub.children.map(x=>{const c=ITEMS.find(i=>i.id===x);return `<a class="nav-item${x===currentPage?" active":""}" href="${c.href}" title="${c.label}"><i class="bi ${c.icon}"></i><span>${c.label}</span></a>`}).join("")}</div>` : `<a class="nav-item${id===currentPage?" active":""}" href="${item.href}" title="${item.label}"><i class="bi ${item.icon}"></i><span>${item.label}</span></a>`;
+        return `<div class="nav-row${sub?" nav-subgroup":""}">
+          ${links}
+
           <span class="nav-order-controls">
             <button type="button" data-move="up" data-id="${id}" ${index === 0 ? "disabled" : ""} title="向上移動"><i class="bi bi-chevron-up"></i></button>
             <button type="button" data-move="down" data-id="${id}" ${index === ids.length - 1 ? "disabled" : ""} title="向下移動"><i class="bi bi-chevron-down"></i></button>
@@ -107,6 +131,10 @@
     function renderNavigation() {
       if (!nav) return;
       nav.innerHTML = GROUPS.map(group => renderGroup(group.id)).join("");
+      const groups=Array.from(nav.querySelectorAll('.nav-subgroup'));
+      function close(row){row.classList.remove('is-open');row.querySelector('button').setAttribute('aria-expanded','false');}
+      function open(row){groups.forEach(r=>{if(r!==row)close(r)});row.classList.add('is-open');const btn=row.querySelector('button'), menu=row.querySelector('.nav-subgroup-menu');btn.setAttribute('aria-expanded','true');if(!matchMedia('(max-width:991.98px)').matches){const r=row.getBoundingClientRect();menu.style.left=(r.right-2)+'px';menu.style.top=Math.max(8,Math.min(r.top,innerHeight-menu.offsetHeight-8))+'px';}}
+      groups.forEach(row=>{let timer;const btn=row.querySelector('button');row.addEventListener('mouseenter',()=>{if(matchMedia('(hover:hover) and (min-width:992px)').matches){clearTimeout(timer);open(row);}});row.addEventListener('mouseleave',()=>{if(matchMedia('(hover:hover) and (min-width:992px)').matches)timer=setTimeout(()=>{if(!row.contains(document.activeElement))close(row)},180);});btn.addEventListener('click',()=>{if(row.classList.contains('is-open'))close(row);else open(row);});row.addEventListener('focusout',e=>{if(!row.contains(e.relatedTarget))close(row);});row.addEventListener('keydown',e=>{if(e.key==='Escape'){close(row);btn.focus();}});});
     }
 
     function setCollapsed(collapsed) {
@@ -133,16 +161,13 @@
 
       const button = event.target.closest("button[data-move]");
       if (!button) return;
-      const item = ITEMS.find(candidate => candidate.id === button.dataset.id);
-      if (!item) return;
-      const groupIds = settings.order.filter(id => ITEMS.find(candidate => candidate.id === id)?.group === item.group);
-      const groupIndex = groupIds.indexOf(button.dataset.id);
-      const targetGroupIndex = button.dataset.move === "up" ? groupIndex - 1 : groupIndex + 1;
-      if (groupIndex < 0 || targetGroupIndex < 0 || targetGroupIndex >= groupIds.length) return;
-      const otherId = groupIds[targetGroupIndex];
-      const index = settings.order.indexOf(button.dataset.id);
-      const target = settings.order.indexOf(otherId);
-      [settings.order[index], settings.order[target]] = [settings.order[target], settings.order[index]];
+      const id=button.dataset.id,sub=SUBGROUPS.find(g=>g.id===id),item=ITEMS.find(i=>i.id===id);
+      const group=sub?'tw':item?.group;if(!group)return;
+      const groupIds=rowIds(group), index=groupIds.indexOf(id), target=index+(button.dataset.move==='up'?-1:1);
+      if(index<0||target<0||target>=groupIds.length)return;
+      [groupIds[index],groupIds[target]]=[groupIds[target],groupIds[index]];
+      const ordered=groupIds.flatMap(g=>settings.order.filter(x=>navId(x)===g));
+      let n=0;settings.order=settings.order.map(x=>ITEMS.find(i=>i.id===x)?.group===group?ordered[n++]:x);
       saveSettings(settings); renderNavigation();
     });
 

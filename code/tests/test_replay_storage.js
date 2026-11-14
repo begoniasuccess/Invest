@@ -5,21 +5,22 @@ const script=fs.readFileSync(require.resolve('../dashboard/static/replay.js'),'u
 const storage=new Map();
 const start=Date.parse('2026-11-10T08:45:00+08:00');
 function makeBrowser(){
-  const elements=new Map(), listeners={}, opts=[];
+  const elements=new Map(), listeners={}, opts=[], frames=[];
+  let failUpdate=false, chartCreations=0;
   function el(){const classes=new Set();return {value:'',checked:true,children:[],style:{},classList:{toggle(k,v){if(v===undefined)v=!classes.has(k);v?classes.add(k):classes.delete(k);},contains:k=>classes.has(k)},addEventListener(k,fn){this[k]=fn;},setAttribute(){},replaceChildren(){this.children=[];},append(...xs){this.children.push(...xs);}};}
   function $(id){if(!elements.has(id))elements.set(id,el());return elements.get(id);}
   Object.entries({market:'tx_day',symbol:'TAIEX',period:'5',date:'2026-11-10',speed:'1',lineKind:'h',lineColor:'#ef4444',lineStyle:'2',lineWidth:'2'}).forEach(([k,v])=>$(k).value=v);
   $('replayLevelLabels').parentElement=el();
-  const series={setData(){},update(){},createPriceLine(){return {};},removePriceLine(){},attachPrimitive(){},detachPrimitive(){}};
+  const series={setData(){},update(){if(failUpdate){failUpdate=false;throw new Error('injected chart failure');}},createPriceLine(){return {};},removePriceLine(){},attachPrimitive(){},detachPrimitive(){}};
   const ts={getVisibleLogicalRange(){return null;},setVisibleLogicalRange(){},scrollToPosition(){},fitContent(){}};
   const chart={addSeries(kind,options){opts.push({kind,options});return {...series};},panes(){return [];},subscribeCrosshairMove(){},subscribeClick(){},timeScale(){return ts;},resize(){},remove(){}};
-  const LC={createChart:()=>chart,CandlestickSeries:'candle',LineSeries:'line',HistogramSeries:'hist',CrosshairMode:{Normal:0}};
+  const LC={createChart:()=>{chartCreations++;return chart;},CandlestickSeries:'candle',LineSeries:'line',HistogramSeries:'hist',CrosshairMode:{Normal:0}};
   const window={LightweightCharts:LC,ReplayCore:{ReplayEngine,ma,macd},PriceLevelLabels:class{schedule(){} destroy(){} setItems(items){this.items=items;}},addEventListener(k,fn){listeners[k]=fn;},confirm:()=>true};
-  const context={window,document:{getElementById:$,createElement:el,addEventListener(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},performance:{now:()=>3000},ResizeObserver:class{observe(){} disconnect(){}},requestAnimationFrame(){},URLSearchParams,Intl,Date,fetch:async url=>({ok:true,json:async()=>url.includes('/init?')?{event_start:'2026-11-10T08:45:00',start_ms:start,end_ms:start+60000,history:[],volume_available:true,resolution:'tick'}:{events:[[start,start/1000,100,100,100,100,1],[start+1000,start/1000,101,101,101,101,1]]}})};
+  const context={window,document:{getElementById:$,createElement:el,addEventListener(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},performance:{now:()=>3000},ResizeObserver:class{observe(){} disconnect(){}},requestAnimationFrame(fn){frames.push(fn);},AbortController,setTimeout,clearTimeout,console:{error(){}},URLSearchParams,Intl,Date,fetch:async url=>({ok:true,json:async()=>url.includes('/init?')?{event_start:'2026-11-10T08:45:00',start_ms:start,end_ms:start+60000,history:[],volume_available:true,resolution:'tick'}:{events:[[start,start/1000,100,100,100,100,1],[start+1000,start/1000,101,101,101,101,1]]}})};
   vm.runInNewContext(script,context);
   // Use the same interval for every simulated reopen.
   $('end').value='2026-11-10T08:46:00';
-  return {$,listeners,opts,load:()=> $('replayForm').onsubmit({preventDefault(){}})};
+  return {$,listeners,opts,window,failNextUpdate:()=>{failUpdate=true;},runFrame:now=>{assert.equal(frames.length,1);frames.shift()(now);},chartCreations:()=>chartCreations,load:()=> $('replayForm').onsubmit({preventDefault(){}})};
 }
 (async()=>{
   let b=makeBrowser();await b.load();assert.equal(b.$('sourceBadge').textContent,'TX 202611 日盤 · 逐筆成交');
@@ -40,4 +41,14 @@ function makeBrowser(){
   b.$('period').value='15';await b.load();assert.equal(b.$('lineList').children.length,0);b.$('period').value='5';await b.load();assert.equal(b.$('lineList').children.length,1);
   b.$('clearLines').onclick();b=makeBrowser();await b.load();assert.equal(b.$('lineList').children.length,0);
   console.log('Replay storage / reload / scope / MA tests passed');
+  // A single rendering exception must not kill the animation loop or lose cursor.
+  storage.clear();b=makeBrowser();await b.load();b.$('play').onclick();b.failNextUpdate();b.runFrame(4000);
+  assert.match(b.$('message').textContent,/injected chart failure/);assert.match(b.$('play').textContent,/播放/);assert.equal(b.$('play').disabled,false);
+  b.$('play').onclick();assert.equal(b.chartCreations(),2);assert.match(b.$('clock').textContent,/08:45:01/);
+  b.runFrame(5000);assert.match(b.$('clock').textContent,/08:45:03/);assert.match(b.$('play').textContent,/暫停/);
+  // A broken paper-trade UI must not stop replay frames.
+  b.window.ReplayPaper={onClock(){throw new Error('injected paper UI failure');}};b.runFrame(6000);assert.match(b.$('clock').textContent,/08:45:04/);assert.match(b.$('play').textContent,/暫停/);
+  b.runFrame(7000);assert.match(b.$('clock').textContent,/08:45:05/);
+  b.$('reset').onclick();assert.match(b.$('clock').textContent,/08:45:00/);
+  console.log('Replay render failure recovery / paper UI isolation tests passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});

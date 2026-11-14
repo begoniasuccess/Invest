@@ -1,5 +1,6 @@
 from typing import Literal
 from decimal import Decimal
+from datetime import date
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict
 from dashboard import paper_trade_service as service
@@ -41,16 +42,13 @@ class Action(Strict):
     stop_loss:Decimal|None=Field(default=None,gt=0,le=1000000,decimal_places=4)
     take_profit:Decimal|None=Field(default=None,gt=0,le=1000000,decimal_places=4)
 
-class Note(Strict):
-    note:str=Field(max_length=10000)
-
 
 def call(fn,*args):
     try: return fn(*args)
     except ValueError as e: raise HTTPException(400,str(e)) from e
     except Exception as e:
         state=getattr(e,'sqlstate',None)
-        if state in ('3F000','42P01'): raise HTTPException(503,'尚未安裝模擬交易資料表，請執行 setup_paper_trade.py。') from e
+        if state in ('3F000','42P01','42703'): raise HTTPException(503,'尚未安裝模擬交易資料表，請執行 setup_paper_trade.py。') from e
         if state=='23505': raise HTTPException(409,'名稱或識別碼重複。') from e
         if state=='23514': raise HTTPException(400,'交易資料未通過資料庫檢核。') from e
         raise
@@ -74,7 +72,7 @@ def post_action(run_id:int,data:Action):
     return call(service.execute_action,run_id,data.model_dump())
 @router.get('/performance')
 def get_performance(account_id:int=Query(gt=0),run_id:int|None=None): return call(service.performance,account_id,run_id)
-@router.patch('/trades/{trade_id}/note')
-def patch_note(trade_id:int,data:Note): return call(service.note_trade,trade_id,data.note)
 @router.delete('/trades/{trade_id}')
 def delete_trade(trade_id:int): return call(service.delete_trade,trade_id)
+
+

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict GygJCXkl9knBvg6mzw8tbImyQBl2ULyuyYue1L2yYNpzefsaKXKFzxPRGGTJbm4
+\restrict T7098QgCokGBlL2gZbCHliCrJe1ziFgH9ekcvIUWLGqOeMCBMSuuhuPCbtcHSyh
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -52,6 +52,13 @@ CREATE SCHEMA ml;
 --
 
 COMMENT ON SCHEMA ml IS '機器學習模型、版本、執行紀錄與預測';
+
+
+--
+-- Name: paper_trade; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA paper_trade;
 
 
 --
@@ -108,6 +115,44 @@ CREATE SCHEMA research;
 --
 
 COMMENT ON SCHEMA research IS '可重建的研究、分層統計與策略實驗結果；不存放原始行情。';
+
+
+--
+-- Name: guard_order_update(); Type: FUNCTION; Schema: paper_trade; Owner: -
+--
+
+CREATE FUNCTION paper_trade.guard_order_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+ IF (to_jsonb(NEW)-ARRAY['status','cancelled_at','cancelled_client_at','cancel_reason']) IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['status','cancelled_at','cancelled_client_at','cancel_reason']) THEN
+  RAISE EXCEPTION 'Immutable simulated order details';
+ END IF;
+ IF OLD.status <> 'PENDING' AND NEW IS DISTINCT FROM OLD THEN RAISE EXCEPTION 'Finalized simulated order cannot be changed'; END IF;
+ RETURN NEW;
+END $$;
+
+
+--
+-- Name: guard_trade_update(); Type: FUNCTION; Schema: paper_trade; Owner: -
+--
+
+CREATE FUNCTION paper_trade.guard_trade_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+ IF (to_jsonb(NEW)-ARRAY['position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) IS DISTINCT FROM
+    (to_jsonb(OLD)-ARRAY['position_quantity','exit_order_id','exit_time','exit_tick_id','exit_price','exit_raw_price','exit_client_at','exit_server_at','exit_reason']) THEN
+  RAISE EXCEPTION 'Immutable simulated entry details';
+ END IF;
+ IF NEW.position_quantity IS DISTINCT FROM OLD.position_quantity AND (OLD.exit_time IS NOT NULL OR NEW.position_quantity IS NULL OR NEW.position_quantity >= COALESCE(OLD.position_quantity,(SELECT quantity FROM paper_trade.orders WHERE id=OLD.order_id))) THEN
+  RAISE EXCEPTION 'Position quantity may only decrease during a split';
+ END IF;
+ IF OLD.exit_time IS NOT NULL AND NEW IS DISTINCT FROM OLD THEN
+  RAISE EXCEPTION 'Finalized simulated trade cannot be changed';
+ END IF;
+ RETURN NEW;
+END $$;
 
 
 --
@@ -1149,6 +1194,277 @@ CREATE TABLE ml.ml_prediction_run (
     finished_at timestamp with time zone,
     CONSTRAINT ml_prediction_run_run_type_check CHECK ((run_type = ANY (ARRAY['single'::text, 'backtest'::text, 'live'::text]))),
     CONSTRAINT ml_prediction_run_status_check CHECK ((status = ANY (ARRAY['running'::text, 'completed'::text, 'partial'::text, 'failed'::text])))
+);
+
+
+--
+-- Name: accounts; Type: TABLE; Schema: paper_trade; Owner: -
+--
+
+CREATE TABLE paper_trade.accounts (
+    id bigint NOT NULL,
+    name text NOT NULL,
+    initial_equity numeric(18,2) DEFAULT 1000000 NOT NULL,
+    fee_tx numeric(12,2) DEFAULT 50 NOT NULL,
+    fee_mtx numeric(12,2) DEFAULT 30 NOT NULL,
+    fee_tmf numeric(12,2) DEFAULT 15 NOT NULL,
+    slippage integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT accounts_fee_mtx_check CHECK ((fee_mtx >= (0)::numeric)),
+    CONSTRAINT accounts_fee_tmf_check CHECK ((fee_tmf >= (0)::numeric)),
+    CONSTRAINT accounts_fee_tx_check CHECK ((fee_tx >= (0)::numeric)),
+    CONSTRAINT accounts_initial_equity_check CHECK ((initial_equity > (0)::numeric)),
+    CONSTRAINT accounts_name_check CHECK (((length(TRIM(BOTH FROM name)) >= 1) AND (length(TRIM(BOTH FROM name)) <= 80))),
+    CONSTRAINT accounts_slippage_check CHECK (((slippage >= 0) AND (slippage <= 1000)))
+);
+
+
+--
+-- Name: accounts_id_seq; Type: SEQUENCE; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE paper_trade.accounts ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME paper_trade.accounts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: journal_links; Type: TABLE; Schema: paper_trade; Owner: -
+--
+
+CREATE TABLE paper_trade.journal_links (
+    id bigint NOT NULL,
+    journal_id bigint NOT NULL,
+    account_id bigint,
+    run_id bigint,
+    trade_id bigint,
+    historical_date date,
+    CONSTRAINT journal_links_check CHECK ((num_nonnulls(account_id, run_id, trade_id, historical_date) = 1))
+);
+
+
+--
+-- Name: orders; Type: TABLE; Schema: paper_trade; Owner: -
+--
+
+CREATE TABLE paper_trade.orders (
+    id bigint NOT NULL,
+    run_id bigint NOT NULL,
+    request_id uuid NOT NULL,
+    product text NOT NULL,
+    direction text NOT NULL,
+    quantity integer NOT NULL,
+    order_type text NOT NULL,
+    target numeric(18,4),
+    stop_loss numeric(18,4),
+    take_profit numeric(18,4),
+    status text NOT NULL,
+    submitted_at timestamp without time zone NOT NULL,
+    submitted_tick_id bigint NOT NULL,
+    submitted_clock_at timestamp without time zone NOT NULL,
+    submitted_client_at timestamp with time zone NOT NULL,
+    submitted_server_at timestamp with time zone DEFAULT now() NOT NULL,
+    fee_tx numeric(12,2) NOT NULL,
+    fee_mtx numeric(12,2) NOT NULL,
+    fee_tmf numeric(12,2) NOT NULL,
+    slippage integer NOT NULL,
+    tax_rate numeric(12,8) DEFAULT 0.00002 NOT NULL,
+    cancelled_at timestamp without time zone,
+    cancelled_client_at timestamp with time zone,
+    position_effect text DEFAULT 'OPEN'::text NOT NULL,
+    cancel_reason text,
+    time_in_force text DEFAULT 'ROD'::text NOT NULL,
+    CONSTRAINT orders_check CHECK ((((order_type = 'MARKET'::text) AND (target IS NULL)) OR ((order_type <> 'MARKET'::text) AND (target IS NOT NULL) AND (target > (0)::numeric)))),
+    CONSTRAINT orders_check1 CHECK ((submitted_clock_at >= submitted_at)),
+    CONSTRAINT orders_check2 CHECK ((((status = 'CANCELLED'::text) AND (cancelled_at IS NOT NULL) AND (cancelled_client_at IS NOT NULL)) OR ((status <> 'CANCELLED'::text) AND (cancelled_at IS NULL) AND (cancelled_client_at IS NULL)))),
+    CONSTRAINT orders_direction_check CHECK ((direction = ANY (ARRAY['LONG'::text, 'SHORT'::text]))),
+    CONSTRAINT orders_order_type_check CHECK ((order_type = ANY (ARRAY['MARKET'::text, 'LIMIT'::text, 'STOP'::text]))),
+    CONSTRAINT orders_position_effect_check CHECK ((position_effect = ANY (ARRAY['AUTO'::text, 'OPEN'::text, 'CLOSE'::text]))),
+    CONSTRAINT orders_product_check CHECK ((product = ANY (ARRAY['TX'::text, 'MTX'::text, 'TMF'::text]))),
+    CONSTRAINT orders_quantity_check CHECK (((quantity >= 1) AND (quantity <= 1000))),
+    CONSTRAINT orders_status_check CHECK ((status = ANY (ARRAY['PENDING'::text, 'FILLED'::text, 'CANCELLED'::text]))),
+    CONSTRAINT orders_stop_loss_check CHECK (((stop_loss IS NULL) OR (stop_loss > (0)::numeric))),
+    CONSTRAINT orders_take_profit_check CHECK (((take_profit IS NULL) OR (take_profit > (0)::numeric))),
+    CONSTRAINT paper_orders_tif_check CHECK (((time_in_force = ANY (ARRAY['ROD'::text, 'IOC'::text, 'FOK'::text])) AND ((order_type = 'LIMIT'::text) OR (time_in_force <> 'ROD'::text))))
+);
+
+
+--
+-- Name: runs; Type: TABLE; Schema: paper_trade; Owner: -
+--
+
+CREATE TABLE paper_trade.runs (
+    id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    market text NOT NULL,
+    contract text NOT NULL,
+    start_at timestamp without time zone NOT NULL,
+    end_at timestamp without time zone NOT NULL,
+    cursor_time timestamp without time zone,
+    cursor_row bigint,
+    cursor_id bigint,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT runs_check CHECK ((end_at > start_at)),
+    CONSTRAINT runs_check1 CHECK ((((cursor_time IS NULL) AND (cursor_row IS NULL) AND (cursor_id IS NULL)) OR ((cursor_time IS NOT NULL) AND (cursor_row IS NOT NULL) AND (cursor_id IS NOT NULL) AND ((cursor_time >= start_at) AND (cursor_time <= end_at))))),
+    CONSTRAINT runs_contract_check CHECK ((contract ~ '^[0-9]{6}$'::text)),
+    CONSTRAINT runs_market_check CHECK ((market = ANY (ARRAY['tx_day'::text, 'tx_night'::text])))
+);
+
+
+--
+-- Name: trades; Type: TABLE; Schema: paper_trade; Owner: -
+--
+
+CREATE TABLE paper_trade.trades (
+    id bigint NOT NULL,
+    order_id bigint NOT NULL,
+    entry_time timestamp without time zone NOT NULL,
+    entry_tick_id bigint NOT NULL,
+    entry_price numeric(18,4) NOT NULL,
+    entry_raw_price numeric(18,4) NOT NULL,
+    entry_client_at timestamp with time zone NOT NULL,
+    entry_server_at timestamp with time zone DEFAULT now() NOT NULL,
+    exit_time timestamp without time zone,
+    exit_tick_id bigint,
+    exit_price numeric(18,4),
+    exit_raw_price numeric(18,4),
+    exit_client_at timestamp with time zone,
+    exit_server_at timestamp with time zone,
+    exit_reason text,
+    position_quantity integer,
+    exit_order_id bigint,
+    CONSTRAINT trades_check CHECK ((((exit_time IS NULL) AND (exit_tick_id IS NULL) AND (exit_price IS NULL) AND (exit_raw_price IS NULL) AND (exit_client_at IS NULL) AND (exit_server_at IS NULL) AND (exit_reason IS NULL)) OR ((exit_time IS NOT NULL) AND (exit_time >= entry_time) AND (exit_tick_id IS NOT NULL) AND (exit_price IS NOT NULL) AND (exit_price > (0)::numeric) AND (exit_raw_price IS NOT NULL) AND (exit_raw_price > (0)::numeric) AND (exit_client_at IS NOT NULL) AND (exit_server_at IS NOT NULL) AND (exit_reason IS NOT NULL) AND (exit_reason = ANY (ARRAY['MANUAL'::text, 'STOP_LOSS'::text, 'TAKE_PROFIT'::text]))))),
+    CONSTRAINT trades_entry_price_check CHECK ((entry_price > (0)::numeric)),
+    CONSTRAINT trades_entry_raw_price_check CHECK ((entry_raw_price > (0)::numeric)),
+    CONSTRAINT trades_position_quantity_check CHECK ((position_quantity > 0))
+);
+
+
+--
+-- Name: journal_link_details; Type: VIEW; Schema: paper_trade; Owner: -
+--
+
+CREATE VIEW paper_trade.journal_link_details AS
+ SELECT l.id,
+    l.journal_id,
+        CASE
+            WHEN (l.trade_id IS NOT NULL) THEN 'trade'::text
+            WHEN (l.run_id IS NOT NULL) THEN 'run'::text
+            WHEN (l.account_id IS NOT NULL) THEN 'account'::text
+            ELSE 'date'::text
+        END AS kind,
+    COALESCE(l.trade_id, l.run_id, l.account_id) AS target_id,
+    COALESCE(l.account_id, r.account_id) AS account_id,
+    a.name AS account_name,
+    COALESCE(l.run_id, o.run_id) AS run_id,
+    l.trade_id,
+    COALESCE(l.historical_date, (t.entry_time)::date, (r.start_at)::date) AS historical_date,
+    l.historical_date AS linked_date,
+    r.market,
+    r.contract,
+    r.start_at,
+    r.end_at,
+    o.product,
+    o.direction,
+    t.entry_price,
+    t.exit_price,
+    t.entry_time,
+    t.exit_time
+   FROM ((((paper_trade.journal_links l
+     LEFT JOIN paper_trade.trades t ON ((t.id = l.trade_id)))
+     LEFT JOIN paper_trade.orders o ON ((o.id = t.order_id)))
+     LEFT JOIN paper_trade.runs r ON ((r.id = COALESCE(l.run_id, o.run_id))))
+     LEFT JOIN paper_trade.accounts a ON ((a.id = COALESCE(l.account_id, r.account_id))));
+
+
+--
+-- Name: journal_links_id_seq; Type: SEQUENCE; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE paper_trade.journal_links ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME paper_trade.journal_links_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: journals; Type: TABLE; Schema: paper_trade; Owner: -
+--
+
+CREATE TABLE paper_trade.journals (
+    id bigint NOT NULL,
+    title text NOT NULL,
+    body text DEFAULT ''::text NOT NULL,
+    journal_date date NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT journals_body_check CHECK ((length(body) <= 100000)),
+    CONSTRAINT journals_title_check CHECK (((length(btrim(title)) >= 1) AND (length(btrim(title)) <= 200)))
+);
+
+
+--
+-- Name: journals_id_seq; Type: SEQUENCE; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE paper_trade.journals ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME paper_trade.journals_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE paper_trade.orders ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME paper_trade.orders_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: runs_id_seq; Type: SEQUENCE; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE paper_trade.runs ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME paper_trade.runs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: trades_id_seq; Type: SEQUENCE; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE paper_trade.trades ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME paper_trade.trades_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -15682,6 +15998,102 @@ ALTER TABLE ONLY ml.ml_prediction_run
 
 
 --
+-- Name: accounts accounts_name_key; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.accounts
+    ADD CONSTRAINT accounts_name_key UNIQUE (name);
+
+
+--
+-- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.accounts
+    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: journal_links journal_links_journal_id_account_id_key; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_journal_id_account_id_key UNIQUE (journal_id, account_id);
+
+
+--
+-- Name: journal_links journal_links_journal_id_historical_date_key; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_journal_id_historical_date_key UNIQUE (journal_id, historical_date);
+
+
+--
+-- Name: journal_links journal_links_journal_id_run_id_key; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_journal_id_run_id_key UNIQUE (journal_id, run_id);
+
+
+--
+-- Name: journal_links journal_links_journal_id_trade_id_key; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_journal_id_trade_id_key UNIQUE (journal_id, trade_id);
+
+
+--
+-- Name: journal_links journal_links_pkey; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: journals journals_pkey; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journals
+    ADD CONSTRAINT journals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: orders orders_request_id_key; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.orders
+    ADD CONSTRAINT orders_request_id_key UNIQUE (request_id);
+
+
+--
+-- Name: runs runs_pkey; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.runs
+    ADD CONSTRAINT runs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trades trades_pkey; Type: CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.trades
+    ADD CONSTRAINT trades_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tpex_bulletin_attention pk_tpex_bulletin_attention_1; Type: CONSTRAINT; Schema: raw_exchange; Owner: -
 --
 
@@ -16353,6 +16765,62 @@ CREATE INDEX ix_ml_prediction_version_date ON ml.ml_prediction USING btree (mode
 
 
 --
+-- Name: journal_date_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX journal_date_idx ON paper_trade.journals USING btree (journal_date DESC, id DESC);
+
+
+--
+-- Name: journal_link_account_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX journal_link_account_idx ON paper_trade.journal_links USING btree (account_id);
+
+
+--
+-- Name: journal_link_history_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX journal_link_history_idx ON paper_trade.journal_links USING btree (historical_date);
+
+
+--
+-- Name: journal_link_run_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX journal_link_run_idx ON paper_trade.journal_links USING btree (run_id);
+
+
+--
+-- Name: journal_link_trade_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX journal_link_trade_idx ON paper_trade.journal_links USING btree (trade_id);
+
+
+--
+-- Name: paper_orders_run_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX paper_orders_run_idx ON paper_trade.orders USING btree (run_id, status, id);
+
+
+--
+-- Name: paper_runs_account_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX paper_runs_account_idx ON paper_trade.runs USING btree (account_id, id DESC);
+
+
+--
+-- Name: paper_trades_order_idx; Type: INDEX; Schema: paper_trade; Owner: -
+--
+
+CREATE INDEX paper_trades_order_idx ON paper_trade.trades USING btree (order_id);
+
+
+--
 -- Name: idx_fmtqik_date_ad; Type: INDEX; Schema: raw_exchange; Owner: -
 --
 
@@ -16689,6 +17157,20 @@ CREATE INDEX ix_yu_candidate_zone_review ON research.yu_candidate_zones USING bt
 
 
 --
+-- Name: orders guard_order_update; Type: TRIGGER; Schema: paper_trade; Owner: -
+--
+
+CREATE TRIGGER guard_order_update BEFORE UPDATE ON paper_trade.orders FOR EACH ROW EXECUTE FUNCTION paper_trade.guard_order_update();
+
+
+--
+-- Name: trades guard_trade_update; Type: TRIGGER; Schema: paper_trade; Owner: -
+--
+
+CREATE TRIGGER guard_trade_update BEFORE UPDATE ON paper_trade.trades FOR EACH ROW EXECUTE FUNCTION paper_trade.guard_trade_update();
+
+
+--
 -- Name: futures_core_next_day_details fk_futures_core_next_day_run; Type: FK CONSTRAINT; Schema: backtest; Owner: -
 --
 
@@ -16742,6 +17224,70 @@ ALTER TABLE ONLY ml.ml_prediction
 
 ALTER TABLE ONLY ml.ml_prediction_run
     ADD CONSTRAINT ml_prediction_run_model_version_id_fkey FOREIGN KEY (model_version_id) REFERENCES ml.ml_model_version(model_version_id) ON DELETE CASCADE;
+
+
+--
+-- Name: journal_links journal_links_account_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_account_id_fkey FOREIGN KEY (account_id) REFERENCES paper_trade.accounts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: journal_links journal_links_journal_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_journal_id_fkey FOREIGN KEY (journal_id) REFERENCES paper_trade.journals(id) ON DELETE CASCADE;
+
+
+--
+-- Name: journal_links journal_links_run_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_run_id_fkey FOREIGN KEY (run_id) REFERENCES paper_trade.runs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: journal_links journal_links_trade_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.journal_links
+    ADD CONSTRAINT journal_links_trade_id_fkey FOREIGN KEY (trade_id) REFERENCES paper_trade.trades(id) ON DELETE CASCADE;
+
+
+--
+-- Name: orders orders_run_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.orders
+    ADD CONSTRAINT orders_run_id_fkey FOREIGN KEY (run_id) REFERENCES paper_trade.runs(id);
+
+
+--
+-- Name: runs runs_account_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.runs
+    ADD CONSTRAINT runs_account_id_fkey FOREIGN KEY (account_id) REFERENCES paper_trade.accounts(id);
+
+
+--
+-- Name: trades trades_exit_order_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.trades
+    ADD CONSTRAINT trades_exit_order_id_fkey FOREIGN KEY (exit_order_id) REFERENCES paper_trade.orders(id);
+
+
+--
+-- Name: trades trades_order_id_fkey; Type: FK CONSTRAINT; Schema: paper_trade; Owner: -
+--
+
+ALTER TABLE ONLY paper_trade.trades
+    ADD CONSTRAINT trades_order_id_fkey FOREIGN KEY (order_id) REFERENCES paper_trade.orders(id) ON DELETE CASCADE;
 
 
 --
@@ -16932,5 +17478,5 @@ ALTER TABLE ONLY research.yu_candidate_zones
 -- PostgreSQL database dump complete
 --
 
-\unrestrict GygJCXkl9knBvg6mzw8tbImyQBl2ULyuyYue1L2yYNpzefsaKXKFzxPRGGTJbm4
+\unrestrict T7098QgCokGBlL2gZbCHliCrJe1ziFgH9ekcvIUWLGqOeMCBMSuuhuPCbtcHSyh
 

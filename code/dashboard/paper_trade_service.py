@@ -217,9 +217,9 @@ def close_trade(cur, trade, tick, wall, reason, quantity=None, price=None, exit_
     if qty<1 or qty>trade['quantity']: raise ValueError('平倉口數無效')
     trade_id=trade['trade_id']
     if qty<trade['quantity']:
-        # Preserve the original open row and its note; create a separate immutable closed slice.
-        row=one(cur, '''INSERT INTO paper_trade.trades(order_id,entry_time,entry_tick_id,entry_price,entry_raw_price,entry_client_at,entry_server_at,note,note_updated_at,position_quantity)
-            SELECT order_id,entry_time,entry_tick_id,entry_price,entry_raw_price,entry_client_at,entry_server_at,note,note_updated_at,%s FROM paper_trade.trades WHERE id=%s AND exit_time IS NULL RETURNING id''',(qty,trade_id))
+        # Preserve the original open row; create a separate immutable closed slice.
+        row=one(cur, '''INSERT INTO paper_trade.trades(order_id,entry_time,entry_tick_id,entry_price,entry_raw_price,entry_client_at,entry_server_at,position_quantity)
+            SELECT order_id,entry_time,entry_tick_id,entry_price,entry_raw_price,entry_client_at,entry_server_at,%s FROM paper_trade.trades WHERE id=%s AND exit_time IS NULL RETURNING id''',(qty,trade_id))
         cur.execute('UPDATE paper_trade.trades SET position_quantity=%s WHERE id=%s AND exit_time IS NULL',(trade['quantity']-qty,trade_id))
         trade_id=require(row,'部分平倉交易')['id']
     cur.execute('''UPDATE paper_trade.trades SET exit_time=%s,exit_tick_id=%s,exit_price=%s,exit_raw_price=%s,
@@ -333,12 +333,6 @@ def execute_action(run_id, data):
             for p in trades: close_trade(cur,p,tick,wall,'MANUAL')
         expire_run_orders(cur,run,clock,wall)
         result=snapshot(cur,run,dec(tick['price'])); conn.commit(); return result
-
-
-def note_trade(trade_id, note):
-    with connection() as conn,cursor(conn) as cur:
-        row=one(cur,'UPDATE paper_trade.trades SET note=%s,note_updated_at=now() WHERE id=%s RETURNING id,note,note_updated_at',(note,trade_id))
-        conn.commit(); return require(row,'交易')
 
 
 def delete_trade(trade_id):

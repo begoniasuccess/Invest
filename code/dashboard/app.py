@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
@@ -22,6 +22,8 @@ from dashboard.data_service import TAIL_MERGE_THRESHOLD_PCT, build_distribution,
 from dashboard.kline_service import KLINE_INTERVALS, US_KLINE_INTERVALS, US_MARKETS, load_kline_data, load_preset_levels, load_us_kline_data, load_us_quick_view_data
 from dashboard import replay_service
 from dashboard.paper_trade_api import router as paper_trade_router
+from dashboard.journal_api import router as journal_router
+from dashboard.journal_media import router as journal_media_router
 from dashboard.margin_maintenance_service import build_margin_maintenance_payload
 from dashboard.yu_level_chart_service import load_yu_chart_date_bounds, load_yu_chart_levels
 from dashboard.night_bucket_service import (
@@ -54,11 +56,17 @@ app = FastAPI(
 )
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 app.include_router(paper_trade_router)
+app.include_router(journal_router)
+app.include_router(journal_media_router)
 
 @app.get("/paper-trade", response_class=HTMLResponse)
 async def paper_trade_page(request: Request):
     return templates.TemplateResponse(request=request, name="paper_trade.html", context={})
 
+
+@app.get("/paper-journal", response_class=HTMLResponse)
+async def paper_journal_page(request: Request):
+    return templates.TemplateResponse(request=request, name="paper_journal.html", context={})
 
 class ReportUpdateRequest(BaseModel):
     modules: list[str] = Field(default_factory=lambda: ["taiex_report", "futures_report"])
