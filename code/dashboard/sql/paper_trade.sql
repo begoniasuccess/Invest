@@ -58,6 +58,21 @@ ALTER TABLE paper_trade.orders ADD COLUMN IF NOT EXISTS cancel_reason text;
 -- Backfill legacy semantics before reinstalling the immutability trigger.
 DROP TRIGGER IF EXISTS guard_order_update ON paper_trade.orders;
 ALTER TABLE paper_trade.orders ADD COLUMN IF NOT EXISTS time_in_force text;
+ALTER TABLE paper_trade.orders ADD COLUMN IF NOT EXISTS trigger_direction text;
+UPDATE paper_trade.orders SET trigger_direction=CASE WHEN direction='LONG' THEN 'ABOVE' ELSE 'BELOW' END WHERE order_type='STOP' AND trigger_direction IS NULL;
+ALTER TABLE paper_trade.orders DROP CONSTRAINT IF EXISTS paper_orders_trigger_direction_check;
+ALTER TABLE paper_trade.orders ADD CONSTRAINT paper_orders_trigger_direction_check CHECK ((order_type='STOP' AND trigger_direction IS NOT NULL AND trigger_direction IN ('ABOVE','BELOW')) OR (order_type<>'STOP' AND trigger_direction IS NULL));
+-- Old clients may omit the direction on new STOP orders; preserve their legacy rule.
+CREATE OR REPLACE FUNCTION paper_trade.default_stop_direction() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF NEW.order_type='STOP' AND NEW.trigger_direction IS NULL THEN
+  NEW.trigger_direction := CASE WHEN NEW.direction='LONG' THEN 'ABOVE' ELSE 'BELOW' END;
+ END IF;
+ RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS default_stop_direction ON paper_trade.orders;
+CREATE TRIGGER default_stop_direction BEFORE INSERT ON paper_trade.orders FOR EACH ROW EXECUTE FUNCTION paper_trade.default_stop_direction();
+
 UPDATE paper_trade.orders SET time_in_force=CASE WHEN order_type='LIMIT' THEN 'ROD' ELSE 'IOC' END WHERE time_in_force IS NULL;
 ALTER TABLE paper_trade.orders ALTER COLUMN time_in_force SET DEFAULT 'ROD';
 ALTER TABLE paper_trade.orders ALTER COLUMN time_in_force SET NOT NULL;
@@ -116,6 +131,24 @@ CREATE TABLE IF NOT EXISTS paper_trade.journal_links (
  CHECK(num_nonnulls(account_id,run_id,trade_id,historical_date)=1),
  UNIQUE(journal_id,account_id), UNIQUE(journal_id,run_id), UNIQUE(journal_id,trade_id), UNIQUE(journal_id,historical_date)
 );
+-- A stable opening-order reference covers all split executions without duplicating links.
+ALTER TABLE paper_trade.journal_links ADD COLUMN IF NOT EXISTS entry_order_id bigint REFERENCES paper_trade.orders(id) ON DELETE CASCADE;
+ALTER TABLE paper_trade.journal_links DROP CONSTRAINT IF EXISTS journal_links_check;
+ALTER TABLE paper_trade.journal_links ADD CONSTRAINT journal_links_check CHECK(num_nonnulls(account_id,run_id,trade_id,historical_date,entry_order_id)=1);
+CREATE UNIQUE INDEX IF NOT EXISTS journal_link_opening_unique ON paper_trade.journal_links(journal_id,entry_order_id) WHERE entry_order_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS journal_link_opening_idx ON paper_trade.journal_links(entry_order_id);
+-- Legacy direct references to currently open positions meant the position as a whole.
+-- Keep closed-slice links unchanged; promote only the still-open references once.
+WITH old_links AS MATERIALIZED (
+ SELECT l.id,l.journal_id,t.order_id FROM paper_trade.journal_links l
+ JOIN paper_trade.trades t ON t.id=l.trade_id WHERE t.exit_time IS NULL
+), inserted AS (
+ INSERT INTO paper_trade.journal_links(journal_id,entry_order_id)
+ SELECT DISTINCT journal_id,order_id FROM old_links ON CONFLICT DO NOTHING RETURNING journal_id
+), removed AS (
+ DELETE FROM paper_trade.journal_links l USING old_links old WHERE l.id=old.id RETURNING l.journal_id
+)
+UPDATE paper_trade.journals SET updated_at=clock_timestamp() WHERE id IN (SELECT journal_id FROM removed);
 CREATE INDEX IF NOT EXISTS journal_date_idx ON paper_trade.journals(journal_date DESC,id DESC);
 CREATE INDEX IF NOT EXISTS journal_link_account_idx ON paper_trade.journal_links(account_id);
 CREATE INDEX IF NOT EXISTS journal_link_run_idx ON paper_trade.journal_links(run_id);
@@ -123,16 +156,18 @@ CREATE INDEX IF NOT EXISTS journal_link_trade_idx ON paper_trade.journal_links(t
 CREATE INDEX IF NOT EXISTS journal_link_history_idx ON paper_trade.journal_links(historical_date);
 CREATE OR REPLACE VIEW paper_trade.journal_link_details AS
  SELECT l.id,l.journal_id,
- CASE WHEN l.trade_id IS NOT NULL THEN 'trade' WHEN l.run_id IS NOT NULL THEN 'run' WHEN l.account_id IS NOT NULL THEN 'account' ELSE 'date' END AS kind,
- COALESCE(l.trade_id,l.run_id,l.account_id) AS target_id,
+ CASE WHEN l.entry_order_id IS NOT NULL THEN 'order' WHEN l.trade_id IS NOT NULL THEN 'trade' WHEN l.run_id IS NOT NULL THEN 'run' WHEN l.account_id IS NOT NULL THEN 'account' ELSE 'date' END AS kind,
+ COALESCE(l.trade_id,l.run_id,l.account_id,l.entry_order_id) AS target_id,
  COALESCE(l.account_id,r.account_id) AS account_id,a.name AS account_name,
  COALESCE(l.run_id,o.run_id) AS run_id,l.trade_id,
- COALESCE(l.historical_date,t.entry_time::date,r.start_at::date) AS historical_date,
+ COALESCE(l.historical_date,t.entry_time::date,g.entry_time::date,o.submitted_at::date,r.start_at::date) AS historical_date,
  l.historical_date AS linked_date,r.market,r.contract,r.start_at,r.end_at,o.product,o.direction,
- t.entry_price,t.exit_price,t.entry_time,t.exit_time
+ COALESCE(t.entry_price,g.entry_price)::numeric(18,4) AS entry_price,t.exit_price,COALESCE(t.entry_time,g.entry_time) AS entry_time,t.exit_time,
+ COALESCE(l.entry_order_id,t.order_id) AS entry_order_id
  FROM paper_trade.journal_links l
  LEFT JOIN paper_trade.trades t ON t.id=l.trade_id
- LEFT JOIN paper_trade.orders o ON o.id=t.order_id
+ LEFT JOIN paper_trade.orders o ON o.id=COALESCE(l.entry_order_id,t.order_id)
+ LEFT JOIN LATERAL (SELECT x.entry_price,x.entry_time FROM paper_trade.trades x WHERE x.order_id=l.entry_order_id ORDER BY x.id LIMIT 1) g ON TRUE
  LEFT JOIN paper_trade.runs r ON r.id=COALESCE(l.run_id,o.run_id)
  LEFT JOIN paper_trade.accounts a ON a.id=COALESCE(l.account_id,r.account_id);
 -- User confirmed legacy notes were never used. Guard against unexpected nonblank data.

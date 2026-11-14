@@ -23,6 +23,7 @@ from typing import Any, Iterable
 
 import numpy as np
 import pandas as pd
+from common.paths import yu_label_path
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -77,7 +78,7 @@ def _as_number(value: Any) -> float | None:
 
 
 def load_yu_labels(path: str | Path, sheet_name: str | None = None) -> pd.DataFrame:
-    frame = pd.read_excel(path, sheet_name=sheet_name or 0)
+    frame = pd.read_excel(yu_label_path(path), sheet_name=sheet_name or 0)
     required = {"分析日期", "分析方向", "交易方向", "進場點", "進場依據"}
     missing = sorted(required - set(frame.columns))
     if missing:

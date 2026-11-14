@@ -1,0 +1,168 @@
+{
+  "project": "C:\\Users\\USER\\Desktop\\Han\\學習\\金融策略\\Invest",
+  "moves": [
+    {
+      "source": "code/Yu點位資料整理_2025_2026.xlsx",
+      "destination": "data/yu/Yu點位資料整理_2025_2026.xlsx",
+      "digest": "b4479441c5d246ae0eded44bf136edbe6845a436c1e37c47b82da88a3332a40e",
+      "reason": "move"
+    },
+    {
+      "source": "code/yu_futures_analysis_2026.xlsx",
+      "destination": "data/yu/yu_futures_analysis_2026.xlsx",
+      "digest": "22d745a4a1b871c3f6247df63f434e4a7908d7f1bf33719229064969e28c5427",
+      "reason": "move"
+    },
+    {
+      "source": "code/yu_taiex_analysis_2025.csv",
+      "destination": "data/yu/yu_taiex_analysis_2025.csv",
+      "digest": "580a67ba2a049e73415fb85ecd44ebfad36af19c3ab5ed3386dc1d42b72caca7",
+      "reason": "move"
+    },
+    {
+      "source": "code/yu_taiex_analysis_2026.csv",
+      "destination": "data/yu/yu_taiex_analysis_2026.csv",
+      "digest": "372e948aab143e3a63967f14e311690c949d2aa6903299cff808c66ef2d0a5af",
+      "reason": "move"
+    },
+    {
+      "source": "output/finMind.csv",
+      "destination": "output/finmind/finMind.csv",
+      "digest": "2f753eea2b343fdb34b29d85dcac875edf94d5c8ecb169dd98a4f2b5ee5a3c7a",
+      "reason": "move"
+    },
+    {
+      "source": "output/finMind_futures_final_settlement_price.csv",
+      "destination": "output/finmind/finMind_futures_final_settlement_price.csv",
+      "digest": "17ed76561313e8df91ba9009f1a742e08491fef30d3bfdfb4c31ffbb6d795f0d",
+      "reason": "move"
+    },
+    {
+      "source": "output/finMind_futures_institutional_investors.csv",
+      "destination": "output/finmind/finMind_futures_institutional_investors.csv",
+      "digest": "13b3d90b110ae336362d257bc03325d92109250efaecb5063edf6b78af7803cd",
+      "reason": "move"
+    },
+    {
+      "source": "output/finMind_futures_institutional_investors_after_hours.csv",
+      "destination": "output/finmind/finMind_futures_institutional_investors_after_hours.csv",
+      "digest": "6dded7d7d3c19d491bc40d90d8bd3f4026aed0032c05c604842836d193842fa8",
+      "reason": "move"
+    },
+    {
+      "source": "output/finMind_option_final_settlement_price.csv",
+      "destination": "output/finmind/finMind_option_final_settlement_price.csv",
+      "digest": "3e3cf5be1a2489c58b94bcac365cbbef1ecce75b8ff1f30bf6f120aeb6b31ca4",
+      "reason": "move"
+    },
+    {
+      "source": "code/finMind.csv",
+      "destination": "archive/organization_conflicts/code/finMind.csv.93e6b3863b8174b8",
+      "digest": "93e6b3863b8174b8b030cf05cabb84833507fffab5d5ddd6e812219205acc007",
+      "reason": "different copy; preserve output/finmind/finMind.csv, archive this version"
+    },
+    {
+      "source": "code/finMind_futures_institutional_investors.csv",
+      "destination": "archive/organization_conflicts/code/finMind_futures_institutional_investors.csv.75c3755162e79fee",
+      "digest": "75c3755162e79feebbf664eb844382b0b0b32695b71f70a76f6910b56a4fd6d3",
+      "reason": "different copy; preserve output/finmind/finMind_futures_institutional_investors.csv, archive this version"
+    },
+    {
+      "source": "code/finMind_futures_institutional_investors_after_hours.csv",
+      "destination": "archive/organization_conflicts/code/finMind_futures_institutional_investors_after_hours.csv.114bdc314a7cda1a",
+      "digest": "114bdc314a7cda1a4d73d1f0df277dae4a46ffc3418601b062580648b223f8ec",
+      "reason": "different copy; preserve output/finmind/finMind_futures_institutional_investors_after_hours.csv, archive this version"
+    },
+    {
+      "source": "code/APPLY_REPORT_COLUMNS_20260817.md",
+      "destination": "code/docs/APPLY_REPORT_COLUMNS_20260817.md",
+      "digest": "4d6bd50a12127c61da38b2f275368897c2d4b52c6d70a69059bba5875a55b71f",
+      "reason": "move"
+    },
+    {
+      "source": "code/APPLY_TAIEX_REPORT_UPDATE.md",
+      "destination": "code/docs/APPLY_TAIEX_REPORT_UPDATE.md",
+      "digest": "fdc01ed401fd5a10fa5f4d3a8e76fa3430146081fc11b097f61951569a05e53c",
+      "reason": "move"
+    },
+    {
+      "source": "code/taifex_night_fallback.sql",
+      "destination": "code/db_migrate/taifex_night_fallback.sql",
+      "digest": "3b0217e5b9ce87aed97e8b39267d720d45f78dda17890324267c9dc6e19eba66",
+      "reason": "move"
+    },
+    {
+      "source": "code/all_python_code.txt",
+      "destination": "archive/code_exports/code/all_python_code.txt",
+      "digest": "78699f748b6516a10d06ba50aa01e72f4745b1fd0678890c1fd69bcb0c0555ba",
+      "reason": "move"
+    },
+    {
+      "source": "all_python_code.txt",
+      "destination": "archive/code_exports/project/all_python_code.txt",
+      "digest": "9ad0dde30cd2a82aec0722139e713108ade8881ff20e09b20f98e749e0bb15f8",
+      "reason": "move"
+    },
+    {
+      "source": "postgres_schema.sql",
+      "destination": "output/db_exports/legacy_project_postgres_schema.sql",
+      "digest": "191a63b5b0625cae7dfa35489b57197d3a6dc5cca1fb42cd8d3c97e151c7d524",
+      "reason": "move"
+    },
+    {
+      "source": "output/postgres_schema.sql",
+      "destination": "output/db_exports/legacy_output_postgres_schema.sql",
+      "digest": "fd40c48e23692787b552d8d958023b6efebbaf39c5303dade5702b8d00f706cd",
+      "reason": "move"
+    },
+    {
+      "source": "code/tests/test_futures_open_to_night_close_convergence.py",
+      "destination": "archive/code_legacy/tests/test_futures_open_to_night_close_convergence.py",
+      "digest": "400f07271c6e663fb3ca3f9d1ca3eb3eda4bd71dc7efcf41fe3d72b2c55a71dd",
+      "reason": "move"
+    },
+    {
+      "source": "code/tests/backtest/futures_raw_signal_strength_scan.py",
+      "destination": "archive/code_legacy/tests/backtest/futures_raw_signal_strength_scan.py",
+      "digest": "e362ca9fda5b2a519116e35ff649b5678a4fb8bc72c0710d7089ce53d32ec3fd",
+      "reason": "move"
+    },
+    {
+      "source": "code/tests/backtest/README_futures_raw_signal_strength_scan.md",
+      "destination": "archive/code_legacy/tests/backtest/README_futures_raw_signal_strength_scan.md",
+      "digest": "7610949d7a034e86e257a209b472b232548d92d9f2eba6be5671408d500bb165",
+      "reason": "move"
+    },
+    {
+      "source": "code/tests/backtest/tests/test_futures_raw_signal_strength_scan.py",
+      "destination": "archive/code_legacy/tests/backtest/tests/test_futures_raw_signal_strength_scan.py",
+      "digest": "e59e249df9e61c90b4ea49fcfb5481671f3da12566e4d1fffa468e0c652bd197",
+      "reason": "move"
+    }
+  ],
+  "completed": [
+    "code/Yu點位資料整理_2025_2026.xlsx",
+    "code/yu_futures_analysis_2026.xlsx",
+    "code/yu_taiex_analysis_2025.csv",
+    "code/yu_taiex_analysis_2026.csv",
+    "output/finMind.csv",
+    "output/finMind_futures_final_settlement_price.csv",
+    "output/finMind_futures_institutional_investors.csv",
+    "output/finMind_futures_institutional_investors_after_hours.csv",
+    "output/finMind_option_final_settlement_price.csv",
+    "code/finMind.csv",
+    "code/finMind_futures_institutional_investors.csv",
+    "code/finMind_futures_institutional_investors_after_hours.csv",
+    "code/APPLY_REPORT_COLUMNS_20260817.md",
+    "code/APPLY_TAIEX_REPORT_UPDATE.md",
+    "code/taifex_night_fallback.sql",
+    "code/all_python_code.txt",
+    "all_python_code.txt",
+    "postgres_schema.sql",
+    "output/postgres_schema.sql",
+    "code/tests/test_futures_open_to_night_close_convergence.py",
+    "code/tests/backtest/futures_raw_signal_strength_scan.py",
+    "code/tests/backtest/README_futures_raw_signal_strength_scan.md",
+    "code/tests/backtest/tests/test_futures_raw_signal_strength_scan.py"
+  ]
+}

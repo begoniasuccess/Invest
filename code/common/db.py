@@ -13,6 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from psycopg import sql as pg_sql
 from common import utils
+from common.paths import DB_EXPORT_ROOT
 
 # PowerShell 範例：
 # $env:POSTGRES_DSN = "host=localhost port=5432 dbname=invest user=postgres password=密碼"
@@ -329,7 +330,7 @@ def _relation_info(conn, table_name: str, schema: str):
 def export_table_to_csv(
     table_name: str,
     batch_size: int = 2000,
-    output_dir: str = "C:/Users/USER/Desktop",
+    output_dir: str | Path = DB_EXPORT_ROOT,
     verbose: bool = True,
     schema: str = DEFAULT_SCHEMA,
 ):
@@ -401,7 +402,7 @@ def export_table_to_csv(
 
 
 def export_database_schema(
-    output_dir: str = "C:/Users/USER/Desktop",
+    output_dir: str | Path = DB_EXPORT_ROOT,
     output_filename: str | None = None,
     schema: str | None = None,
     pg_dump_path: str | None = None,
@@ -664,7 +665,7 @@ def _delete_stock_spans_fully_covered_by_all(target_table: str):
 if __name__ == "__main__":
     print("====== run python -m common.db =========")
     export_database_schema(
-        output_dir="C:/Users/USER/Desktop/Han/學習/金融策略/Invest",
+        output_dir=DB_EXPORT_ROOT,
         output_filename="postgres_schema.sql",
         schema=None,
     )

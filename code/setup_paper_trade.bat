@@ -1,9 +1,9 @@
 @echo off
 cd /d "%~dp0"
-python -c "import markdown_it; import mdurl" >nul 2>&1
+python -c "import markdown_it; import mdurl; import PIL; import openpyxl; assert int(PIL.__version__.split(chr(46))[0]) >= 11" >nul 2>&1
 if errorlevel 1 (
-  echo Installing Markdown preview dependency...
-  python -m pip install "markdown-it-py>=3.0,<5"
+  echo Installing Markdown and media validation dependencies...
+  python -m pip install "markdown-it-py>=3.0,<5" "Pillow>=11.3,<13" "openpyxl>=3.1,<4"
   if errorlevel 1 goto failed
 )
 python setup_paper_trade.py

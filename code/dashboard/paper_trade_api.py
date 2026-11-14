@@ -37,6 +37,7 @@ class Action(Strict):
     quantity:int=Field(default=1,ge=1,le=1000)
     order_type:Literal['MARKET','LIMIT','STOP']='MARKET'
     time_in_force:Literal['ROD','IOC','FOK']|None=None
+    trigger_direction:Literal['ABOVE','BELOW']|None=None
     position_effect:Literal['AUTO','OPEN','CLOSE']='OPEN'
     target:Decimal|None=Field(default=None,gt=0,le=1000000,decimal_places=4)
     stop_loss:Decimal|None=Field(default=None,gt=0,le=1000000,decimal_places=4)

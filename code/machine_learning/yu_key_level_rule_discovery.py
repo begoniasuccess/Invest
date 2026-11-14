@@ -30,6 +30,7 @@ from typing import Any, Iterable
 
 import numpy as np
 import pandas as pd
+from common.paths import yu_label_path
 
 from machine_learning import yu_key_k_stage1 as stage1
 from machine_learning import yu_key_k_stage2 as stage2
@@ -58,7 +59,7 @@ def _text(value: Any) -> str:
 
 
 def _read_table(path: str | Path, sheet: str | int = 0) -> pd.DataFrame:
-    path = Path(path)
+    path = yu_label_path(path)
     if path.suffix.lower() == ".csv":
         return pd.read_csv(path, encoding="utf-8-sig")
     if path.suffix.lower() in {".xlsx", ".xls"}:
@@ -68,7 +69,7 @@ def _read_table(path: str | Path, sheet: str | int = 0) -> pd.DataFrame:
 
 def _read_taiex_label_table(path: str | Path) -> pd.DataFrame:
     """讀取舊版分析檔或已整理好的 Yu 點位活頁簿。"""
-    path = Path(path)
+    path = yu_label_path(path)
     if path.suffix.lower() in {".xlsx", ".xls"}:
         with pd.ExcelFile(path) as workbook:
             if "加權點位整理" in workbook.sheet_names:

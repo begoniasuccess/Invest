@@ -38,10 +38,11 @@ def slipped(price, direction, slippage, closing=False):
     return dec(price)+sign*slippage
 
 
-def triggered(kind, direction, target, price):
+def triggered(kind, direction, target, price, trigger_direction=None):
+    if kind == "MARKET": return True
     price, target = dec(price), dec(target)
     if kind == 'LIMIT': return price<=target if direction=='LONG' else price>=target
-    if kind == 'STOP': return price>=target if direction=='LONG' else price<=target
+    if kind == 'STOP': return price>=target if (trigger_direction or ('ABOVE' if direction=='LONG' else 'BELOW'))=='ABOVE' else price<=target
     return True
 
 
@@ -52,10 +53,10 @@ def normalize_tif(kind, tif=None):
     return tif
 
 
-def initial_order_decision(kind, direction, target, price, tif):
+def initial_order_decision(kind, direction, target, price, tif, trigger_direction=None):
     # No order book: an eligible tick fills all requested lots in this model.
     # STOP is a conditional order; TIF applies only after activation.
-    if kind == 'MARKET' or triggered(kind, direction, target, price):
+    if kind == 'MARKET' or triggered(kind, direction, target, price, trigger_direction):
         return 'FILL'
     if kind == 'STOP' or tif == 'ROD':
         return 'WAIT'
@@ -208,6 +209,11 @@ def fill(cur, order, tick, wall, limit=False):
         cur.execute('''INSERT INTO paper_trade.trades(order_id,entry_time,entry_tick_id,entry_price,entry_raw_price,entry_client_at,position_quantity)
             VALUES(%s,%s,%s,%s,%s,%s,%s)''',(order['id'],tick['trade_datetime'],tick['id'],price,dec(tick['price']),wall,remaining))
     cur.execute("UPDATE paper_trade.orders SET status='FILLED' WHERE id=%s",(order['id'],))
+    if remaining and (order.get('stop_loss') is not None or order.get('take_profit') is not None):
+        position=one(cur,TRADE_SELECT+' WHERE t.order_id=%s AND t.exit_time IS NULL',(order['id'],))
+        if position:
+            why=exit_trigger(position,tick['price'])
+            if why: close_trade(cur,position,tick,wall,why)
 
 
 def close_trade(cur, trade, tick, wall, reason, quantity=None, price=None, exit_order_id=None):
@@ -257,13 +263,14 @@ def advance(cur, run, tick, wall):
                 if why:
                     close_trade(cur,p,t,wall,why); protective.remove(p)
             for o in pending[:]:
-                if triggered(o['order_type'],o['direction'],o['target'],t['price']):
+                if triggered(o['order_type'],o['direction'],o['target'],t['price'],o.get('trigger_direction')):
                     fill(cur,o,t,wall,o['order_type']=='LIMIT'); pending.remove(o)
                     # Rebuild protection after closing/splitting/opening positions.
                     if o.get('position_effect','OPEN')!='OPEN':
                         protective=many(cur,TRADE_SELECT+' WHERE o.run_id=%s AND t.exit_time IS NULL AND (o.stop_loss IS NOT NULL OR o.take_profit IS NOT NULL) ORDER BY t.id',(run['id'],))
                     elif o['stop_loss'] is not None or o['take_profit'] is not None:
-                        p=one(cur,TRADE_SELECT+' WHERE t.order_id=%s AND t.exit_time IS NULL',(o['id'],)); protective.append(p)
+                        p=one(cur,TRADE_SELECT+' WHERE t.order_id=%s AND t.exit_time IS NULL',(o['id'],)); 
+                        if p is not None: protective.append(p)
     cur.execute('UPDATE paper_trade.runs SET cursor_time=%s,cursor_row=%s,cursor_id=%s WHERE id=%s',(*new,run['id']))
     run.update(cursor_time=new[0],cursor_row=new[1],cursor_id=new[2])
 
@@ -314,13 +321,15 @@ def execute_action(run_id, data):
                 if stop is not None or take is not None: raise ValueError('平倉委託不可附加新倉停損停利')
                 allocation_plan(opposite_positions(cur,dict(run_id=run_id,product=data['product'],direction=direction)),data['quantity'],effect)
             else: bracket_valid(direction,ref,stop,take)
+            trigger_direction=data.get('trigger_direction') if kind=='STOP' else None
+            if kind=='STOP': trigger_direction=trigger_direction or ('ABOVE' if direction=='LONG' else 'BELOW')
             if kind=='MARKET': target=None
-            order=one(cur,'''INSERT INTO paper_trade.orders(run_id,request_id,product,direction,quantity,order_type,target,stop_loss,take_profit,position_effect,time_in_force,status,
+            order=one(cur,'''INSERT INTO paper_trade.orders(run_id,request_id,product,direction,quantity,order_type,target,stop_loss,take_profit,position_effect,time_in_force,trigger_direction,status,
               submitted_at,submitted_tick_id,submitted_clock_at,submitted_client_at,fee_tx,fee_mtx,fee_tmf,slippage,tax_rate)
-              VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING',%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *''',
-              (run_id,request_id,data['product'],direction,data['quantity'],kind,target,stop,take,effect,tif,tick['trade_datetime'],tick['id'],clock,wall,a['fee_tx'],a['fee_mtx'],a['fee_tmf'],a['slippage'],TAX))
+              VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'PENDING',%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *''',
+              (run_id,request_id,data['product'],direction,data['quantity'],kind,target,stop,take,effect,tif,trigger_direction,tick['trade_datetime'],tick['id'],clock,wall,a['fee_tx'],a['fee_mtx'],a['fee_tmf'],a['slippage'],TAX))
             # Market: immediate known tick. Marketable limit/stop: immediate known tick, no queue model.
-            decision=initial_order_decision(kind,direction,target,tick['price'],tif)
+            decision=initial_order_decision(kind,direction,target,tick['price'],tif,trigger_direction)
             if decision=='FILL': fill(cur,order,tick,wall,kind=='LIMIT')
             elif decision=='CANCEL': cancel_pending(cur,order['id'],clock,wall,tif+'：當下價格不符合限價')
         elif action=='cancel':

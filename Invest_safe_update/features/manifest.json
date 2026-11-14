@@ -1,0 +1,163 @@
+{
+  "files": [
+    {
+      "path": "dashboard/journal_api.py",
+      "allowed_old_sha256": [
+        "8a9460ee582928c1cf542debc71067380078e72d8cd3c03e415c8d8e5becd5e5",
+        "aae90d0cc10a1cb51d071b00c9d6b922efd5a1ed0407f44ad3323d01139ef46b"
+      ],
+      "new_sha256": "aae90d0cc10a1cb51d071b00c9d6b922efd5a1ed0407f44ad3323d01139ef46b"
+    },
+    {
+      "path": "dashboard/journal_media.py",
+      "allowed_old_sha256": [
+        "46beee64db45e42e2077bcdf10b275410926c934a0d433c409fe342e15f2f06d",
+        "a95cbd16c8ecd4cc023caa01b896c96003709fc16e427ca725162723a1565e60"
+      ],
+      "new_sha256": "a95cbd16c8ecd4cc023caa01b896c96003709fc16e427ca725162723a1565e60"
+    },
+    {
+      "path": "dashboard/journal_service.py",
+      "allowed_old_sha256": [
+        "47790fe2e17eecc9b38c9f473c084211dd2d456499e88cde1f3449f36f1dac2f",
+        "cb71c33f4ac8ab09b36011ad2ee639c066057c30c05b2a67a95b7d6937e105e0"
+      ],
+      "new_sha256": "cb71c33f4ac8ab09b36011ad2ee639c066057c30c05b2a67a95b7d6937e105e0"
+    },
+    {
+      "path": "dashboard/paper_trade_api.py",
+      "allowed_old_sha256": [
+        "5cfcbbae46288e63826d68262618700c06a43ca8b4a2e8d7cd2eb0409a19138f",
+        "d244ff53fea329131870afd6faa6a1d4c6a8d076b6963651db28e1f1519affde"
+      ],
+      "new_sha256": "d244ff53fea329131870afd6faa6a1d4c6a8d076b6963651db28e1f1519affde"
+    },
+    {
+      "path": "dashboard/paper_trade_service.py",
+      "allowed_old_sha256": [
+        "1589d2cac8117343358063c8cda298cc5865547c685de9512fbbe6e7367db102",
+        "e234d556fd672f9bd88b96fc06cdae3c93efea9746e26a4809ffda4d47bf11ea"
+      ],
+      "new_sha256": "e234d556fd672f9bd88b96fc06cdae3c93efea9746e26a4809ffda4d47bf11ea"
+    },
+    {
+      "path": "dashboard/sql/paper_trade.sql",
+      "allowed_old_sha256": [
+        "2a7d9ff85ac1684ee966936f5883fb1803c6ab3a5a7d5725da2f5089e8d64a99",
+        "2a209ffb7b3a33476780423ee057a0a929afde7b292f0d1fa3398f9498c1516b"
+      ],
+      "new_sha256": "e0ac78b74adc3cd0098fb10014010f0b9828658715a47f016bbd3adfddb5a9c4"
+    },
+    {
+      "path": "dashboard/static/paper_common.js",
+      "allowed_old_sha256": [
+        "d3284c1504c02fdc3d025503046d95284658ce4882821d9a111e42729b808fd5",
+        "2d1ee4cd2e9cc3371c08dd4630a1215b37c9fa3c3faeb24d56bf8a69a6cfc6a9"
+      ],
+      "new_sha256": "028344047caf1d02fdba9135137ef39c64a7fd152ce7a8207bfdc3b0e62e9e8b"
+    },
+    {
+      "path": "dashboard/static/paper_journal.js",
+      "allowed_old_sha256": [
+        "2a6ea6b76e94386fc63bf126fe39220de8d7a3029994a31562bcc8e3f8462df2",
+        "0551db835c00953a8ab36ab8c6bcc35c35d050e58491feaf9edc5a2b6f704098"
+      ],
+      "new_sha256": "0551db835c00953a8ab36ab8c6bcc35c35d050e58491feaf9edc5a2b6f704098"
+    },
+    {
+      "path": "dashboard/static/paper_trade.js",
+      "allowed_old_sha256": [
+        "99f179b12d3741b354531731baa07439b9cb09e164dc752f97f6a196381eaaa6",
+        "6b02c79172b39b3a2b090c629bd355c7407288b12e64a85147bd57bed3fa923e"
+      ],
+      "new_sha256": "6b02c79172b39b3a2b090c629bd355c7407288b12e64a85147bd57bed3fa923e"
+    },
+    {
+      "path": "dashboard/static/replay_paper.js",
+      "allowed_old_sha256": [
+        "1464b28d0b771fe07376abc2d49cfdaea71d1333e53674111d7db5b787b242cd",
+        "12887286a5298e7bfc7625b506d87389aa02da5ecd412ae3f4aef04922504a57"
+      ],
+      "new_sha256": "49c198600e37147f6ae06206ab3a5bee1dfe6a105435b365d60b2ca04b3513b6"
+    },
+    {
+      "path": "dashboard/templates/paper_journal.html",
+      "allowed_old_sha256": [
+        "81c1e1806ad8f8526ac41e9119ec6695f383aafddd0c01bf9833cc586f90e562",
+        "7183b698a78fcfebd16ce278e44326bab003ce017cfb4bec7f9843f72d31361b"
+      ],
+      "new_sha256": "f11fac48c69438d3c1fcbefe277cc9cabe1436aa1651410ba6986e6af1e7fa8a"
+    },
+    {
+      "path": "dashboard/templates/paper_trade.html",
+      "allowed_old_sha256": [
+        "84212c6088907bcdb0769c5367e91a7be70fe2b5edbc528d13d48732717cd4eb",
+        "2c074b17b1b9abcc4401363443684170a0fcffd5eb36f7c26a2b533c89400790"
+      ],
+      "new_sha256": "35a7a493108efadb8f6a8b3b5e003fbe22ac26bf75de839a1bf50a775482fc3c"
+    },
+    {
+      "path": "dashboard/templates/replay.html",
+      "allowed_old_sha256": [
+        "dd4defc1d821069ce657a27c63c116a710a70f9d26f5cdd9cd4ced980abe9af1",
+        "46c971b335f141ba233d14777d9465386a79b8c2f6689c3ba495f3fe363afa92"
+      ],
+      "new_sha256": "5d956c16c7941e3cc291f963487a80946ee14101edd0b81e5b239da2f5bdca12"
+    },
+    {
+      "path": "requirements-dashboard.txt",
+      "allowed_old_sha256": [
+        "868bf4313aeee37be985d8d5282bbd433f986eadddb307ca52d1aa255acae737",
+        "5aacd235ec35441275e540d0a49e5726d32e3ac5f7c304621400b58e8bfff1de"
+      ],
+      "new_sha256": "5aacd235ec35441275e540d0a49e5726d32e3ac5f7c304621400b58e8bfff1de"
+    },
+    {
+      "path": "setup_paper_trade.bat",
+      "allowed_old_sha256": [
+        "db5a3971e52f0f44731f62fe2184b815bd1c77f11e24a53662202c49e8180031",
+        "4a7cb638e9556b9c99812a4150ce6d6c3a04ac308b0983a3c73d2af4f5dcb6a7"
+      ],
+      "new_sha256": "4a7cb638e9556b9c99812a4150ce6d6c3a04ac308b0983a3c73d2af4f5dcb6a7"
+    },
+    {
+      "path": "setup_paper_trade.py",
+      "allowed_old_sha256": [
+        "e214c5e649b2951818205f7d6efd466f8951b8950f9c768ef6f4046ac143d9c9",
+        "808074afb1225136e47f36032e23e4e2a78852e072f7f1ffb22a7bd34c7a3693"
+      ],
+      "new_sha256": "80ca9d65a88767cfeb9663b4c15d16eb03f3efcb4d077eb65fdad8349e763466"
+    },
+    {
+      "path": "tests/test_journal_media.py",
+      "allowed_old_sha256": [
+        "747f445ecb749469857ff8449163334a0fe1a31a3cf946f0f0742a0b9d413eb3",
+        "fa1fdb0ce115e4eeebc68bb7099cab0a12017bb1b13fdaa52241d125e0dfb8bc"
+      ],
+      "new_sha256": "fa1fdb0ce115e4eeebc68bb7099cab0a12017bb1b13fdaa52241d125e0dfb8bc"
+    },
+    {
+      "path": "tests/test_journal_trade_reliability.py",
+      "allowed_old_sha256": [
+        null,
+        "ba1709a8d282ea9b25d4feb4bb8a04844584fbb92fde0e713c5972c484ff52e6"
+      ],
+      "new_sha256": "6b49ee591b83061c67e3f871226886837335591ed74511146417df86d0e9cc11"
+    },
+    {
+      "path": "tests/test_paper_journal.py",
+      "allowed_old_sha256": [
+        "773be4d4228d31d9ea21870fcded2152cde693e5215c9e7e6b5898dd675084d0",
+        "9441277d1a15cb67c21587fc5dca6ea13ca08483a7b298820089348102fef6ac"
+      ],
+      "new_sha256": "9441277d1a15cb67c21587fc5dca6ea13ca08483a7b298820089348102fef6ac"
+    },
+    {
+      "path": "tests/test_paper_trade_service.py",
+      "allowed_old_sha256": [
+        "f120be729196242325d03602cd875e85426e27bcaacc97f40cb239ddf9826aeb"
+      ],
+      "new_sha256": "f120be729196242325d03602cd875e85426e27bcaacc97f40cb239ddf9826aeb"
+    }
+  ]
+}

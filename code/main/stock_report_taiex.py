@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
+from common.paths import OUTPUT_ROOT
 from module import finMind as fm
 from module import stock_report_utils as SRU
 from common import db  # DB 模組
@@ -67,7 +68,8 @@ def export(stock_id, sDt, eDt, *, export_csv: bool = True):
     output = output.loc[:, order_taiex_report_columns(list(output.columns))]
 
     if export_csv:
-        output.to_csv("C:/Users/USER/Desktop/Han/學習/金融策略/Invest/output/stock_report.csv", index=False, encoding="utf-8-sig")
+        OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+        output.to_csv(str(OUTPUT_ROOT / "stock_report.csv"), index=False, encoding="utf-8-sig")
     return output
 
 

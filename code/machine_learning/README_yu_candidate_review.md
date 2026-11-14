@@ -9,7 +9,7 @@
 python -m machine_learning.yu_candidate_review_system `
   --config machine_learning/configs/yu_candidate_review_v3.json `
   --date 2026-09-23 `
-  --known-labels "Yu點位資料整理_2025_2026.xlsx"
+  --known-labels "../data/yu/Yu點位資料整理_2025_2026.xlsx"
 ```
 
 若 Excel 內含「加權點位整理」工作表，程式會直接使用已整理好的 `點位分類`、

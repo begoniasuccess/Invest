@@ -697,7 +697,9 @@ def _fetch_with_cache(
     output = pd.concat(all_dfs, ignore_index=True) if all_dfs else pd.DataFrame()
 
     if output_csv:
-        output.to_csv(output_csv, index=False, encoding="utf-8-sig")
+        output_path = Path(output_csv)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output.to_csv(output_path, index=False, encoding="utf-8-sig")
 
     return output
 

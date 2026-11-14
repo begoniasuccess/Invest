@@ -16,6 +16,7 @@ from typing import Any, Iterable
 
 import numpy as np
 import pandas as pd
+from common.paths import yu_label_path
 
 from machine_learning import yu_key_k_stage1 as stage1
 from machine_learning import yu_strategy_model as v1
@@ -47,7 +48,7 @@ def load_config(path: str | Path) -> dict[str, Any]:
 
 
 def load_yu_labels(path: str | Path, sheet_name: str | int = 0) -> pd.DataFrame:
-    frame = pd.read_excel(path, sheet_name=sheet_name)
+    frame = pd.read_excel(yu_label_path(path), sheet_name=sheet_name)
     required = {"分析日期", *[field for spec in POINT_SPECS for field in spec[1:3]]}
     missing = sorted(required - set(frame.columns))
     if missing:

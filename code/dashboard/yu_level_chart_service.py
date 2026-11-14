@@ -17,6 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = PROJECT_ROOT / "machine_learning" / "configs" / "yu_candidate_review_v3.json"
 STRICT_CONFIG = PROJECT_ROOT / "machine_learning" / "configs" / "yu_candidate_review_strict.json"
 YU_HISTORY_START = pd.Timestamp("2025-01-01")
+from common.paths import yu_label_path
 YU_ACTUAL_LABELS = PROJECT_ROOT / "Yu點位資料整理_2025_2026.xlsx"
 
 
@@ -39,9 +40,10 @@ def _candidate_config(mode: str) -> dict:
 
 
 def _actual_yu_levels(start: pd.Timestamp, cutoff: pd.Timestamp) -> dict:
-    if not YU_ACTUAL_LABELS.exists():
-        raise ValueError(f"找不到Yu整理點位檔：{YU_ACTUAL_LABELS.name}")
-    labels = discovery.normalize_taiex_labels([YU_ACTUAL_LABELS], start, cutoff)
+    path = yu_label_path(YU_ACTUAL_LABELS)
+    if not path.is_file():
+        raise ValueError(f"找不到 Yu 整理點位檔：{path}（舊位置 code 或新位置 data/yu）")
+    labels = discovery.normalize_taiex_labels([path], start, cutoff)
     close_frame = db.query_to_df(
         'SELECT "收盤價" FROM report.v_taiex_report '
         'WHERE "日期" <= ? ORDER BY "日期" DESC LIMIT 1',

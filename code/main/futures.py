@@ -1,5 +1,6 @@
 from module import finMind as fm, futures_utils as FU
 from common import db, utils
+from common.paths import OUTPUT_ROOT
 from datetime import datetime, timedelta
 from pathlib import Path
 from time import perf_counter
@@ -914,10 +915,7 @@ def sync_report_csv_to_view(
             f"SELECT {selected_columns} "
             'FROM report.v_futures_report_daily_corrected_turning ORDER BY "日期"'
         )
-        output_path = (
-            "C:/Users/USER/Desktop/Han/學習/金融策略/Invest/"
-            "output/futures_report_daily.csv"
-        )
+        output_path = OUTPUT_ROOT / "futures_report_daily.csv"
         started = perf_counter()
         db.copy_query_to_csv(export_query, output_path)
         elapsed = perf_counter() - started

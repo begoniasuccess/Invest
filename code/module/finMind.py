@@ -8,6 +8,7 @@ import requests
 from typing import Union
 from pathlib import Path
 from dotenv import load_dotenv
+from common.paths import DATA_ROOT, FINMIND_OUTPUT_ROOT
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
@@ -24,7 +25,7 @@ if not token:
     )
 api.login_by_token(api_token=token)
 
-storageDir = "../data/FinMind"
+storageDir = str(DATA_ROOT / "FinMind")
 os.makedirs(storageDir, exist_ok=True)
 
 storageDir_twStockInfo =  f"{storageDir}/TW/StockInfo"
@@ -1038,7 +1039,7 @@ def get_tw_futures_daily(
         """,
         order_by_sql="date, contract_date, trading_session",
         debug_name="futures_daily",
-        output_csv="finMind.csv",
+        output_csv=str(FINMIND_OUTPUT_ROOT / "finMind.csv"),
         # 盤後行情以次一交易日為 date；週五夜盤會標成下週一，
         # 春節等連假則可能跨更多日曆日，因此只對本資料集放寬查詢範圍。
         max_future_days=14,
@@ -1147,7 +1148,7 @@ def get_tw_futures_institutional_investors(
         """,
         order_by_sql="date, institutional_investors",
         debug_name="futures_inst",
-        output_csv="finMind_futures_institutional_investors.csv",
+        output_csv=str(FINMIND_OUTPUT_ROOT / "finMind_futures_institutional_investors.csv"),
     )
 
 
@@ -1237,7 +1238,7 @@ def get_tw_futures_institutional_investors_after_hours(
         """,
         order_by_sql="date, institutional_investors",
         debug_name="futures_inst_ah",
-        output_csv="finMind_futures_institutional_investors_after_hours.csv",
+        output_csv=str(FINMIND_OUTPUT_ROOT / "finMind_futures_institutional_investors_after_hours.csv"),
         # 夜盤法人使用報表交易日本身的 date；與期貨夜盤行情的
         # 「下一交易日」歸屬不同。固定覆抓近期資料避免中間缺口。
         recent_refresh_days=recent_refresh_days,
@@ -1533,7 +1534,7 @@ def get_tw_option_final_settlement_price(
         """,
         order_by_sql="date, contract_month",
         debug_name="option_final_settlement",
-        output_csv="finMind_option_final_settlement_price.csv",
+        output_csv=str(FINMIND_OUTPUT_ROOT / "finMind_option_final_settlement_price.csv"),
     )
 
 

@@ -2,17 +2,18 @@
 from pathlib import Path
 from common import db
 
-REQUIRED = {"orders": {"position_effect", "time_in_force", "cancel_reason"},
+REQUIRED = {"orders": {"position_effect", "time_in_force", "cancel_reason", "trigger_direction"},
             "trades": {"position_quantity", "exit_order_id"},
             "journals": {"id", "title", "body", "journal_date", "updated_at"},
-            "journal_links": {"journal_id", "account_id", "run_id", "trade_id", "historical_date"}}
+            "journal_links": {"journal_id", "account_id", "run_id", "trade_id", "historical_date", "entry_order_id"}}
 
 
 def main():
     try:
         import markdown_it  # noqa: F401
+        import PIL  # noqa: F401
     except ImportError as exc:
-        raise RuntimeError('Install Markdown dependency: python -m pip install "markdown-it-py>=3.0,<5"') from exc
+        raise RuntimeError('Install Markdown dependency: python -m pip install "markdown-it-py>=3.0,<5" "Pillow>=11.3,<13"') from exc
     sql = (Path(__file__).resolve().parent / "dashboard" / "sql" / "paper_trade.sql").read_text(encoding="utf-8")
     with db.get_connection() as conn:
         conn.commit()
@@ -34,17 +35,13 @@ def main():
         old_unique = conn.execute("""SELECT 1 FROM pg_constraint c JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=c.conkey[1] WHERE c.conrelid='paper_trade.trades'::regclass AND c.contype='u' AND cardinality(c.conkey)=1 AND a.attname='order_id'""").fetchone()
         if old_unique:
             raise RuntimeError("Legacy UNIQUE(order_id) remains; partial closing cannot work.")
-        conn.execute("SELECT COALESCE(t.position_quantity,o.quantity), t.exit_order_id, o.position_effect, o.time_in_force, o.cancel_reason FROM paper_trade.trades t JOIN paper_trade.orders o ON o.id=t.order_id LIMIT 0")
-        conn.execute("SELECT * FROM paper_trade.journal_link_details LIMIT 0")
-        print("Verified: position fields, time_in_force, journals and journal links.")
+        conn.execute("SELECT COALESCE(t.position_quantity,o.quantity), t.exit_order_id, o.position_effect, o.time_in_force, o.cancel_reason, o.trigger_direction FROM paper_trade.trades t JOIN paper_trade.orders o ON o.id=t.order_id LIMIT 0")
+        conn.execute("SELECT entry_order_id FROM paper_trade.journal_link_details LIMIT 0")
+        print("Verified: position fields, time_in_force, trigger_direction, journal opening-order links.")
         print("paper_trade schema ready. Existing market and backtest tables were not changed.")
 
 
 if __name__ == "__main__":
     main()
-    # Remove only the retired notes-page assets after successful migration.
-    root=Path(__file__).resolve().parent
-    for name in ("dashboard/templates/paper_notes.html", "dashboard/static/paper_notes.js", "tests/test_paper_notes.py"):
-        (root/name).unlink(missing_ok=True)
     from dashboard.journal_media import media_root
     print("Journal media:", media_root())

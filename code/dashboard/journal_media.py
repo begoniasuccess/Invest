@@ -3,6 +3,10 @@ from pathlib import Path
 from uuid import uuid4
 from urllib.parse import quote, unquote
 import re
+import json
+from hashlib import sha256
+from urllib.parse import urlsplit
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException, Request, Query
 from fastapi.responses import FileResponse
 
@@ -38,16 +42,118 @@ def resolve_file(name):
         raise HTTPException(404,'找不到檔案')
     return path
 
+def alias_path(path):
+    # Stable physical filename: rename only the library label, never a journal URL.
+    return path.parent / ('.display-'+sha256(path.name.encode('utf-8')).hexdigest()+'.json')
+
+
+def display_name(path):
+    alias=alias_path(path)
+    if alias.is_file() and not alias.is_symlink():
+        try:
+            value=json.loads(alias.read_text(encoding='utf-8'))['display_name']
+            if isinstance(value,str) and value.strip(): return value
+        except (OSError,ValueError,KeyError,TypeError): pass
+    return re.sub(r'^[0-9a-f]{32}_','',path.name)
+
+
+def validate_content(path, suffix):
+    """Verify images with Pillow; video signature check is not a codec decoder."""
+    mime=TYPES[suffix]
+    if mime.startswith('image/'):
+        from PIL import Image, UnidentifiedImageError
+        formats={'.png':'PNG','.jpg':'JPEG','.jpeg':'JPEG','.gif':'GIF','.webp':'WEBP','.avif':'AVIF','.bmp':'BMP'}
+        try:
+            with Image.open(path) as image:
+                if image.format!=formats[suffix]: raise ValueError('圖片格式與副檔名不符')
+                if image.width*image.height>100_000_000: raise ValueError('圖片像素過大')
+                image.verify()
+        except (OSError,ValueError,Image.DecompressionBombError) as e:
+            raise HTTPException(400,'無效圖片或圖片格式不符') from e
+    elif mime.startswith('video/'):
+        with path.open('rb') as f: header=f.read(4096)
+        valid=(suffix in ('.mp4','.mov') and len(header)>=12 and header[4:8] in (b'ftyp',b'moov',b'mdat',b'wide',b'free')) or (suffix=='.webm' and header.startswith(b'\x1a\x45\xdf\xa3')) or (suffix in ('.ogg','.ogv') and header.startswith(b'OggS'))
+        if not valid: raise HTTPException(400,'影片檔頭與副檔名不符；請確認檔案格式')
+
+
+def media_names(body):
+    """Parse Markdown links, including reference-style links, not raw substrings."""
+    from markdown_it import MarkdownIt
+    names=set()
+    def walk(tokens):
+        for token in tokens:
+            url=token.attrGet('src') if token.type=='image' else token.attrGet('href') if token.type=='link_open' else None
+            if url:
+                try: parsed=urlsplit(url)
+                except ValueError: continue
+                if (not parsed.netloc or parsed.hostname in ('localhost','127.0.0.1','::1')) and parsed.path.startswith(PREFIX):
+                    name=unquote(parsed.path[len(PREFIX):])
+                    if valid_name(name): names.add(name)
+            if token.children: walk(token.children)
+    walk(MarkdownIt('commonmark',{'html':False}).enable(['table','strikethrough']).parse(body))
+    return names
+
+
+def references(cur,name):
+    from dashboard import paper_trade_service as p
+    rows=p.many(cur,'SELECT id,title,journal_date,body FROM paper_trade.journals ORDER BY journal_date DESC,id DESC')
+    return [{k:r[k] for k in ('id','title','journal_date')} for r in rows if name in media_names(r['body'])]
+
+
+class Rename(BaseModel):
+    display_name:str=Field(min_length=1,max_length=240)
+
+
+@router.get('/references/{name}')
+def get_references(name:str):
+    resolve_file(name)
+    from dashboard import paper_trade_service as p
+    with p.connection() as conn,p.cursor(conn) as cur:
+        return {'items':references(cur,name)}
+
+
+@router.put('/rename/{name}')
+def rename(name:str,data:Rename):
+    path=resolve_file(name); value=data.display_name.strip()
+    if not valid_name(value) or Path(value).suffix.lower()!=path.suffix.lower():
+        raise HTTPException(400,'請保留原副檔名並使用有效檔名')
+    target=alias_path(path); temp=path.parent/('.'+uuid4().hex+'.alias')
+    try:
+        temp.write_text(json.dumps({'display_name':value},ensure_ascii=False),encoding='utf-8')
+        temp.replace(target)
+    finally: temp.unlink(missing_ok=True)
+    return file_info(path)
+
+
+@router.delete('/files/{name}')
+def delete_file(name:str):
+    # Exclusive against journal saves; only unreferenced saved files may be removed.
+    from dashboard import paper_trade_service as p
+    with p.connection() as conn,p.cursor(conn) as cur:
+        cur.execute('LOCK TABLE paper_trade.journals IN SHARE ROW EXCLUSIVE MODE')
+        path=resolve_file(name)
+        refs=references(cur,name)
+        if refs: raise HTTPException(409,'仍有日記引用此檔案，請先移除連結')
+        path.unlink(); alias_path(path).unlink(missing_ok=True)
+        conn.commit(); return {'deleted':name}
+
+
 def file_info(path):
     name=path.name
-    display=re.sub(r'^[0-9a-f]{32}_','',name)
+    display=display_name(path)
     return {'name':name,'display_name':display,'kind':kind_for(name),'size':path.stat().st_size,
             'url':PREFIX+quote(name,safe='')}
 
 @router.get('')
-def list_files(keyword: str=Query('',max_length=200), kind: str=Query('all',pattern='^(all|image|video|file)$')):
-    files=[]
+def list_files(keyword: str=Query('',max_length=200), kind: str=Query('all',pattern='^(all|image|video|file)$'), unused:bool=False):
+    files=[]; used=set()
+    if unused:
+        from dashboard import paper_trade_service as p
+        with p.connection() as conn,p.cursor(conn) as cur:
+            for row in p.many(cur,'SELECT body FROM paper_trade.journals'):
+                used.update(media_names(row['body']))
     for path in media_root().iterdir():
+        if path.name in used: continue
         if not valid_name(path.name) or path.is_symlink() or not path.is_file(): continue
         info=file_info(path)
         if keyword.casefold() not in info['display_name'].casefold() or kind!='all' and kind!=info['kind']: continue
@@ -72,6 +178,7 @@ async def upload(request: Request, filename: str=Query(...,max_length=240)):
                 if size>MAX_BYTES: raise HTTPException(413,'單檔上限 500 MB')
                 out.write(chunk)
         if not size: raise HTTPException(400,'檔案不可為空')
+        validate_content(temp,suffix)
         temp.rename(dest)
     finally:
         temp.unlink(missing_ok=True)

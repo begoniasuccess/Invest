@@ -1,0 +1,145 @@
+{
+  "files": [
+    {
+      "path": "backtest/futures_open_to_night_close_convergence.py",
+      "allowed_old_sha256": [
+        "570f92fa1df4ab7c4ef04cb70f1fa8d886fd6795da9e42aa0d9f588820bc92ea",
+        "ed1e62f87fdcb19baee8f273d41bc8c3e3ae03dbb504ea41b74206d5f89a821c"
+      ],
+      "new_sha256": "a9aaedcb22ae6a7a21703464e750fe35804a5a1b246d666f3bf264cff914b94f"
+    },
+    {
+      "path": "common/db.py",
+      "allowed_old_sha256": [
+        "8c0b7767de7865045182924b63d2d02417c98d1eacbff339460ab24ec2f3bb9e",
+        "d470a1cf738971f5b17f449404b11280650434bd98ec6d3345b6be35081982b0"
+      ],
+      "new_sha256": "0318e7770c058168a0d6e5df18239a236d9e36c5cb828add44af1842f26dda54"
+    },
+    {
+      "path": "common/paths.py",
+      "allowed_old_sha256": [
+        null,
+        "b5d681d229f2d69ab14fdcf36c7f403391999907136907dc1a827ed3fc862fd9"
+      ],
+      "new_sha256": "d557035f0c71996dc467c2af85668c0da249e34aeb030174bc91417771ee1409"
+    },
+    {
+      "path": "common/utils.py",
+      "allowed_old_sha256": [
+        "8f7be27ea4ec36d5b5d605bd1342d352507960439b552ac3d7d9e586a4d95028",
+        "781607d9cf2acf1b4c60ce9648238863e7ffa3d2eb343824e18266f33738c33a"
+      ],
+      "new_sha256": "c07d3d73d32335d5c46ab0f16d435dbd9431d6f825da7d7782642c2a05c2a13f"
+    },
+    {
+      "path": "dashboard/yu_level_chart_service.py",
+      "allowed_old_sha256": [
+        "d689575d139b823bf8b0ef17e396aa561045cf9376645a17c60f6a316990f04b",
+        "3360da26219af41aa2ad56fbef2d447fb4cd19179bf0f4456e58a168e7f7db79"
+      ],
+      "new_sha256": "14fbdcc71999ca0d35589183e513c7ddaf90dfaeb49bea9885f7ed3a2d8f69b2"
+    },
+    {
+      "path": "futures_open_to_night_close_convergence.py",
+      "allowed_old_sha256": [
+        "570f92fa1df4ab7c4ef04cb70f1fa8d886fd6795da9e42aa0d9f588820bc92ea",
+        "d049e8353935e51a24e55a961efc06bc4e145dc6f0a58783dff667334eb218ef"
+      ],
+      "new_sha256": "d049e8353935e51a24e55a961efc06bc4e145dc6f0a58783dff667334eb218ef"
+    },
+    {
+      "path": "machine_learning/README_yu_candidate_review.md",
+      "allowed_old_sha256": [
+        "c595a78c963731acf9cf508199ceca4abc677ad669c529a75d688d81b477ffe2",
+        "c3ad86043d8a522b95d8845b290db4da36a4597082da8be174e1e4b62cd01710"
+      ],
+      "new_sha256": "c3ad86043d8a522b95d8845b290db4da36a4597082da8be174e1e4b62cd01710"
+    },
+    {
+      "path": "machine_learning/yu_key_k_stage2.py",
+      "allowed_old_sha256": [
+        "b0b51161ca2fdbc5893a00b8c425936cb4f6c135865e592f9558a5fc97df7c35",
+        "16d9924520db2d1fa288725f47ad0811839ec63230d181a36601835dc6042b83"
+      ],
+      "new_sha256": "5f539b928efd4a233f750565234431349352505e0fcd41cd5dfd29db55b44212"
+    },
+    {
+      "path": "machine_learning/yu_key_level_rule_discovery.py",
+      "allowed_old_sha256": [
+        "105be35c550605df4fc5615b3e8e32e5792e9bef8157749843cb66f44ef977d9",
+        "0989b6ad66cbcec4a3d428a1a71854679290578bfb4e908ec15c5848190dced4"
+      ],
+      "new_sha256": "5787f97d425549ed05de395934e83eccec011062d358d9434375448561364c2a"
+    },
+    {
+      "path": "machine_learning/yu_strategy_model.py",
+      "allowed_old_sha256": [
+        "b43804e2cdf1986eaa2dc27e13a526f199e44215400e0a97597355543697246d",
+        "ea6704325ca47c49c0a6a4af3f2e636aa527c79fe65eedc2fd2c1f482797f638"
+      ],
+      "new_sha256": "6031dde541163b0b7d0684daeabc0438c3846891d9be0c67e830eb9113db22d1"
+    },
+    {
+      "path": "main/futures.py",
+      "allowed_old_sha256": [
+        "3700f8a077dd7c8cc8d817476bebfd02228a63001b38459c527ec6d551a92371",
+        "f248771b2d30dddf9f79ee5f94e4d071d48b6c55b58f982c0371d168728a283d"
+      ],
+      "new_sha256": "d8fcade076230c2a7bdc837ad50493fbd605745039f69b67ab00aaacf6395903"
+    },
+    {
+      "path": "main/repair_tx_tick_2019_2020.py",
+      "allowed_old_sha256": [
+        null,
+        "50d9695fe36c508e2586b3c53f21ee680c2b239c1671730a18f60c1d29b88311"
+      ],
+      "new_sha256": "50d9695fe36c508e2586b3c53f21ee680c2b239c1671730a18f60c1d29b88311"
+    },
+    {
+      "path": "main/stock_report_taiex.py",
+      "allowed_old_sha256": [
+        "a5865cec0d8db91b6d379692e80df04cbe7d947f3397bb3a3e6c7f737af7107a",
+        "728093c8b905b15af55e963d9c4a8a51e4a8ca233ca958cc3b8b23c943f108d3"
+      ],
+      "new_sha256": "d9512e81c22ff20935221a03debc7ce5e58c90bb0b8fabcb713a72a9bff45b48"
+    },
+    {
+      "path": "module/finMind.py",
+      "allowed_old_sha256": [
+        "7931e2177fe9ac6212fdd69016cab23a2454a72f074d7b13c8ce877594e21a01",
+        "ada5875608a27e4b39a82b3f485c0cb28c20432625d35696197cd217b33fbe4a"
+      ],
+      "new_sha256": "93a53cc46c727ff72c2a8f9e5960d84d78afd2d024f681c236d7dca93036a8ad"
+    },
+    {
+      "path": "repair_tx_tick_2019_2020.py",
+      "allowed_old_sha256": [
+        "50d9695fe36c508e2586b3c53f21ee680c2b239c1671730a18f60c1d29b88311",
+        "f0abf8f87fc3737343d38adbdf5fb3bdfaca5eeac06a6fa1da4be582f888bd44"
+      ],
+      "new_sha256": "f0abf8f87fc3737343d38adbdf5fb3bdfaca5eeac06a6fa1da4be582f888bd44"
+    },
+    {
+      "path": "tools/organize_project.py",
+      "allowed_old_sha256": [
+        null
+      ],
+      "new_sha256": "2572953d4b7037973281558aed3f2d8d1ed0538dc98808918e2f2a45dadcac49"
+    },
+    {
+      "path": "tools/powershell.txt",
+      "allowed_old_sha256": [
+        "6aa2ea68efa4a470126854fef1bae727d589c2bc4e5ffb3bda8ce5b65b389171"
+      ],
+      "new_sha256": "28dfdccdac3c7a6c5408a911c302d75776aa795994a64672e39a027f26f5cb10"
+    },
+    {
+      "path": "tests/test_project_organization.py",
+      "allowed_old_sha256": [
+        null
+      ],
+      "new_sha256": "717df3eb29a1b0d0b1b451bcfff5b2354c1e044fc36889364a60138210577f99"
+    }
+  ]
+}

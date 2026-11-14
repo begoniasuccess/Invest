@@ -25,12 +25,12 @@ def test_markdown_and_unsafe_content():
 def test_create_multiple_links_without_touching_executions():
     data=Journal(title='策略研究',body='## 研究',journal_date=DAY,links=[Link(kind='trade',target_id=7),Link(kind='trade',target_id=7),Link(kind='run',target_id=3),Link(kind='date',historical_date=DAY),Link(kind='account',target_id=1)]).model_dump()
     conn=MagicMock();cur=MagicMock()
-    with patch.object(p,'connection') as c,patch.object(p,'cursor') as cc,patch.object(p,'one',side_effect=[{'id':42},{'id':42,'title':'策略研究'}]),patch.object(p,'many',return_value=[]):
+    with patch.object(p,'connection') as c,patch.object(p,'cursor') as cc,patch.object(p,'one',side_effect=[{'id':42},{'order_id':70,'exit_time':NOW},{'order_id':70,'exit_time':NOW},{'id':42,'title':'策略研究'}]),patch.object(p,'many',return_value=[]):
         c.return_value.__enter__.return_value=conn;cc.return_value.__enter__.return_value=cur
         assert s.save(data)['id']==42
     stmts=[x.args for x in cur.execute.call_args_list]
-    assert len(stmts)==5 and stmts[0][0].startswith('DELETE FROM paper_trade.journal_links')
-    assert [x[1] for x in stmts[1:]]==[(42,7),(42,3),(42,DAY),(42,1)]
+    assert len(stmts)==6 and stmts[1][0].startswith('DELETE FROM paper_trade.journal_links')
+    assert [x[1] for x in stmts[2:]]==[(42,7),(42,3),(42,DAY),(42,1)]
     conn.commit.assert_called_once()
 
 def test_edit_concurrency_guard():
@@ -39,20 +39,21 @@ def test_edit_concurrency_guard():
     with patch.object(p,'connection',return_value=MagicMock()),patch.object(p,'cursor') as c,patch.object(p,'one',return_value={'id':1,'updated_at':datetime(2026,11,14,tzinfo=timezone.utc)}):
         c.return_value.__enter__.return_value=cur
         with pytest.raises(ValueError,match='其他視窗'): s.save(data,1)
-    cur.execute.assert_not_called()
+    cur.execute.assert_called_once_with('LOCK TABLE paper_trade.journals IN ROW EXCLUSIVE MODE')
 
 def test_search_parameterized_and_independent_date_link():
     with patch.object(p,'connection',return_value=MagicMock()),patch.object(p,'cursor',return_value=MagicMock()),patch.object(p,'many',side_effect=[[{'id':1},{'id':2}],[]]) as m:
         result=s.search(account_id=2,run_id=3,trade_id=4,history_date=DAY,keyword="x' OR 1=1",limit=1,link_kind='trade')
         sql,args=m.call_args_list[0].args[1:]
-        assert 'l.account_id=%s' in sql and 'l.run_id=%s' in sql and 'l.trade_id=%s' in sql and 'l.kind=%s' in sql
+        assert 'l.account_id=%s' in sql and 'l.run_id=%s' in sql and 'l.trade_id=%s' in sql and "l.kind IN ('trade','order')" in sql
         assert 'd.historical_date=%s' in sql and "x' OR 1=1" not in sql
-        assert args==(2,3,4,'trade',DAY,"x' OR 1=1",2,0) and result['has_more']
+        assert args==(2,3,4,4,DAY,"x' OR 1=1",2,0) and result['has_more']
 
 def test_delete_only_journal():
     conn=MagicMock();cur=MagicMock()
-    with patch.object(p,'connection') as c,patch.object(p,'cursor') as cc,patch.object(p,'one',return_value={'id':1}) as one:
+    with patch.object(p,'connection') as c,patch.object(p,'cursor') as cc,patch.object(p,'one',return_value={'id':1,'updated_at':NOW}) as one:
         c.return_value.__enter__.return_value=conn;cc.return_value.__enter__.return_value=cur
-        assert s.delete(1)=={'deleted':1}
-        assert one.call_args.args[1]=='DELETE FROM paper_trade.journals WHERE id=%s RETURNING id'
+        assert s.delete(1,NOW)=={'deleted':1}
+        assert 'FOR UPDATE' in one.call_args.args[1]
+        cur.execute.assert_called_once_with('DELETE FROM paper_trade.journals WHERE id=%s',(1,))
         conn.commit.assert_called_once()
