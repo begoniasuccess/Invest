@@ -4,7 +4,7 @@ from common import db
 
 REQUIRED = {"orders": {"position_effect", "time_in_force", "cancel_reason", "trigger_direction"},
             "trades": {"position_quantity", "exit_order_id"},
-            "journals": {"id", "title", "body", "journal_date", "updated_at"},
+            "journals": {"id", "title", "body", "journal_date", "updated_at", "tags"},
             "journal_links": {"journal_id", "account_id", "run_id", "trade_id", "historical_date", "entry_order_id"}}
 
 

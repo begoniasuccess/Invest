@@ -1,0 +1,4731 @@
+{
+  "schema_version": 2,
+  "source_archive": "code(20261114-125036).zip",
+  "note": "正式實驗索引；歷史資料與新執行批次分開。執行入口固定，資料庫預設唯讀。",
+  "experiments": [
+    {
+      "id": "futures_core_next_day_hit",
+      "title": "五日核心多空隔日命中率",
+      "category": "核心與方向",
+      "kind": "方向統計",
+      "source_path": "code/backtest/futures_core_next_day_hit.py",
+      "module": "backtest.futures_core_next_day_hit",
+      "source_sha256": "2ba7e87ad5beb5051b0ae71e2a604bb5de457e07e1cd6fda87b18498667acb43",
+      "description_path": "experiments/futures_core_next_day_hit/README.md",
+      "original_readme": null,
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', required=True, type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', required=True, type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--shadow-threshold"
+          ],
+          "declaration": "parser.add_argument('--shadow-threshold', type=float, default=125.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest'))"
+        },
+        {
+          "flags": [
+            "--no-save-db"
+          ],
+          "declaration": "parser.add_argument('--no-save-db', action='store_true', help='只輸出 CSV，不寫入資料庫')"
+        }
+      ],
+      "output_name_literals": [
+        "futures_core_next_day_detail_corrected_{suffix}.csv",
+        "futures_core_next_day_summary_corrected_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "",
+        "prefix": "futures_core_next_day_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": null,
+            "required": true,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": true,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--shadow-threshold",
+            "key": "shadow_threshold",
+            "type": "float",
+            "default": 125.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": [
+          "--no-save-db"
+        ]
+      }
+    },
+    {
+      "id": "futures_core_five_day_next_day_statistics",
+      "title": "五日核心與隔日日盤報酬統計",
+      "category": "核心與方向",
+      "kind": "方向統計",
+      "source_path": "code/backtest/futures_core_five_day_next_day_statistics.py",
+      "module": "backtest.futures_core_five_day_next_day_statistics",
+      "source_sha256": "c35e0c77b56e1849caeaf1eae104c34eb5c23166958ab8bc62805f0234760ea9",
+      "description_path": "experiments/futures_core_five_day_next_day_statistics/README.md",
+      "original_readme": "code/backtest/README_futures_core_five_day_next_day_statistics.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_core_five_day_next_day_statistics'))"
+        }
+      ],
+      "output_name_literals": [
+        "core_five_day_next_day_detail_{suffix}.csv",
+        "core_five_day_next_day_manifest_{suffix}.json",
+        "core_five_day_next_day_summary_{suffix}.csv",
+        "core_five_day_next_day_tests_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_core_five_day_next_day_statistics",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_core_night_state_backtest",
+      "title": "核心方向 × 夜盤走勢與偏離程度",
+      "category": "核心與方向",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_core_night_state_backtest.py",
+      "module": "backtest.futures_core_night_state_backtest",
+      "source_sha256": "d5839848c1dd0f5be0793881725ef75cd95c28ad6db93af1eece69ad3e1ad8df",
+      "description_path": "experiments/futures_core_night_state_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_core_night_state_backtest.md",
+      "configs": [
+        "code/backtest/configs/futures_core_night_state_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "ap.add_argument('--config', type=Path, default=Path(__file__).parent / 'configs' / 'futures_core_night_state_v1.json')"
+        }
+      ],
+      "output_name_literals": [
+        "{prefix}_{ending}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "",
+        "prefix": "futures_core_night_state_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_core_night_state_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_next_day_session_statistics",
+      "title": "隔日日盤盤前條件分層統計",
+      "category": "核心與方向",
+      "kind": "方向統計",
+      "source_path": "code/backtest/futures_next_day_session_statistics.py",
+      "module": "backtest.futures_next_day_session_statistics",
+      "source_sha256": "861b33b5b37c94118ac8e7dc18608b5212e325bd84ede28d1b73993083bb6620",
+      "description_path": "experiments/futures_next_day_session_statistics/README.md",
+      "original_readme": "code/backtest/README_futures_next_day_session_statistics.md",
+      "configs": [
+        "code/backtest/configs/futures_next_day_session_statistics_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_next_day_session_statistics_v1.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "next_day_session_by_core_{suffix}.csv",
+        "next_day_session_by_night_change_{suffix}.csv",
+        "next_day_session_by_night_trend_{suffix}.csv",
+        "next_day_session_detail_{suffix}.csv",
+        "next_day_session_full_matrix_{suffix}.csv",
+        "next_day_session_manifest_{suffix}.json",
+        "next_day_session_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_next_day_session_statistics",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_next_day_session_statistics_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_combination_signal_backtest",
+      "title": "核心、夜盤、位置與籌碼複合訊號",
+      "category": "核心與方向",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_combination_signal_backtest.py",
+      "module": "backtest.futures_combination_signal_backtest",
+      "source_sha256": "4a0c62a892b1820646d0ee5e9c19616a875b0a3922b594a9a3de0d56e54afd98",
+      "description_path": "experiments/futures_combination_signal_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_combination_signal_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat, default=None)"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--core-column"
+          ],
+          "declaration": "parser.add_argument('--core-column', default='策略_核心_五日價量')"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest'))"
+        }
+      ],
+      "output_name_literals": [
+        "futures_combination_detail_{suffix}.csv",
+        "futures_combination_manifest_{suffix}.json",
+        "futures_combination_summary_{suffix}.csv",
+        "futures_combination_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "",
+        "prefix": "futures_combination_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--core-column",
+            "key": "core_column",
+            "type": "text",
+            "default": "策略_核心_五日價量",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_stop_trailing",
+      "title": "2-1 固定停損與移動保利",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_stop_trailing.py",
+      "module": "backtest.futures_stop_trailing",
+      "source_sha256": "6222550dec0e8505841911dcb87559e73fa05eb1639f893e0dc8ec0051a7bc8b",
+      "description_path": "experiments/futures_stop_trailing/README.md",
+      "original_readme": "code/backtest/README_futures_stop_trailing_2_1.md",
+      "configs": [
+        "code/backtest/configs/futures_stop_trailing_2_1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_stop_trailing_2_1.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "futures_stop_trailing_2_1_directional_detail_{suffix}.csv",
+        "futures_stop_trailing_2_1_directional_summary_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "",
+        "prefix": "futures_stop_trailing_2_1_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_stop_trailing_2_1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_turning_level_intraday",
+      "title": "2-2 轉折支撐壓力 A～L 當沖",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_turning_level_intraday.py",
+      "module": "backtest.futures_turning_level_intraday",
+      "source_sha256": "e8172f5d43728a0d0b2ba80cdef954b4bf27f6218e821d922a689fa98ef3c253",
+      "description_path": "experiments/futures_turning_level_intraday/README.md",
+      "original_readme": "code/backtest/README_futures_turning_level_intraday.md",
+      "configs": [
+        "code/backtest/configs/futures_turning_level_intraday_v1.json",
+        "code/backtest/configs/futures_turning_level_intraday_v2.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_turning_level_intraday_v2.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "turning_level_detail_{suffix}.csv",
+        "turning_level_manifest_{suffix}.json",
+        "turning_level_summary_{suffix}.csv",
+        "turning_level_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_turning_level",
+        "prefix": "turning_level_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_turning_level_intraday_v2.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_session_trend_intraday",
+      "title": "日盤走勢選點 2-2.7～2-2.10",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_session_trend_intraday.py",
+      "module": "backtest.futures_session_trend_intraday",
+      "source_sha256": "93be450e31077a0a4f5d10627a8061fd9818ff6a8d5a623bb6b154bd8045c6eb",
+      "description_path": "experiments/futures_session_trend_intraday/README.md",
+      "original_readme": "code/backtest/README_futures_session_trend_intraday.md",
+      "configs": [
+        "code/backtest/configs/futures_session_trend_intraday_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_session_trend_intraday_v1.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "session_trend_by_entry_type_{suffix}.csv",
+        "session_trend_by_trend_{suffix}.csv",
+        "session_trend_detail_{suffix}.csv",
+        "session_trend_manifest_{suffix}.json",
+        "session_trend_summary_{suffix}.csv",
+        "session_trend_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_session_trend",
+        "prefix": "session_trend_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_session_trend_intraday_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_session_trend_intraday_a",
+      "title": "日盤走勢選點與移動停利 2-2-A",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_session_trend_intraday_a.py",
+      "module": "backtest.futures_session_trend_intraday_a",
+      "source_sha256": "d23ce603b92d1956316f6ff5a3baf5f8256e49e113a60b67d6daf3ca571c0d2b",
+      "description_path": "experiments/futures_session_trend_intraday_a/README.md",
+      "original_readme": "code/backtest/README_futures_session_trend_intraday_a.md",
+      "configs": [
+        "code/backtest/configs/futures_session_trend_intraday_a_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_session_trend_intraday_a_v1.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "session_trend_a_by_entry_type_{suffix}.csv",
+        "session_trend_a_by_trend_{suffix}.csv",
+        "session_trend_a_detail_{suffix}.csv",
+        "session_trend_a_manifest_{suffix}.json",
+        "session_trend_a_summary_{suffix}.csv",
+        "session_trend_a_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_session_trend_a",
+        "prefix": "session_trend_a_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_session_trend_intraday_a_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_session_trend_night",
+      "title": "夜盤走勢選點 2-2.11～2-2.14",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_session_trend_night.py",
+      "module": "backtest.futures_session_trend_night",
+      "source_sha256": "3426b4f108d182dbd5a16e17c9f25dbc5699303c098be239ebd784e11780534e",
+      "description_path": "experiments/futures_session_trend_night/README.md",
+      "original_readme": "code/backtest/README_futures_session_trend_night.md",
+      "configs": [
+        "code/backtest/configs/futures_session_trend_night_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_session_trend_night_v1.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "night_session_trend_by_entry_type_{suffix}.csv",
+        "night_session_trend_by_trend_{suffix}.csv",
+        "night_session_trend_detail_{suffix}.csv",
+        "night_session_trend_manifest_{suffix}.json",
+        "night_session_trend_summary_{suffix}.csv",
+        "night_session_trend_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_session_trend_night",
+        "prefix": "night_session_trend_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_session_trend_night_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_night_retrace",
+      "title": "夜盤上漲後回檔掛多",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_night_retrace.py",
+      "module": "backtest.futures_night_retrace",
+      "source_sha256": "64e16af64575dac4f24c9731f60618aa9dbb1d42c1e4f9da6f9924d02894a7dc",
+      "description_path": "experiments/futures_night_retrace/README.md",
+      "original_readme": "code/backtest/README_futures_night_retrace.md",
+      "configs": [
+        "code/backtest/configs/futures_night_retrace_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', default=str(DEFAULT_CONFIG))"
+        },
+        {
+          "flags": [
+            "--no-db"
+          ],
+          "declaration": "parser.add_argument('--no-db', action='store_true')"
+        },
+        {
+          "flags": [
+            "--no-csv"
+          ],
+          "declaration": "parser.add_argument('--no-csv', action='store_true')"
+        }
+      ],
+      "output_name_literals": [
+        "night_retrace_manifest_{suffix}.json",
+        "night_retrace_parameter_summary_{suffix}.csv",
+        "night_retrace_selection_{suffix}.csv",
+        "night_retrace_top_detail_{suffix}.csv",
+        "night_retrace_yearly_summary_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "night_retrace",
+        "prefix": "night_retrace_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_night_retrace_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": [
+          "--no-db"
+        ]
+      }
+    },
+    {
+      "id": "futures_combination_exit_backtest",
+      "title": "五組複合訊號 × 四種出場法",
+      "category": "進出場與轉折",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_combination_exit_backtest.py",
+      "module": "backtest.futures_combination_exit_backtest",
+      "source_sha256": "69933b5b4462acbe00d2a5df08814483607647d3b72954ae95c9bb2407def144",
+      "description_path": "experiments/futures_combination_exit_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_combination_exit_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat, default=None)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/combination_exit'))"
+        }
+      ],
+      "output_name_literals": [
+        "combination_exit_detail_{suffix}.csv",
+        "combination_exit_diagnostics_{suffix}.csv",
+        "combination_exit_manifest_{suffix}.json",
+        "combination_exit_summary_{suffix}.csv",
+        "combination_exit_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "combination_exit",
+        "prefix": "combination_exit_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_intraday_reversal",
+      "title": "日盤開盤漲跌反轉事件",
+      "category": "進出場與轉折",
+      "kind": "事件統計",
+      "source_path": "code/backtest/futures_intraday_reversal.py",
+      "module": "backtest.futures_intraday_reversal",
+      "source_sha256": "51f549e63a402281681f2019ea5c210367cf7e530913c2d3cb96cac4e65c0269",
+      "description_path": "experiments/futures_intraday_reversal/README.md",
+      "original_readme": "code/backtest/README_futures_intraday_reversal.md",
+      "configs": [
+        "code/backtest/configs/futures_intraday_reversal_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_intraday_reversal_v1.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "{name}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "intraday_reversal",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_intraday_reversal_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_retail_extreme_expansion_backtest",
+      "title": "散戶極空策略：分位門檻與進場距離擴張",
+      "category": "散戶極端與反轉",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_retail_extreme_expansion_backtest.py",
+      "module": "backtest.futures_retail_extreme_expansion_backtest",
+      "source_sha256": "de6f7b30c337711452c845539d7a84d8abe8fab72d17a29d861ac4a702fe1048",
+      "description_path": "experiments/futures_retail_extreme_expansion_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_retail_extreme_expansion_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "p.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "p.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "p.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "p.add_argument('--output-dir', type=Path, default=Path('../output/backtest/retail_expansion'))"
+        }
+      ],
+      "output_name_literals": [
+        "retail_expansion_detail_{suffix}.csv",
+        "retail_expansion_entry_status_{suffix}.csv",
+        "retail_expansion_manifest_{suffix}.json",
+        "retail_expansion_summary_{suffix}.csv",
+        "retail_expansion_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "retail_expansion",
+        "prefix": "retail_expansion_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_retail_wait_window_comparison_backtest",
+      "title": "散戶極空策略：前30分鐘等待限制",
+      "category": "散戶極端與反轉",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_retail_wait_window_comparison_backtest.py",
+      "module": "backtest.futures_retail_wait_window_comparison_backtest",
+      "source_sha256": "30da2a3adc286181460777049764fc989f90bbc0ab00ff539fd475b1e0bbe511",
+      "description_path": "experiments/futures_retail_wait_window_comparison_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_retail_wait_window_comparison_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/retail_wait_window'))"
+        }
+      ],
+      "output_name_literals": [
+        "retail_wait_window_detail_{suffix}.csv",
+        "retail_wait_window_entry_status_{suffix}.csv",
+        "retail_wait_window_manifest_{suffix}.json",
+        "retail_wait_window_summary_{suffix}.csv",
+        "retail_wait_window_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "retail_wait_window",
+        "prefix": "retail_wait_window_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_retail_bounce_reentry_comparison_backtest",
+      "title": "散戶極空策略：跌破失效價後反彈重進",
+      "category": "散戶極端與反轉",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_retail_bounce_reentry_comparison_backtest.py",
+      "module": "backtest.futures_retail_bounce_reentry_comparison_backtest",
+      "source_sha256": "6206ad1888dccf08b4f2a94de826060484e32b823f656685b1cd2a295e6aa1bb",
+      "description_path": "experiments/futures_retail_bounce_reentry_comparison_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_retail_bounce_reentry_comparison_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/retail_bounce_reentry'))"
+        }
+      ],
+      "output_name_literals": [
+        "retail_bounce_reentry_detail_{suffix}.csv",
+        "retail_bounce_reentry_entry_status_{suffix}.csv",
+        "retail_bounce_reentry_manifest_{suffix}.json",
+        "retail_bounce_reentry_rescued_detail_{suffix}.csv",
+        "retail_bounce_reentry_summary_{suffix}.csv",
+        "retail_bounce_reentry_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "retail_bounce_reentry",
+        "prefix": "retail_bounce_reentry_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_retail_dif_reentry_comparison_backtest",
+      "title": "散戶極空策略：DIF止跌確認重進",
+      "category": "散戶極端與反轉",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_retail_dif_reentry_comparison_backtest.py",
+      "module": "backtest.futures_retail_dif_reentry_comparison_backtest",
+      "source_sha256": "d3ff3672ea47477d65c49514788d87120053a80e053400ecef79159b74ae84ee",
+      "description_path": "experiments/futures_retail_dif_reentry_comparison_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_retail_dif_reentry_comparison_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/retail_dif_reentry'))"
+        }
+      ],
+      "output_name_literals": [
+        "retail_dif_reentry_detail_{suffix}.csv",
+        "retail_dif_reentry_entry_status_{suffix}.csv",
+        "retail_dif_reentry_manifest_{suffix}.json",
+        "retail_dif_reentry_rescued_detail_{suffix}.csv",
+        "retail_dif_reentry_summary_{suffix}.csv",
+        "retail_dif_reentry_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "retail_dif_reentry",
+        "prefix": "retail_dif_reentry_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_retail_night_gap_adaptive_entry_backtest",
+      "title": "散戶極空策略：夜盤位移與自適應進場",
+      "category": "散戶極端與反轉",
+      "kind": "交易回測",
+      "source_path": "code/backtest/futures_retail_night_gap_adaptive_entry_backtest.py",
+      "module": "backtest.futures_retail_night_gap_adaptive_entry_backtest",
+      "source_sha256": "2ae44fe78ea14093ac03de1b56d52731db1173158c58731af2b8d183ebb3a1e5",
+      "description_path": "experiments/futures_retail_night_gap_adaptive_entry_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_retail_night_gap_adaptive_entry_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/retail_night_gap'))"
+        }
+      ],
+      "output_name_literals": [
+        "retail_night_gap_entry_status_{suffix}.csv",
+        "retail_night_gap_manifest_{suffix}.json",
+        "retail_night_gap_matrix_detail_{suffix}.csv",
+        "retail_night_gap_matrix_summary_{suffix}.csv",
+        "retail_night_gap_path_detail_{suffix}.csv",
+        "retail_night_gap_path_summary_{suffix}.csv",
+        "retail_night_gap_policy_detail_{suffix}.csv",
+        "retail_night_gap_policy_summary_{suffix}.csv",
+        "retail_night_gap_policy_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "retail_night_gap",
+        "prefix": "retail_night_gap_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_retail_bounce_reentry_chart_gallery",
+      "title": "散戶極空反彈重進五分K圖庫",
+      "category": "散戶極端與反轉",
+      "kind": "輔助工具",
+      "source_path": "code/backtest/futures_retail_bounce_reentry_chart_gallery.py",
+      "module": "backtest.futures_retail_bounce_reentry_chart_gallery",
+      "source_sha256": "9357fa1bc586102f2331830dbb90210dcaff2f476fde7f2c3c08cd0fb79b07a0",
+      "description_path": "experiments/futures_retail_bounce_reentry_chart_gallery/README.md",
+      "original_readme": null,
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--cost-points"
+          ],
+          "declaration": "parser.add_argument('--cost-points', type=float, default=3.0)"
+        },
+        {
+          "flags": [
+            "--output"
+          ],
+          "declaration": "parser.add_argument('--output', type=Path, default=Path('../output/backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html'))"
+        }
+      ],
+      "output_name_literals": [
+        "../output/backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "parent_experiment": "futures_retail_bounce_reentry_comparison_backtest",
+      "history": {
+        "root": "backtest",
+        "directory": "retail_bounce_reentry",
+        "prefix": "retail_bounce_reentry_5m_gallery"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--cost-points",
+            "key": "cost_points",
+            "type": "float",
+            "default": 3.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output",
+        "force_flags": []
+      },
+      "related_experiment": "futures_retail_bounce_reentry_comparison_backtest"
+    },
+    {
+      "id": "futures_signal_path_statistics",
+      "title": "訊號日與隔日日盤完整價格路徑",
+      "category": "盤勢與價格路徑",
+      "kind": "事件統計",
+      "source_path": "code/backtest/futures_signal_path_statistics.py",
+      "module": "backtest.futures_signal_path_statistics",
+      "source_sha256": "43bcf30e1daea12acee6f49d9f173a3f53472bd61492d0960dcc5e096a46d448",
+      "description_path": "experiments/futures_signal_path_statistics/README.md",
+      "original_readme": "code/backtest/README_futures_signal_path_statistics.md",
+      "configs": [
+        "code/backtest/configs/futures_signal_path_statistics.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', type=Path, default=Path('backtest/configs/futures_signal_path_statistics.json'))"
+        }
+      ],
+      "output_name_literals": [
+        "futures_signal_manifest_{suffix}.json",
+        "futures_signal_{name}_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "signal_path_statistics",
+        "prefix": "futures_signal_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/backtest/configs/futures_signal_path_statistics.json",
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_day_night_next_day_layered",
+      "title": "日夜盤方向與隔日路徑分層",
+      "category": "盤勢與價格路徑",
+      "kind": "方向統計",
+      "source_path": "code/backtest/futures_day_night_next_day_layered.py",
+      "module": "backtest.futures_day_night_next_day_layered",
+      "source_sha256": "7a7d9f9853f15987a0880a8eb1c804899fbe46c49a2fab58f9bd422aa9cc9ef8",
+      "description_path": "experiments/futures_day_night_next_day_layered/README.md",
+      "original_readme": "code/backtest/README_futures_day_night_next_day_layered.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--minimum-sample-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-sample-size', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_day_night_next_day_layered'))"
+        }
+      ],
+      "output_name_literals": [
+        "day_night_bucket_matrix_{suffix}.csv",
+        "day_night_layered_detail_{suffix}.csv",
+        "day_night_layered_manifest_{suffix}.json",
+        "day_night_layered_summary_{suffix}.csv",
+        "day_night_layered_yearly_{suffix}.csv",
+        "day_night_opposite_vs_same_tests_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_day_night_next_day_layered",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-sample-size",
+            "key": "minimum_sample_size",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_open_to_night_close_convergence",
+      "title": "日盤開盤向前夜收盤收斂研究",
+      "category": "盤勢與價格路徑",
+      "kind": "事件統計",
+      "source_path": "code/backtest/futures_open_to_night_close_convergence.py",
+      "module": "backtest.futures_open_to_night_close_convergence",
+      "source_sha256": "8c97d66125e4fdebc6bd1d306e19e3dfbeda714fd0c6d12b2f9d9e9feecd9b0b",
+      "description_path": "experiments/futures_open_to_night_close_convergence/README.md",
+      "original_readme": null,
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--minimum-sample-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-sample-size', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path(__file__).resolve().parents[2] / 'output/backtest/futures_open_to_night_close_convergence')"
+        }
+      ],
+      "output_name_literals": [
+        "open_night_convergence_by_anchor_position_{suffix}.csv",
+        "open_night_convergence_by_gap_{suffix}.csv",
+        "open_night_convergence_detail_{suffix}.csv",
+        "open_night_convergence_gap_matrix_{suffix}.csv",
+        "open_night_convergence_manifest_{suffix}.json",
+        "open_night_convergence_tests_{suffix}.csv",
+        "open_night_convergence_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_open_to_night_close_convergence",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-sample-size",
+            "key": "minimum_sample_size",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_raw_signal_strength_scan",
+      "title": "原始指標強度與隔日報表結果",
+      "category": "籌碼與訊號",
+      "kind": "特徵掃描",
+      "source_path": "code/backtest/futures_raw_signal_strength_scan.py",
+      "module": "backtest.futures_raw_signal_strength_scan",
+      "source_sha256": "830c5daaf49750e7e2cc86a4d3699cedf525c6d35fcf8e04180b4aa09a41d436",
+      "description_path": "experiments/futures_raw_signal_strength_scan/README.md",
+      "original_readme": "code/backtest/README_futures_raw_signal_strength_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--minimum-year-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-size', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--winsor-tail"
+          ],
+          "declaration": "parser.add_argument('--winsor-tail', type=float, default=0.005)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_raw_signal_strength_scan'))"
+        },
+        {
+          "flags": [
+            "--save-db"
+          ],
+          "declaration": "parser.add_argument('--save-db', action='store_true', help='同時將本次明細與統計結果寫入 research schema（需先執行 migration）')"
+        }
+      ],
+      "output_name_literals": [
+        "raw_signal_strength_by_bucket_{suffix}.csv",
+        "raw_signal_strength_candidates_{suffix}.csv",
+        "raw_signal_strength_detail_{suffix}.csv",
+        "raw_signal_strength_manifest_{suffix}.json",
+        "raw_signal_strength_tests_{suffix}.csv",
+        "raw_signal_strength_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_raw_signal_strength_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-size",
+            "key": "minimum_year_size",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--winsor-tail",
+            "key": "winsor_tail",
+            "type": "float",
+            "default": 0.005,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_direction_signal_strength_scan",
+      "title": "原始指標強度與日夜盤多空方向",
+      "category": "籌碼與訊號",
+      "kind": "特徵掃描",
+      "source_path": "code/backtest/futures_direction_signal_strength_scan.py",
+      "module": "backtest.futures_direction_signal_strength_scan",
+      "source_sha256": "bdb091807afc42b51219bb434a1948fe5d473cae26ece65a7dc2b5a67196c911",
+      "description_path": "experiments/futures_direction_signal_strength_scan/README.md",
+      "original_readme": "code/backtest/README_futures_direction_signal_strength_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--minimum-year-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-size', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--winsor-tail"
+          ],
+          "declaration": "parser.add_argument('--winsor-tail', type=float, default=0.005)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_direction_signal_strength_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "direction_signal_buckets_{suffix}.csv",
+        "direction_signal_detail_{suffix}.csv",
+        "direction_signal_manifest_{suffix}.json",
+        "direction_signal_ranking_{suffix}.csv",
+        "direction_signal_tests_{suffix}.csv",
+        "direction_signal_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_direction_signal_strength_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-size",
+            "key": "minimum_year_size",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--winsor-tail",
+            "key": "winsor_tail",
+            "type": "float",
+            "default": 0.005,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_main_position_direction_backtest",
+      "title": "期貨主力部位與隔日方向",
+      "category": "籌碼與訊號",
+      "kind": "特徵掃描",
+      "source_path": "code/backtest/futures_main_position_direction_backtest.py",
+      "module": "backtest.futures_main_position_direction_backtest",
+      "source_sha256": "3d045ffbb9bf0867276aa6b9e9cd240ac7d5da5f4b325918faaf7e570e8c12cc",
+      "description_path": "experiments/futures_main_position_direction_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_main_position_direction_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_main_position_direction_backtest'))"
+        }
+      ],
+      "output_name_literals": [
+        "main_position_direction_detail_{suffix}.csv",
+        "main_position_direction_groups_{suffix}.csv",
+        "main_position_direction_manifest_{suffix}.json",
+        "main_position_direction_models_{suffix}.csv",
+        "main_position_direction_predictions_{suffix}.csv",
+        "main_position_direction_univariate_tests_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_main_position_direction_backtest",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_strategy_next_day_field_scan",
+      "title": "策略多空與隔日報表欄位掃描",
+      "category": "籌碼與訊號",
+      "kind": "特徵掃描",
+      "source_path": "code/backtest/futures_strategy_next_day_field_scan.py",
+      "module": "backtest.futures_strategy_next_day_field_scan",
+      "source_sha256": "6d3d04ed5a11d61fbbb30d801fd5ababd87c32a5dd4e61d48bbaf185e7767332",
+      "description_path": "experiments/futures_strategy_next_day_field_scan/README.md",
+      "original_readme": null,
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=100)"
+        },
+        {
+          "flags": [
+            "--minimum-year-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-size', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--winsor-tail"
+          ],
+          "declaration": "parser.add_argument('--winsor-tail', type=float, default=0.005)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_strategy_next_day_field_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "strategy_next_day_field_scan_all_{suffix}.csv",
+        "strategy_next_day_field_scan_manifest_{suffix}.json",
+        "strategy_next_day_field_scan_shortlist_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_strategy_next_day_field_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 100,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-size",
+            "key": "minimum_year_size",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--winsor-tail",
+            "key": "winsor_tail",
+            "type": "float",
+            "default": 0.005,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_strategy_next_day_intraday_scan",
+      "title": "策略多空與隔日當沖績效掃描",
+      "category": "籌碼與訊號",
+      "kind": "方向統計",
+      "source_path": "code/backtest/futures_strategy_next_day_intraday_scan.py",
+      "module": "backtest.futures_strategy_next_day_intraday_scan",
+      "source_sha256": "855311778ee9d6086fe6baf36ba6d0aeca1d41a5ed4da3ca25ecbff818497479",
+      "description_path": "experiments/futures_strategy_next_day_intraday_scan/README.md",
+      "original_readme": "code/backtest/README_futures_strategy_next_day_intraday_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=100)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_strategy_next_day_intraday_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "intraday_directional_performance_{suffix}.csv",
+        "intraday_group_differences_{suffix}.csv",
+        "intraday_group_shortlist_{suffix}.csv",
+        "intraday_scan_manifest_{suffix}.json"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_strategy_next_day_intraday_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 100,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_volatility_strength_backtest",
+      "title": "隔日日盤波動強度四因子計分",
+      "category": "波動與路徑",
+      "kind": "波動預測",
+      "source_path": "code/backtest/futures_volatility_strength_backtest.py",
+      "module": "backtest.futures_volatility_strength_backtest",
+      "source_sha256": "1dda3465fd12e4e3bc47b6936951baac2034977d36051d121c2cec0586d738d2",
+      "description_path": "experiments/futures_volatility_strength_backtest/README.md",
+      "original_readme": "code/backtest/README_futures_volatility_strength_backtest.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--minimum-year-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-size', type=int, default=10)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--winsor-tail"
+          ],
+          "declaration": "parser.add_argument('--winsor-tail', type=float, default=0.005)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_volatility_strength'))"
+        },
+        {
+          "flags": [
+            "--save-db"
+          ],
+          "declaration": "parser.add_argument('--save-db', action='store_true')"
+        }
+      ],
+      "output_name_literals": [
+        "volatility_strength_daily_{suffix}.csv",
+        "volatility_strength_manifest_{suffix}.json",
+        "volatility_strength_summary_{suffix}.csv",
+        "volatility_strength_tests_{suffix}.csv",
+        "volatility_strength_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_volatility_strength",
+        "prefix": "volatility_strength_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-size",
+            "key": "minimum_year_size",
+            "type": "int",
+            "default": 10,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--winsor-tail",
+            "key": "winsor_tail",
+            "type": "float",
+            "default": 0.005,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_volatility_model_compare",
+      "title": "波動強度計分與正則化模型比較",
+      "category": "波動與路徑",
+      "kind": "模型比較",
+      "source_path": "code/backtest/futures_volatility_model_compare.py",
+      "module": "backtest.futures_volatility_model_compare",
+      "source_sha256": "bb8d791cb57805d6f36d3de80d4758cb3a8d35f708726a1528c7489e4c70685a",
+      "description_path": "experiments/futures_volatility_model_compare/README.md",
+      "original_readme": "code/backtest/README_futures_volatility_model_compare.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--minimum-year-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-size', type=int, default=10)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--winsor-tail"
+          ],
+          "declaration": "parser.add_argument('--winsor-tail', type=float, default=0.005)"
+        },
+        {
+          "flags": [
+            "--first-test-year"
+          ],
+          "declaration": "parser.add_argument('--first-test-year', type=int, default=2021)"
+        },
+        {
+          "flags": [
+            "--minimum-train-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-train-size', type=int, default=500)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/backtest/futures_volatility_model'))"
+        },
+        {
+          "flags": [
+            "--save-db"
+          ],
+          "declaration": "parser.add_argument('--save-db', action='store_true')"
+        }
+      ],
+      "output_name_literals": [
+        "volatility_model_coefficients_{suffix}.csv",
+        "volatility_model_manifest_{suffix}.json",
+        "volatility_model_metrics_{suffix}.csv",
+        "volatility_model_predictions_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_volatility_model",
+        "prefix": "volatility_model_"
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-size",
+            "key": "minimum_year_size",
+            "type": "int",
+            "default": 10,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--winsor-tail",
+            "key": "winsor_tail",
+            "type": "float",
+            "default": 0.005,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--first-test-year",
+            "key": "first_test_year",
+            "type": "int",
+            "default": 2021,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-train-size",
+            "key": "minimum_train_size",
+            "type": "int",
+            "default": 500,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_daily_amplitude_pattern",
+      "title": "全交易日日盤振幅與路徑型態分類",
+      "category": "波動與路徑",
+      "kind": "標籤建置",
+      "source_path": "code/analysis/futures_daily_amplitude_pattern.py",
+      "module": "analysis.futures_daily_amplitude_pattern",
+      "source_sha256": "88a25a4853d12f9b2e03a036d558ed09327f9335a64deb025cc1ec8e80234d24",
+      "description_path": "experiments/futures_daily_amplitude_pattern/README.md",
+      "original_readme": "code/analysis/README_futures_daily_amplitude_pattern.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--range-days"
+          ],
+          "declaration": "parser.add_argument('--range-days', type=int, default=30)"
+        },
+        {
+          "flags": [
+            "--minimum-bars"
+          ],
+          "declaration": "parser.add_argument('--minimum-bars', type=int, default=290)"
+        },
+        {
+          "flags": [
+            "--low-range-threshold"
+          ],
+          "declaration": "parser.add_argument('--low-range-threshold', type=float, default=0.75)"
+        },
+        {
+          "flags": [
+            "--expanded-range-threshold"
+          ],
+          "declaration": "parser.add_argument('--expanded-range-threshold', type=float, default=1.25)"
+        },
+        {
+          "flags": [
+            "--violent-range-threshold"
+          ],
+          "declaration": "parser.add_argument('--violent-range-threshold', type=float, default=1.5)"
+        },
+        {
+          "flags": [
+            "--extreme-range-threshold"
+          ],
+          "declaration": "parser.add_argument('--extreme-range-threshold', type=float, default=2.0)"
+        },
+        {
+          "flags": [
+            "--biased-share-threshold"
+          ],
+          "declaration": "parser.add_argument('--biased-share-threshold', type=float, default=0.65)"
+        },
+        {
+          "flags": [
+            "--strong-share-threshold"
+          ],
+          "declaration": "parser.add_argument('--strong-share-threshold', type=float, default=0.8)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_daily_amplitude_pattern'))"
+        },
+        {
+          "flags": [
+            "--save-db"
+          ],
+          "declaration": "parser.add_argument('--save-db', action='store_true')"
+        }
+      ],
+      "output_name_literals": [
+        "daily_amplitude_pattern_{settings.start:%Y%m%d}_{end_text}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "backtest",
+        "directory": "futures_daily_amplitude_pattern",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--range-days",
+            "key": "range_days",
+            "type": "int",
+            "default": 30,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-bars",
+            "key": "minimum_bars",
+            "type": "int",
+            "default": 290,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--low-range-threshold",
+            "key": "low_range_threshold",
+            "type": "float",
+            "default": 0.75,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--expanded-range-threshold",
+            "key": "expanded_range_threshold",
+            "type": "float",
+            "default": 1.25,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--violent-range-threshold",
+            "key": "violent_range_threshold",
+            "type": "float",
+            "default": 1.5,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--extreme-range-threshold",
+            "key": "extreme_range_threshold",
+            "type": "float",
+            "default": 2.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--biased-share-threshold",
+            "key": "biased_share_threshold",
+            "type": "float",
+            "default": 0.65,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--strong-share-threshold",
+            "key": "strong_share_threshold",
+            "type": "float",
+            "default": 0.8,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_daily_amplitude_feature_scan",
+      "title": "劇烈振幅單因子特徵掃描",
+      "category": "波動與路徑",
+      "kind": "特徵掃描",
+      "source_path": "code/analysis/futures_daily_amplitude_feature_scan.py",
+      "module": "analysis.futures_daily_amplitude_feature_scan",
+      "source_sha256": "dc689b469eaf06cf355124ad0e2e5dfbd08d74ea257639dfe07a2ea808dd0761",
+      "description_path": "experiments/futures_daily_amplitude_feature_scan/README.md",
+      "original_readme": "code/analysis/README_futures_daily_amplitude_feature_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--minimum-year-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-size', type=int, default=80)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_daily_amplitude_feature_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "amplitude_feature_buckets_{suffix}.csv",
+        "amplitude_feature_detail_{suffix}.csv",
+        "amplitude_feature_distribution_{suffix}.csv",
+        "amplitude_feature_manifest_{suffix}.json",
+        "amplitude_feature_ranking_{suffix}.csv",
+        "amplitude_feature_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_daily_amplitude_feature_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-size",
+            "key": "minimum_year_size",
+            "type": "int",
+            "default": 80,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_daily_amplitude_violent_combo_scan",
+      "title": "劇烈振幅多因子組合分析",
+      "category": "波動與路徑",
+      "kind": "事件統計",
+      "source_path": "code/analysis/futures_daily_amplitude_violent_combo_scan.py",
+      "module": "analysis.futures_daily_amplitude_violent_combo_scan",
+      "source_sha256": "82d58b6037ca1ce2c931aa4fbc61a6cc3d08ce4db770bcff423f64e4de46a40a",
+      "description_path": "experiments/futures_daily_amplitude_violent_combo_scan/README.md",
+      "original_readme": "code/analysis/README_futures_daily_amplitude_violent_combo_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-rule-sample', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--minimum-year-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-rule-sample', type=int, default=8)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_daily_amplitude_violent_combo_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "violent_amplitude_combo_detail_{suffix}.csv",
+        "violent_amplitude_combo_manifest_{suffix}.json",
+        "violent_amplitude_combo_summary_{suffix}.csv",
+        "violent_amplitude_combo_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_daily_amplitude_violent_combo_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-rule-sample",
+            "key": "minimum_rule_sample",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-rule-sample",
+            "key": "minimum_year_rule_sample",
+            "type": "int",
+            "default": 8,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_daily_amplitude_foreign_flow_scan",
+      "title": "外資買賣超與隔日劇烈振幅",
+      "category": "籌碼與訊號",
+      "kind": "事件統計",
+      "source_path": "code/analysis/futures_daily_amplitude_foreign_flow_scan.py",
+      "module": "analysis.futures_daily_amplitude_foreign_flow_scan",
+      "source_sha256": "30a40b6bc07492a502fb3639aa11a59d8bcaf1939f20841dc567b5f20b495c22",
+      "description_path": "experiments/futures_daily_amplitude_foreign_flow_scan/README.md",
+      "original_readme": "code/analysis/README_futures_daily_amplitude_foreign_flow_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--foreign-days"
+          ],
+          "declaration": "parser.add_argument('--foreign-days', type=int, default=3)"
+        },
+        {
+          "flags": [
+            "--lower-percentile"
+          ],
+          "declaration": "parser.add_argument('--lower-percentile', type=float, default=20.0)"
+        },
+        {
+          "flags": [
+            "--upper-percentile"
+          ],
+          "declaration": "parser.add_argument('--upper-percentile', type=float, default=80.0)"
+        },
+        {
+          "flags": [
+            "--minimum-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-rule-sample', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--minimum-year-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-rule-sample', type=int, default=5)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_daily_amplitude_foreign_flow_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "violent_amplitude_foreign_flow_detail_{suffix}.csv",
+        "violent_amplitude_foreign_flow_manifest_{suffix}.json",
+        "violent_amplitude_foreign_flow_summary_{suffix}.csv",
+        "violent_amplitude_foreign_flow_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_daily_amplitude_foreign_flow_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--foreign-days",
+            "key": "foreign_days",
+            "type": "int",
+            "default": 3,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--lower-percentile",
+            "key": "lower_percentile",
+            "type": "float",
+            "default": 20.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--upper-percentile",
+            "key": "upper_percentile",
+            "type": "float",
+            "default": 80.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-rule-sample",
+            "key": "minimum_rule_sample",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-rule-sample",
+            "key": "minimum_year_rule_sample",
+            "type": "int",
+            "default": 5,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_foreign_flow_direction_scan",
+      "title": "外資買賣超與隔日多空方向",
+      "category": "籌碼與訊號",
+      "kind": "方向統計",
+      "source_path": "code/analysis/futures_foreign_flow_direction_scan.py",
+      "module": "analysis.futures_foreign_flow_direction_scan",
+      "source_sha256": "d9e08c3f7aee82535e3c241178130b235d00a8a931293e0d49a37d3fd8f8b314",
+      "description_path": "experiments/futures_foreign_flow_direction_scan/README.md",
+      "original_readme": "code/analysis/README_futures_foreign_flow_direction_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--foreign-days"
+          ],
+          "declaration": "parser.add_argument('--foreign-days', type=int, default=3)"
+        },
+        {
+          "flags": [
+            "--lower-percentile"
+          ],
+          "declaration": "parser.add_argument('--lower-percentile', type=float, default=20.0)"
+        },
+        {
+          "flags": [
+            "--upper-percentile"
+          ],
+          "declaration": "parser.add_argument('--upper-percentile', type=float, default=80.0)"
+        },
+        {
+          "flags": [
+            "--minimum-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-rule-sample', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--minimum-year-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-rule-sample', type=int, default=5)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_foreign_flow_direction_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "foreign_flow_direction_buckets_{suffix}.csv",
+        "foreign_flow_direction_classifier_{suffix}.csv",
+        "foreign_flow_direction_detail_{suffix}.csv",
+        "foreign_flow_direction_manifest_{suffix}.json",
+        "foreign_flow_direction_summary_{suffix}.csv",
+        "foreign_flow_direction_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_foreign_flow_direction_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--foreign-days",
+            "key": "foreign_days",
+            "type": "int",
+            "default": 3,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--lower-percentile",
+            "key": "lower_percentile",
+            "type": "float",
+            "default": 20.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--upper-percentile",
+            "key": "upper_percentile",
+            "type": "float",
+            "default": 80.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-rule-sample",
+            "key": "minimum_rule_sample",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-rule-sample",
+            "key": "minimum_year_rule_sample",
+            "type": "int",
+            "default": 5,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_foreign_flow_streak_direction_scan",
+      "title": "外資連續買賣超與隔日方向",
+      "category": "籌碼與訊號",
+      "kind": "方向統計",
+      "source_path": "code/analysis/futures_foreign_flow_streak_direction_scan.py",
+      "module": "analysis.futures_foreign_flow_streak_direction_scan",
+      "source_sha256": "233d9e7323c0226dbebdfa5a44cd80718495caf0f22bfe1c59c547c5a4365218",
+      "description_path": "experiments/futures_foreign_flow_streak_direction_scan/README.md",
+      "original_readme": "code/analysis/README_futures_foreign_flow_streak_direction_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--foreign-days"
+          ],
+          "declaration": "parser.add_argument('--foreign-days', type=int, default=3)"
+        },
+        {
+          "flags": [
+            "--lower-percentile"
+          ],
+          "declaration": "parser.add_argument('--lower-percentile', type=float, default=20.0)"
+        },
+        {
+          "flags": [
+            "--upper-percentile"
+          ],
+          "declaration": "parser.add_argument('--upper-percentile', type=float, default=80.0)"
+        },
+        {
+          "flags": [
+            "--minimum-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-rule-sample', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--minimum-year-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-rule-sample', type=int, default=5)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_foreign_flow_streak_direction_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "foreign_flow_streak_direction_classifier_{suffix}.csv",
+        "foreign_flow_streak_direction_detail_{suffix}.csv",
+        "foreign_flow_streak_direction_manifest_{suffix}.json",
+        "foreign_flow_streak_direction_summary_{suffix}.csv",
+        "foreign_flow_streak_direction_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_foreign_flow_streak_direction_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--foreign-days",
+            "key": "foreign_days",
+            "type": "int",
+            "default": 3,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--lower-percentile",
+            "key": "lower_percentile",
+            "type": "float",
+            "default": 20.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--upper-percentile",
+            "key": "upper_percentile",
+            "type": "float",
+            "default": 80.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-rule-sample",
+            "key": "minimum_rule_sample",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-rule-sample",
+            "key": "minimum_year_rule_sample",
+            "type": "int",
+            "default": 5,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_foreign_flow_price_reaction_direction_scan",
+      "title": "外資連續極端買賣 × 價格反應",
+      "category": "籌碼與訊號",
+      "kind": "方向統計",
+      "source_path": "code/analysis/futures_foreign_flow_price_reaction_direction_scan.py",
+      "module": "analysis.futures_foreign_flow_price_reaction_direction_scan",
+      "source_sha256": "dffbd8bb78388638653f8960e5c9d5e333b1af63f57027235478498e26f6a116",
+      "description_path": "experiments/futures_foreign_flow_price_reaction_direction_scan/README.md",
+      "original_readme": "code/analysis/README_futures_foreign_flow_price_reaction_direction_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--foreign-days"
+          ],
+          "declaration": "parser.add_argument('--foreign-days', type=int, choices=[3], default=3)"
+        },
+        {
+          "flags": [
+            "--lower-percentile"
+          ],
+          "declaration": "parser.add_argument('--lower-percentile', type=float, default=20.0)"
+        },
+        {
+          "flags": [
+            "--upper-percentile"
+          ],
+          "declaration": "parser.add_argument('--upper-percentile', type=float, default=80.0)"
+        },
+        {
+          "flags": [
+            "--minimum-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-rule-sample', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--minimum-year-rule-sample"
+          ],
+          "declaration": "parser.add_argument('--minimum-year-rule-sample', type=int, default=5)"
+        },
+        {
+          "flags": [
+            "--alpha"
+          ],
+          "declaration": "parser.add_argument('--alpha', type=float, default=0.05)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_foreign_flow_price_reaction_direction_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "foreign_flow_price_reaction_direction_classifier_{suffix}.csv",
+        "foreign_flow_price_reaction_direction_detail_{suffix}.csv",
+        "foreign_flow_price_reaction_direction_manifest_{suffix}.json",
+        "foreign_flow_price_reaction_direction_summary_{suffix}.csv",
+        "foreign_flow_price_reaction_direction_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_foreign_flow_price_reaction_direction_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--foreign-days",
+            "key": "foreign_days",
+            "type": "int",
+            "default": 3,
+            "required": false,
+            "choices": [
+              3
+            ],
+            "help": ""
+          },
+          {
+            "flag": "--lower-percentile",
+            "key": "lower_percentile",
+            "type": "float",
+            "default": 20.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--upper-percentile",
+            "key": "upper_percentile",
+            "type": "float",
+            "default": 80.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-rule-sample",
+            "key": "minimum_rule_sample",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-year-rule-sample",
+            "key": "minimum_year_rule_sample",
+            "type": "int",
+            "default": 5,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--alpha",
+            "key": "alpha",
+            "type": "float",
+            "default": 0.05,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_margin_maintenance_scan",
+      "title": "大盤融資維持率與隔日日盤振幅",
+      "category": "籌碼與訊號",
+      "kind": "特徵掃描",
+      "source_path": "code/analysis/futures_margin_maintenance_scan.py",
+      "module": "analysis.futures_margin_maintenance_scan",
+      "source_sha256": "e468a31b7f0ad940a60c17bad4adff3bd2f5480fddf3485feb855b6d7fbe2017",
+      "description_path": "experiments/futures_margin_maintenance_scan/README.md",
+      "original_readme": "code/analysis/README_futures_margin_maintenance_scan.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--split-date"
+          ],
+          "declaration": "parser.add_argument('--split-date', type=date.fromisoformat, default=date(2023, 1, 1))"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=100)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=80)"
+        },
+        {
+          "flags": [
+            "--low-percentile"
+          ],
+          "declaration": "parser.add_argument('--low-percentile', type=float, default=20.0)"
+        },
+        {
+          "flags": [
+            "--steep-drop-percentile"
+          ],
+          "declaration": "parser.add_argument('--steep-drop-percentile', type=float, default=90.0)"
+        },
+        {
+          "flags": [
+            "--minimum-group-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-group-size', type=int, default=20)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_margin_maintenance_scan'))"
+        }
+      ],
+      "output_name_literals": [
+        "margin_maintenance_buckets_{suffix}.csv",
+        "margin_maintenance_detail_{suffix}.csv",
+        "margin_maintenance_low_drop_combo_{suffix}.csv",
+        "margin_maintenance_manifest_{suffix}.json",
+        "margin_maintenance_tests_{suffix}.csv",
+        "margin_maintenance_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_margin_maintenance_scan",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--split-date",
+            "key": "split_date",
+            "type": "date",
+            "default": "2023-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 100,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 80,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--low-percentile",
+            "key": "low_percentile",
+            "type": "float",
+            "default": 20.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--steep-drop-percentile",
+            "key": "steep_drop_percentile",
+            "type": "float",
+            "default": 90.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-group-size",
+            "key": "minimum_group_size",
+            "type": "int",
+            "default": 20,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_night_bucket",
+      "title": "台指期夜盤漲跌十組分層",
+      "category": "盤勢與價格路徑",
+      "kind": "分層統計",
+      "source_path": "code/analysis/futures_night_bucket.py",
+      "module": "analysis.futures_night_bucket",
+      "source_sha256": "29aa784ca88f0b12a428132c95227284237398f1249854795c6276d94fd64a08",
+      "description_path": "experiments/futures_night_bucket/README.md",
+      "original_readme": "code/analysis/README_futures_night_bucket.md",
+      "configs": [
+        "code/analysis/configs/futures_night_bucket_v1.json"
+      ],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--config"
+          ],
+          "declaration": "parser.add_argument('--config', default=str(DEFAULT_CONFIG_PATH), help='JSON 設定檔')"
+        },
+        {
+          "flags": [
+            "--start-date"
+          ],
+          "declaration": "parser.add_argument('--start-date', help='覆寫開始日期 YYYY-MM-DD')"
+        },
+        {
+          "flags": [
+            "--end-date"
+          ],
+          "declaration": "parser.add_argument('--end-date', help='覆寫結束日期 YYYY-MM-DD')"
+        },
+        {
+          "flags": [
+            "--no-db"
+          ],
+          "declaration": "parser.add_argument('--no-db', action='store_true', help='不寫入 research Schema')"
+        },
+        {
+          "flags": [
+            "--no-csv"
+          ],
+          "declaration": "parser.add_argument('--no-csv', action='store_true', help='不輸出 CSV')"
+        }
+      ],
+      "output_name_literals": [
+        "futures_night_bucket_daily_{suffix}.csv",
+        "futures_night_bucket_manifest_{suffix}.json",
+        "futures_night_bucket_summary_{suffix}.csv",
+        "futures_night_bucket_yearly_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "night_bucket",
+        "prefix": "futures_night_bucket_"
+      },
+      "runner": {
+        "mode": "config",
+        "fields": [],
+        "default_config": "code/analysis/configs/futures_night_bucket_v1.json",
+        "output_flag": "--output-dir",
+        "force_flags": [
+          "--no-db"
+        ]
+      }
+    },
+    {
+      "id": "futures_volatility_combo_model",
+      "title": "隔日波動128種特徵組合模型比較",
+      "category": "波動與路徑",
+      "kind": "模型比較",
+      "source_path": "code/analysis/futures_volatility_combo_model.py",
+      "module": "analysis.futures_volatility_combo_model",
+      "source_sha256": "3cd1433eb8afe20940f18b37aa928452c129ea2f3b28339eae97b0a74bf35cdb",
+      "description_path": "experiments/futures_volatility_combo_model/README.md",
+      "original_readme": "code/analysis/README_futures_volatility_combo_model.md",
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', type=date.fromisoformat, default=date(2018, 1, 1))"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', type=date.fromisoformat)"
+        },
+        {
+          "flags": [
+            "--futures-id"
+          ],
+          "declaration": "parser.add_argument('--futures-id', default='TX')"
+        },
+        {
+          "flags": [
+            "--first-test-year"
+          ],
+          "declaration": "parser.add_argument('--first-test-year', type=int, default=2023)"
+        },
+        {
+          "flags": [
+            "--history-window"
+          ],
+          "declaration": "parser.add_argument('--history-window', type=int, default=252)"
+        },
+        {
+          "flags": [
+            "--minimum-history"
+          ],
+          "declaration": "parser.add_argument('--minimum-history', type=int, default=60)"
+        },
+        {
+          "flags": [
+            "--minimum-train-size"
+          ],
+          "declaration": "parser.add_argument('--minimum-train-size', type=int, default=500)"
+        },
+        {
+          "flags": [
+            "--ridge-alpha"
+          ],
+          "declaration": "parser.add_argument('--ridge-alpha', type=float, default=10.0)"
+        },
+        {
+          "flags": [
+            "--logistic-c"
+          ],
+          "declaration": "parser.add_argument('--logistic-c', type=float, default=1.0)"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', type=Path, default=Path('../output/analysis/futures_volatility_combo_model'))"
+        }
+      ],
+      "output_name_literals": [
+        "volatility_model_manifest_{suffix}.json",
+        "{stem}_{suffix}.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_volatility_combo_model",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--futures-id",
+            "key": "futures_id",
+            "type": "text",
+            "default": "TX",
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--first-test-year",
+            "key": "first_test_year",
+            "type": "int",
+            "default": 2023,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--history-window",
+            "key": "history_window",
+            "type": "int",
+            "default": 252,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-history",
+            "key": "minimum_history",
+            "type": "int",
+            "default": 60,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--minimum-train-size",
+            "key": "minimum_train_size",
+            "type": "int",
+            "default": 500,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--ridge-alpha",
+            "key": "ridge_alpha",
+            "type": "float",
+            "default": 10.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          },
+          {
+            "flag": "--logistic-c",
+            "key": "logistic_c",
+            "type": "float",
+            "default": 1.0,
+            "required": false,
+            "choices": null,
+            "help": ""
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    },
+    {
+      "id": "futures_weekday_settlement_analysis",
+      "title": "台股星期效應與週三週五統計",
+      "category": "盤勢與價格路徑",
+      "kind": "分層統計",
+      "source_path": "code/analysis/futures_weekday_settlement_analysis.py",
+      "module": "analysis.futures_weekday_settlement_analysis",
+      "source_sha256": "f4c6a1975d0893861d652b238dae9f5cf1c649b5d63ae46bd34505201e93f015",
+      "description_path": "experiments/futures_weekday_settlement_analysis/README.md",
+      "original_readme": null,
+      "configs": [],
+      "cli_arguments": [
+        {
+          "flags": [
+            "--market"
+          ],
+          "declaration": "parser.add_argument('--market', choices=sorted(MARKETS), default='tx_day', help='市場：taiex、tx_day、tx_night、tx_full；預設 tx_day。')"
+        },
+        {
+          "flags": [
+            "--start"
+          ],
+          "declaration": "parser.add_argument('--start', default='2018-01-01', help='統計起日，含當日。')"
+        },
+        {
+          "flags": [
+            "--end"
+          ],
+          "declaration": "parser.add_argument('--end', default=None, help='統計迄日，含當日；省略為資料庫最新日。')"
+        },
+        {
+          "flags": [
+            "--output-dir"
+          ],
+          "declaration": "parser.add_argument('--output-dir', default=None, help='輸出資料夾；預設為專案根目錄/output/analysis/futures_weekday_settlement_analysis。')"
+        }
+      ],
+      "output_name_literals": [
+        "wednesday_friday_comparison.csv",
+        "weekday_by_year.csv",
+        "weekday_overall.csv"
+      ],
+      "status": "unreviewed",
+      "runner_enabled": true,
+      "history": {
+        "root": "analysis",
+        "directory": "futures_weekday_settlement_analysis",
+        "prefix": ""
+      },
+      "runner": {
+        "mode": "cli",
+        "fields": [
+          {
+            "flag": "--market",
+            "key": "market",
+            "type": "text",
+            "default": "tx_day",
+            "required": false,
+            "choices": [
+              "taiex",
+              "tx_day",
+              "tx_night",
+              "tx_full"
+            ],
+            "help": "市場：taiex、tx_day、tx_night、tx_full；預設 tx_day。"
+          },
+          {
+            "flag": "--start",
+            "key": "start",
+            "type": "date",
+            "default": "2018-01-01",
+            "required": false,
+            "choices": null,
+            "help": "統計起日，含當日。"
+          },
+          {
+            "flag": "--end",
+            "key": "end",
+            "type": "date",
+            "default": null,
+            "required": false,
+            "choices": null,
+            "help": "統計迄日，含當日；省略為資料庫最新日。"
+          }
+        ],
+        "output_flag": "--output-dir",
+        "force_flags": []
+      }
+    }
+  ]
+}

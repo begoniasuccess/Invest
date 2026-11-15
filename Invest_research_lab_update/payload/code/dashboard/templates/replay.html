@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invest Dashboard｜台股行情回放</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}?v=20260815-1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/app.css') }}?v=20261113-journal" rel="stylesheet">
+  <link href="{{ url_for('static', path='/paper_trade.css') }}?v=1" rel="stylesheet">
+  <style>
+    /* Replay-only layout: two logical filter rows and a stacked player. */
+    #replayForm { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
+    #replayForm .replay-filter-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+    #replayForm .replay-filter-row > div { flex: 1 1 190px; min-width: 0; }
+    #replayForm .replay-filter-row > [hidden] { display: none !important; }
+    #replayForm .replay-filter-datetime { flex-basis: 245px !important; }
+    #replayForm .replay-filter-load { flex: 0 0 auto !important; margin-left: auto; }
+    #replayForm .replay-filter-load .btn { min-height: 40px; min-width: 145px; white-space: nowrap; }
+    #replayPanel > .replay-heading { flex-direction: column; align-items: stretch; gap: 12px; min-height: 0; }
+    #replayPanel .replay-status-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+    #replayPanel .replay-status-row h2 { margin: 0; }
+    /* The resizable chart frame, not the shared 720px grid minimum or the
+       settings content, determines the normal replay workspace height. */
+    #replayPanel:not(.panel-expanded) > .kline-workspace { min-height: 0; align-items: stretch; }
+    #replayPanel:not(.panel-expanded) > .kline-workspace > .kline-chart-section { min-height: 0; }
+    @media (min-width: 768px) {
+      #replayPanel:not(.panel-expanded) > .kline-workspace > .kline-settings {
+        contain: size;
+        min-height: 0;
+        max-height: none;
+        overflow-y: auto;
+      }
+    }
+    #replayPanel > .replay-player { flex: 0 0 auto; width: 100%; min-width: 0; padding: 10px 16px; border-top: 1px solid var(--line); }
+    #replayPanel .replay-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    #replayPanel .replay-controls .btn { white-space: nowrap; font-size: 12px; padding: 3px 8px; min-height: 0; }
+    #replayPanel .replay-controls .form-select { font-size: 12px; min-height: 0; padding-block: 3px; }
+    #replayPanel .replay-controls .form-check { font-size: 12px; }
+    #replayPanel > .replay-player .form-range { display: block; }
+    #replayPanel .replay-controls .form-check { margin-bottom: 0; }
+    #replayPanel .replay-controls #live { margin-left: auto; }
+    #replayPanel.panel-expanded > .replay-heading { flex: 0 0 auto; }
+    @media (max-width: 575.98px) {
+      #replayForm .replay-filter-row > div { flex-basis: 100%; }
+      #replayForm .replay-filter-load { flex-basis: 100% !important; }
+      #replayPanel .replay-controls #live { margin-left: 0; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20261114-research-lab"></script>
+</head>
+<body data-page="replay">
+  <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="開啟選單"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
+  <div class="app-layout">
+    <aside id="appSidebar" class="sidebar flex-column">
+      <div class="brand"><a class="brand-home" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span class="brand-text">Yu Invest</span></a><button id="sidebarCollapseBtn" class="sidebar-collapse-btn" type="button" aria-label="收合側欄"><i class="bi bi-layout-sidebar-inset"></i></button></div>
+      <div class="sidebar-label">台股</div>
+      <nav id="sidebarNav" class="sidebar-nav"></nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-foot"><span class="status-dot"></span>本機資料庫</div>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <main class="main-content kline-page">
+      <header class="topbar"><div><div class="eyebrow">MARKET REPLAY</div><h1>台股行情回放</h1><p>以歷史成交重建盤中 K 棒；不顯示未來行情。</p></div><span id="sourceBadge" class="source-badge">尚未載入</span></header>
+      <section class="filter-panel panel-card"><div class="filter-section"><div class="filter-section-title"><i class="bi bi-sliders"></i>回放條件（台北時間）</div>
+        <form id="replayForm">
+          <div class="replay-filter-row">
+          <div><label for="market">市場</label><select id="market" class="form-select"><option value="tx_day">台指期日盤 TX</option><option value="tx_night">台指期夜盤 TX</option><option value="stock">加權／個股</option></select></div>
+          <div><label for="period">K 線週期</label><select id="period" class="form-select"><option value="1">1 分 K</option><option value="5" selected>5 分 K</option><option value="15">15 分 K</option><option value="30">30 分 K</option><option value="60">60 分 K</option></select></div>
+          <div id="symbolField" hidden><label for="symbol">股票代號</label><input id="symbol" class="form-control" value="TAIEX" maxlength="16"></div>
+          <div id="contractField"><label for="contract">實際契約月份</label><div class="input-group"><input id="contract" class="form-control" inputmode="numeric" maxlength="6" placeholder="YYYYMM" list="contracts"><button id="contractBtn" class="btn btn-outline-secondary" type="button" title="查詢此時段契約">查詢</button></div><datalist id="contracts"></datalist></div>
+          </div>
+          <div class="replay-filter-row">
+          <div><label for="date">交易起始日曆日期</label><input id="date" type="date" class="form-control" value="{{ default_date }}" required></div>
+          <div class="replay-filter-datetime"><label for="start">開始時間</label><input id="start" type="datetime-local" step="1" class="form-control" required></div>
+          <div class="replay-filter-datetime"><label for="end">結束時間</label><input id="end" type="datetime-local" step="1" class="form-control" required></div>
+          <div class="replay-filter-load"><button id="loadBtn" class="btn btn-dark w-100" type="submit"><i class="bi bi-database-down me-1"></i>載入回放</button></div>
+          </div>
+        </form><p id="sourceHelp" class="small text-secondary mt-2 mb-0"></p>
+      </div></section>
+      <div id="message" class="alert alert-info mt-3" role="status">選擇日期及契約後載入；預設原速播放。</div>
+      <article id="replayPanel" class="panel-card kline-panel mt-3">
+        <div class="panel-heading replay-heading"><div class="replay-status-row"><span class="panel-kicker">REPLAY CLOCK</span><h2 id="clock">—</h2><div id="quote" class="small text-secondary">尚未載入行情</div></div></div>
+        
+        <details id="paperTicket" class="paper-ticket" open>
+          <summary>模擬交易｜台指期快速下單 <span class="paper-muted ms-2">歷史訓練 · 非真實委託</span></summary>
+          <div class="paper-fields"><div class="paper-wide"><label for="ptAccount">交易帳號</label><select id="ptAccount" class="form-select"><option value="">選擇帳號</option></select></div>
+            <div class="paper-wide"><label for="ptRun">回放交易場次（同帳號可重練）</label><select id="ptRun" class="form-select"><option value="">選擇場次</option></select></div>
+            <div class="paper-action"><button id="ptNewRun" class="btn btn-outline-primary" type="button">＋ 新場次</button></div><div class="paper-action"><a class="btn btn-outline-secondary" href="/paper-trade" target="_blank" rel="noopener">帳號／績效</a></div><div class="paper-action"><a id="ptRunNote" class="btn btn-outline-secondary" href="/paper-journal" target="_blank" rel="noopener" aria-disabled="true">場次相關日記</a></div><div class="paper-action"><button id="ptResync" class="btn btn-outline-secondary" type="button">重新同步交易</button></div><div class="paper-action"><button id="ptRefresh" class="btn btn-outline-secondary" type="button">更新帳號</button></div></div>
+          <div class="paper-fields"><div><label for="ptProduct">交易商品（TX 價格試算）</label><select id="ptProduct" class="form-select"><option value="TX">大台 TX</option><option value="MTX">小台 MTX</option><option value="TMF">微台 TMF</option></select></div><div><label for="ptEffect">倉別</label><select id="ptEffect" class="form-select"><option value="AUTO">自動</option><option value="OPEN">新倉</option><option value="CLOSE">平倉</option></select></div><div><label for="ptQty">口數</label><input id="ptQty" type="number" class="form-control" value="1" min="1" max="1000" step="1"></div>
+            <div><label for="ptType">委託類別</label><select id="ptType" class="form-select"><option value="MARKET">市價（最新已知成交）</option><option value="LIMIT">限價</option><option value="STOP">觸價市價</option></select></div><div><label for="ptTif">委託有效條件</label><select id="ptTif" class="form-select"><option value="ROD">ROD 當盤有效</option><option value="IOC">IOC 立即成交否則取消</option><option value="FOK">FOK 全部成交否則取消</option></select></div><div id="ptTargetField" hidden><label for="ptTarget">委託／觸發點位</label><input id="ptTarget" class="form-control" type="number" min="1" step="1"></div><div id="ptTriggerField" hidden><label for="ptTrigger">觸價方向</label><select id="ptTrigger" class="form-select"><option value="ABOVE">價格 ≥ 觸發價</option><option value="BELOW">價格 ≤ 觸發價</option></select></div><div><label for="ptStop">停損點位（選填）</label><input id="ptStop" class="form-control" type="number" min="1" step="1" placeholder="不設定"></div><div><label for="ptTake">停利點位（選填）</label><input id="ptTake" class="form-control" type="number" min="1" step="1" placeholder="不設定"></div>
+            <div class="paper-action d-flex gap-2"><button id="ptBuy" class="btn paper-buy" type="button" disabled>買進</button><button id="ptSell" class="btn paper-sell" type="button" disabled>賣出</button></div></div>
+          <label class="form-check small mt-2 mb-0"><input id="ptMarkers" type="checkbox" class="form-check-input" checked> 在 K 線顯示本場次成交標記</label>
+          <div id="ptStatus" class="paper-status" role="status">請載入 TX 回放，選擇交易帳號與場次。</div><p class="paper-muted mb-0">市價按最新已知 TX 成交價；限價與觸價依逐筆成交觸發。自動先沖銷同商品反向部位（FIFO），剩餘口數新倉；新倉獨立開倉；平倉只沖銷反向部位。停損停利只附加於新倉且互斥；ROD 限價持續等待至本回放區間結束；IOC／FOK 限價僅檢查送單當下；觸價市價在觸發後才適用有效條件。無委託簿，符合價格即整筆成交，IOC 與 FOK 暫無部分成交差異。沒有委買賣量／排隊或保證金模擬。倒回已交易時間以前時，須回到原進度或另建場次。</p>
+        </details>
+        <div class="replay-tools-bar"><div class="panel-actions"><div class="draw-tools" role="group" aria-label="直接在圖上畫線"><button id="drawH" class="draw-mode-btn" type="button" aria-pressed="false"><i class="bi bi-dash-lg"></i> 水平</button><button id="drawV" class="draw-mode-btn" type="button" aria-pressed="false"><i class="bi bi-distribute-horizontal"></i> 垂直</button></div><button id="levelLabelsToggle" class="icon-btn" type="button" title="隱藏水平點位標籤" aria-label="顯示或隱藏水平點位標籤" aria-pressed="true"><i class="bi bi-list-columns-reverse"></i></button><button id="settingsToggle" class="icon-btn" title="收合設定"><i class="bi bi-layout-sidebar-inset-reverse"></i></button><button id="fit" class="icon-btn" title="顯示完整已知行情"><i class="bi bi-arrows-angle-expand"></i></button></div></div>
+        <div class="kline-workspace"><section class="kline-chart-section"><div id="ohlc" class="ohlc-legend">將游標移到 K 棒查看行情</div><div id="maLegend" class="ma-legend"></div><div id="macdLegend" class="macd-status-panel">DIF12−26 / MACD9 / OSC</div><div class="kline-chart-frame" id="chartFrame"><div class="level-chart-layout"><div id="replayChart" class="kline-chart"></div><div id="replayLevelLabels" class="level-label-rail" aria-label="水平點位標籤"></div></div></div></section>
+        <aside class="kline-settings"><section class="setting-block"><div class="setting-title"><span>副圖設定</span></div><label class="form-check form-switch"><input id="volumeVisible" type="checkbox" class="form-check-input" checked> 成交量</label><label class="form-check form-switch"><input id="macdVisible" type="checkbox" class="form-check-input" checked> MACD（DIF／MACD9／OSC）</label></section>
+        <details class="setting-block setting-collapsible" open><summary class="setting-summary">均線設定（MA）</summary><div class="setting-content"><form id="maForm" class="setting-form ma-form"><div><label for="maPeriod">週期</label><input id="maPeriod" type="number" min="2" max="500" value="20" class="form-control" required></div><div><label for="maColor">顏色</label><input id="maColor" type="color" value="#8b5cf6" class="form-control form-control-color"></div><button type="submit" class="btn btn-primary">＋</button></form><div id="maList" class="setting-list"></div><button id="resetMa" class="btn btn-sm btn-link">恢復預設</button></div></details>
+        <details class="setting-block setting-collapsible" open><summary class="setting-summary">水平點位／垂直時間</summary><div class="setting-content"><form id="lineForm" class="d-grid gap-2"><label for="lineKind">線條類型</label><select id="lineKind" class="form-select"><option value="h">水平點位</option><option value="v">垂直時間</option></select><div id="linePriceField"><label for="linePrice">點位</label><input id="linePrice" type="number" step="any" class="form-control" placeholder="例如 25000"></div><div id="lineTimeField" hidden><label for="lineTime">時間（吸附至已知 K 棒）</label><input id="lineTime" type="datetime-local" step="1" class="form-control"></div><div><label for="lineName">名稱</label><input id="lineName" maxlength="24" class="form-control" placeholder="支撐／壓力／事件"></div><div class="d-flex gap-2"><input id="lineColor" type="color" class="form-control form-control-color" value="#ef4444" aria-label="線色"><select id="lineStyle" class="form-select" aria-label="線型"><option value="0">實線</option><option value="2" selected>虛線</option><option value="1">點線</option></select><select id="lineWidth" class="form-select" aria-label="粗細"><option value="1">1px</option><option value="2" selected>2px</option><option value="3">3px</option><option value="4">4px</option></select></div><div class="d-flex gap-2"><button id="lineSubmit" class="btn btn-primary flex-grow-1" type="submit">加入線條</button><button id="cancelEdit" class="btn btn-outline-secondary" type="button" hidden>取消</button></div></form><div class="d-flex flex-wrap mt-2"><button id="showLines" class="btn btn-sm btn-link">全顯示</button><button id="hideLines" class="btn btn-sm btn-link">全隱藏</button><button id="clearLines" class="btn btn-sm btn-link text-danger">清除</button></div><div id="lineList" class="setting-list"></div><p class="small text-secondary">也可使用圖上方水平／垂直工具點圖畫線；Esc 取消。線條自動儲存於本機瀏覽器（依市場、商品／契約、起始日期與 K 線週期區分）；倒回建立時間之前會暫時隱藏。重新載入相同區間會恢復上次回放時間。</p></div></details></aside></div>
+        <div class="replay-player"><div class="replay-controls">
+          <button id="play" class="btn btn-sm btn-primary" type="button" disabled>▶ 播放</button><button id="reset" class="btn btn-sm btn-outline-secondary" disabled>重置</button><button id="prev" class="btn btn-sm btn-outline-secondary" disabled>上一根</button><button id="next" class="btn btn-sm btn-outline-secondary" disabled>下一根</button><button id="step" class="btn btn-sm btn-outline-secondary" disabled>下一筆</button>
+          <label for="speed" class="small">速度</label><select id="speed" class="form-select form-select-sm w-auto"><option value="1" selected>1× 原速</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="30">30×</option><option value="60">60×</option><option value="300">300×</option></select><label class="form-check ms-2"><input id="follow" type="checkbox" class="form-check-input" checked> 跟隨最新 K</label><button id="live" class="btn btn-sm btn-outline-primary">回到最新</button>
+        </div><input id="seek" type="range" class="form-range mt-2 mb-0" min="0" max="1" value="0" step="1" disabled aria-label="回放時間"><div class="d-flex justify-content-between small text-secondary"><span id="rangeStart">—</span><span id="rangeEnd">—</span></div></div>
+        <section id="paperPositions" class="paper-section border-top"><div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"><h2 class="mb-0">模擬交易帳務</h2><button id="ptCloseAll" class="btn btn-sm btn-outline-danger" disabled type="button">全部平倉（本場次）</button></div>
+        <div id="ptSummary" class="paper-stats mb-3"></div>
+        <h3 class="fs-6">未平倉部位</h3><div class="paper-scroll mb-3"><table class="table table-sm table-hover paper-table"><thead><tr><th>交易</th><th>商品</th><th>方向</th><th>口數</th><th>歷史進場時間</th><th>進場價</th><th>停損／停利</th><th>未實現淨損益（估）</th><th>關聯日記</th><th>操作</th></tr></thead><tbody id="ptOpen"></tbody></table></div>
+        <h3 class="fs-6">委託紀錄</h3><div class="paper-scroll mb-3"><table class="table table-sm table-hover paper-table"><thead><tr><th>編號</th><th>商品</th><th>方向</th><th>口數</th><th>倉別</th><th>類別</th><th>有效條件</th><th>委託點位</th><th>歷史委託時間</th><th>電腦時間</th><th>狀態</th><th>操作</th></tr></thead><tbody id="ptOrders"></tbody></table></div>
+        <h3 class="fs-6">本場次平倉損益（三種口值比較）</h3><div class="paper-scroll"><table class="table table-sm table-hover paper-table"><thead><tr><th>交易</th><th>方向</th><th>口數</th><th>進場價</th><th>出場價</th><th>成交點數／口</th><th>大台淨額</th><th>小台淨額</th><th>微台淨額</th><th>歷史出場時間</th><th>原因</th><th>關聯日記</th></tr></thead><tbody id="ptClosed"></tbody></table></div><p class="paper-muted mt-2 mb-0">比較值以同一筆 TX 價格、相同口數、各商品獨立成本計算，非三商品合計。關聯日記可直接查閱；刪除與帳號完整統計請到「模擬交易績效」。</p></section>
+        <footer class="chart-attribution">Charting by <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a></footer>
+      </article>
+    </main></div>
+    <script src="{{ url_for('static', path='/replay_engine.js') }}?v=20261112-3"></script>
+    <script src="{{ url_for('static', path='/level_labels.js') }}?v=20260929-2"></script>
+    <script src="{{ url_for('static', path='/replay.js') }}?v=20261113-freeze-fix"></script>
+    <script src="{{ url_for('static', path='/paper_common.js') }}?v=20261114-safe2"></script>
+    <script src="{{ url_for('static', path='/replay_paper.js') }}?v=20261114-safe2"></script>
+</body></html>

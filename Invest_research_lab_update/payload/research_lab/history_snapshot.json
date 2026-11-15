@@ -1,0 +1,1198 @@
+{
+  "hist-42f005cc903b8a85d14e": [
+    {
+      "path": "backtest/futures_core_next_day_summary_corrected_20240101_20260904.csv",
+      "size": 531,
+      "sha256": "f5595cf6a4863b8a903aa241e8b063a1252d3f665eea109648a25802e040e89b"
+    },
+    {
+      "path": "backtest/futures_core_next_day_detail_corrected_20240101_20260904.csv",
+      "size": 73600,
+      "sha256": null
+    }
+  ],
+  "hist-ac20d229c8926fe9c65b": [
+    {
+      "path": "backtest/futures_core_five_day_next_day_statistics/core_five_day_next_day_manifest_20180101_20261019.json",
+      "size": 531,
+      "sha256": "85079a8b348620cec219b0b64f361c6052f22f0d84fdc233533523dc36bf3881"
+    },
+    {
+      "path": "backtest/futures_core_five_day_next_day_statistics/core_five_day_next_day_summary_20180101_20261019.csv",
+      "size": 424,
+      "sha256": "14c89d1fea75741d1c28ea1f7d46bb9b448e6d828a778dd4f6d9399d4e6b2640"
+    },
+    {
+      "path": "backtest/futures_core_five_day_next_day_statistics/core_five_day_next_day_detail_20180101_20261019.csv",
+      "size": 586443,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_five_day_next_day_statistics/core_five_day_next_day_tests_20180101_20261019.csv",
+      "size": 2232,
+      "sha256": "e08020950796ce933ecf30ca12f3dd65c43de41240ff7bf81e1e1a3c79c0c573"
+    }
+  ],
+  "hist-8f822358d1f440c2787f": [
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_bucket_summary.csv",
+      "size": 3959,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_direction_bucket_summary.csv",
+      "size": 6781,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_summary.csv",
+      "size": 685,
+      "sha256": "cdd32bbfde6a118310087ec24b49f1113643a70ca9b3b153c7530e341b083372"
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_year_bucket_summary.csv",
+      "size": 33180,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_year_summary.csv",
+      "size": 5534,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_core_baseline.csv",
+      "size": 358,
+      "sha256": "654f07097859b63225d63125bd5586a4b7bc4b1779ebd5aa425633bd05856744"
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_detail.csv",
+      "size": 1096243,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_night_baseline.csv",
+      "size": 365,
+      "sha256": "a7c924533419c00c9132bc1ec2ef72408775640320f4aaf8369580ce6d60ad21"
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_signals.csv",
+      "size": 615057,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_core_night_state_20180101_20261028_skipped.csv",
+      "size": 3998,
+      "sha256": null
+    }
+  ],
+  "hist-249243d3f531b4bc9720": [
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_manifest_20180101_20261012.json",
+      "size": 1324,
+      "sha256": "2af8e0c4cf65062f8582481cdcd4a325911772219b67bd80e65d09f261a55b05"
+    },
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_by_core_20180101_20261012.csv",
+      "size": 1570,
+      "sha256": "c3b15dc1fe4f577f1654e29303253cfb5c565d5a81ac82ed6ee2a1beff5f9318"
+    },
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_by_night_change_20180101_20261012.csv",
+      "size": 3280,
+      "sha256": "3b7754533ce71a27e3e36dec7069d82f38288cc420b1de5dfa401791e6277d03"
+    },
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_by_night_trend_20180101_20261012.csv",
+      "size": 2155,
+      "sha256": "1cd9e74e33809811a4c713b7488cbb3585445ca34943a92e9e456dc97f53acc3"
+    },
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_detail_20180101_20261012.csv",
+      "size": 631488,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_full_matrix_20180101_20261012.csv",
+      "size": 5545,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_next_day_session_statistics/next_day_session_yearly_20180101_20261012.csv",
+      "size": 33716,
+      "sha256": null
+    }
+  ],
+  "hist-8bf107a73ce614dfd114": [
+    {
+      "path": "backtest/futures_combination_manifest_20180101_20261102.json",
+      "size": 1479,
+      "sha256": "40f605ada01a8086a73e73bf473498a1a7511451455e91958c579157585dde53"
+    },
+    {
+      "path": "backtest/futures_combination_summary_20180101_20261102.csv",
+      "size": 6649,
+      "sha256": "851efb922473fa2d1adc72815f1893b3dc82fab9322e6e03d34e896be13a08ec"
+    },
+    {
+      "path": "backtest/futures_combination_detail_20180101_20261102.csv",
+      "size": 4968484,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_combination_yearly_20180101_20261102.csv",
+      "size": 39665,
+      "sha256": null
+    }
+  ],
+  "hist-860b5f003df89a610cbc": [
+    {
+      "path": "backtest/futures_stop_trailing_2_1_directional_summary_20180101_20261028.csv",
+      "size": 1118,
+      "sha256": "664c3bab24b4b02bf0e24811037f796486c4ee288a14d27ba725c1a398a733ff"
+    },
+    {
+      "path": "backtest/futures_stop_trailing_2_1_directional_detail_20180101_20261028.csv",
+      "size": 1442189,
+      "sha256": null
+    }
+  ],
+  "hist-5262fadf14d6d3b130ef": [
+    {
+      "path": "backtest/futures_stop_trailing_2_1_summary_20240101_20260910.csv",
+      "size": 11300,
+      "sha256": "ba137642d3b561aea287bee3c728fabfe481e4d7acfc1dd1773b0c50869b7dde"
+    },
+    {
+      "path": "backtest/futures_stop_trailing_2_1_detail_20240101_20260910.csv",
+      "size": 10766732,
+      "sha256": null
+    }
+  ],
+  "hist-f4f14021f0866e877151": [
+    {
+      "path": "backtest/futures_stop_trailing_2_1_directional_summary_20240101_20260910.csv",
+      "size": 142073,
+      "sha256": "e026c70ef294d3ec9a6b87174c0638be6e4234745dfdca73e662bc6735568705"
+    },
+    {
+      "path": "backtest/futures_stop_trailing_2_1_directional_detail_20240101_20260910.csv",
+      "size": 71123332,
+      "sha256": null
+    }
+  ],
+  "hist-8e41de5791628e4c1c0c": [
+    {
+      "path": "backtest/futures_stop_trailing_2_1_directional_summary_20200101_20260910.csv",
+      "size": 142665,
+      "sha256": "2d7e97073952ae5b1e1360b51ae758eb348e5f1ce88bb46ae1397eac1065f981"
+    },
+    {
+      "path": "backtest/futures_stop_trailing_2_1_directional_detail_20200101_20260910.csv",
+      "size": 176852509,
+      "sha256": null
+    }
+  ],
+  "hist-759b98f7ad0bfb2a7525": [
+    {
+      "path": "backtest/futures_turning_level/v1/turning_level_manifest_20180101_20261009.json",
+      "size": 893,
+      "sha256": "977cc628f548e8de262a3edc3b85b8805b9665d2fa19ef39560bf48544ee638d"
+    },
+    {
+      "path": "backtest/futures_turning_level/v1/turning_level_summary_20180101_20261009.csv",
+      "size": 2438,
+      "sha256": "aca7fc6cbc4f524ec2aec4570356cb8d2a3fa497a28bf65c62508f3012908579"
+    },
+    {
+      "path": "backtest/futures_turning_level/v1/turning_level_detail_20180101_20261009.csv",
+      "size": 2337059,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_turning_level/v1/turning_level_yearly_20180101_20261009.csv",
+      "size": 17603,
+      "sha256": null
+    }
+  ],
+  "hist-1150891e8a5c2a025881": [
+    {
+      "path": "backtest/futures_turning_level/v2/turning_level_manifest_20180101_20261008.json",
+      "size": 2816,
+      "sha256": "4f93e7246ff266af3151311adb672210249996bec2ba8989bd4960e14ded07fe"
+    },
+    {
+      "path": "backtest/futures_turning_level/v2/turning_level_summary_20180101_20261008.csv",
+      "size": 5550,
+      "sha256": "43c848ea18ffe2d931db4c0d6084e889c74017b412ca970443b604e80dcf5728"
+    },
+    {
+      "path": "backtest/futures_turning_level/v2/turning_level_detail_20180101_20261008.csv",
+      "size": 5422281,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_turning_level/v2/turning_level_yearly_20180101_20261008.csv",
+      "size": 42914,
+      "sha256": null
+    }
+  ],
+  "hist-5bb2e4b0044bcd2a645b": [
+    {
+      "path": "backtest/futures_session_trend/session_trend_manifest_20180101_20261008.json",
+      "size": 2017,
+      "sha256": "858a170bdad13b4264d7637c45d2ba1c8ed44f889f58ec0ae1d5b1e8c1a59135"
+    },
+    {
+      "path": "backtest/futures_session_trend/session_trend_summary_20180101_20261008.csv",
+      "size": 1041,
+      "sha256": "c9d2f4ed42ccabf7fb673b8f42bebc25b174523fb46be446547bbdac5830d0ae"
+    },
+    {
+      "path": "backtest/futures_session_trend/session_trend_by_entry_type_20180101_20261008.csv",
+      "size": 1689,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend/session_trend_by_trend_20180101_20261008.csv",
+      "size": 1668,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend/session_trend_detail_20180101_20261008.csv",
+      "size": 2482727,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend/session_trend_yearly_20180101_20261008.csv",
+      "size": 5210,
+      "sha256": null
+    }
+  ],
+  "hist-c76a128dfc23f3af7b74": [
+    {
+      "path": "backtest/futures_session_trend_a/session_trend_a_manifest_20180101_20261012.json",
+      "size": 2204,
+      "sha256": "f052347c3e0535b1defc65b01059d52ace116cc7bb20741b940628873fd6942e"
+    },
+    {
+      "path": "backtest/futures_session_trend_a/session_trend_a_summary_20180101_20261012.csv",
+      "size": 1129,
+      "sha256": "a0a9cdfc147fcb4b21da0829e036ba4ec0ffe67e4e80d955d5e847d1133a9723"
+    },
+    {
+      "path": "backtest/futures_session_trend_a/session_trend_a_by_entry_type_20180101_20261012.csv",
+      "size": 1783,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend_a/session_trend_a_by_trend_20180101_20261012.csv",
+      "size": 1767,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend_a/session_trend_a_detail_20180101_20261012.csv",
+      "size": 2757031,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend_a/session_trend_a_yearly_20180101_20261012.csv",
+      "size": 5429,
+      "sha256": null
+    }
+  ],
+  "hist-d677ffa670db0867c5b2": [
+    {
+      "path": "backtest/futures_session_trend_night/night_session_trend_manifest_20180101_20261008.json",
+      "size": 2071,
+      "sha256": "4a89a411e1e058bc8db70749f71ed9f09540028175f1eb0c9ad126dc2a06f170"
+    },
+    {
+      "path": "backtest/futures_session_trend_night/night_session_trend_summary_20180101_20261008.csv",
+      "size": 1053,
+      "sha256": "8e9e8c9a1cb9317eea80e6197bac2a595bc59aa5f5bd49bcf96faf41a563e37a"
+    },
+    {
+      "path": "backtest/futures_session_trend_night/night_session_trend_by_entry_type_20180101_20261008.csv",
+      "size": 1719,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend_night/night_session_trend_by_trend_20180101_20261008.csv",
+      "size": 1664,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend_night/night_session_trend_detail_20180101_20261008.csv",
+      "size": 2701495,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_session_trend_night/night_session_trend_yearly_20180101_20261008.csv",
+      "size": 5159,
+      "sha256": null
+    }
+  ],
+  "hist-b8530119f6eeb32c6ec7": [
+    {
+      "path": "backtest/night_retrace/night_retrace_manifest_20180101_20260910.json",
+      "size": 2315,
+      "sha256": "bd964c8c5874ce5455fe8926877c38e3a589f6b6ceb30eadc58b2487a4596b41"
+    },
+    {
+      "path": "backtest/night_retrace/night_retrace_parameter_summary_20180101_20260910.csv",
+      "size": 844456,
+      "sha256": "61f3511eaad9a30d7d4e13489e677b7fcfae43b01f8d6d73255e439b3a689653"
+    },
+    {
+      "path": "backtest/night_retrace/night_retrace_selection_20180101_20260910.csv",
+      "size": 505975,
+      "sha256": "493e7d2674a7fc0f25fc26310434512ac55dec8ea2bd1ac2ad61641ba0fae4bd"
+    },
+    {
+      "path": "backtest/night_retrace/night_retrace_yearly_summary_20180101_20260910.csv",
+      "size": 1682924,
+      "sha256": null
+    },
+    {
+      "path": "backtest/night_retrace/night_retrace_top_detail_20180101_20260910.csv",
+      "size": 2421374,
+      "sha256": null
+    }
+  ],
+  "hist-fe403d6897d079c77515": [
+    {
+      "path": "backtest/combination_exit/combination_exit_manifest_20180101_20261102.json",
+      "size": 2290,
+      "sha256": "5d4af1cab3a04ae62686fd2a1c28a1c5ac1cbaeb32b19cdd7bd01a68aa493852"
+    },
+    {
+      "path": "backtest/combination_exit/combination_exit_summary_20180101_20261102.csv",
+      "size": 3583,
+      "sha256": "33b66ed9f043c4df85fb093fc17d1c8a06d9aaa264e0f735e4a42e4a90011607"
+    },
+    {
+      "path": "backtest/combination_exit/combination_exit_detail_20180101_20261102.csv",
+      "size": 559994,
+      "sha256": null
+    },
+    {
+      "path": "backtest/combination_exit/combination_exit_diagnostics_20180101_20261102.csv",
+      "size": 4406,
+      "sha256": null
+    },
+    {
+      "path": "backtest/combination_exit/combination_exit_yearly_20180101_20261102.csv",
+      "size": 22246,
+      "sha256": null
+    }
+  ],
+  "hist-8ca257b9def5cd94ece9": [
+    {
+      "path": "backtest/intraday_reversal/manifest.json",
+      "size": 1441,
+      "sha256": "00fa89f39f449be25f0f1afb6520aa5a5704f585eab39748e9fc720bddb90f0a"
+    },
+    {
+      "path": "backtest/intraday_reversal/data_quality_summary.csv",
+      "size": 44,
+      "sha256": "8af028eb1b1837c80d40fcdd3107c90698e9dea5e2c8e4d871e3b52acb30d128"
+    },
+    {
+      "path": "backtest/intraday_reversal/mfe_mae_summary.csv",
+      "size": 1950109,
+      "sha256": null
+    },
+    {
+      "path": "backtest/intraday_reversal/validation_summary.csv",
+      "size": 4353300,
+      "sha256": "edb8c641394344f4d9f6fcf767d7de36e17b65b019d6b6149dc5772524d9f9df"
+    },
+    {
+      "path": "backtest/intraday_reversal/data_quality_detail.csv",
+      "size": 61418,
+      "sha256": null
+    },
+    {
+      "path": "backtest/intraday_reversal/event_detail.csv",
+      "size": 3649006,
+      "sha256": null
+    },
+    {
+      "path": "backtest/intraday_reversal/first_hit_detail.csv",
+      "size": 41341036,
+      "sha256": null
+    },
+    {
+      "path": "backtest/intraday_reversal/first_hit_probability.csv",
+      "size": 18674812,
+      "sha256": "ad7c3410a7ea016dc39db1cebf7c150e3b72c2aaacf29a3cfe6011d47e4b4fad"
+    },
+    {
+      "path": "backtest/intraday_reversal/reversal_probability.csv",
+      "size": 3812058,
+      "sha256": "7a02c78a197b9d8901d0a447a2516e41c4f28a327592f35afe690f8bc9c1e15f"
+    },
+    {
+      "path": "backtest/intraday_reversal/time_analysis.csv",
+      "size": 4739534,
+      "sha256": null
+    },
+    {
+      "path": "backtest/intraday_reversal/trigger_frequency.csv",
+      "size": 2357,
+      "sha256": "fd999714bd4e5500e73f3e9e653ef282b6588bc97dcfe053195f62ec025378b1"
+    },
+    {
+      "path": "backtest/intraday_reversal/yearly_analysis.csv",
+      "size": 4317385,
+      "sha256": null
+    },
+    {
+      "path": "backtest/intraday_reversal/yearly_mfe_mae.csv",
+      "size": 2090914,
+      "sha256": null
+    }
+  ],
+  "hist-03cfecbc6d4fb5dec208": [
+    {
+      "path": "backtest/retail_expansion/retail_expansion_manifest_20180101_20261008.json",
+      "size": 861,
+      "sha256": "97ad9fdd1458cc79d62be4c6ff479790d6cd236d7aa26281d2145a9073b6092e"
+    },
+    {
+      "path": "backtest/retail_expansion/retail_expansion_summary_20180101_20261008.csv",
+      "size": 1483,
+      "sha256": "8c2855a77ec3117373d748126e9c9cc12c7156793df40ac86457d2a557e6999c"
+    },
+    {
+      "path": "backtest/retail_expansion/retail_expansion_detail_20180101_20261008.csv",
+      "size": 532798,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_expansion/retail_expansion_entry_status_20180101_20261008.csv",
+      "size": 1330,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_expansion/retail_expansion_yearly_20180101_20261008.csv",
+      "size": 8901,
+      "sha256": null
+    }
+  ],
+  "hist-c6cf0569a845ccbb71cf": [
+    {
+      "path": "backtest/retail_wait_window/retail_wait_window_manifest_20180101_20260127.json",
+      "size": 833,
+      "sha256": "63102d32370527556d8644fb078c441e97408364addef4f4c2ac7e9f2e26801d"
+    },
+    {
+      "path": "backtest/retail_wait_window/retail_wait_window_summary_20180101_20260127.csv",
+      "size": 768,
+      "sha256": "489b2eed91fa28fedddf39adee18f2039c151f064803ad066fcc3f9039f5106d"
+    },
+    {
+      "path": "backtest/retail_wait_window/retail_wait_window_detail_20180101_20260127.csv",
+      "size": 145792,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_wait_window/retail_wait_window_entry_status_20180101_20260127.csv",
+      "size": 173,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_wait_window/retail_wait_window_yearly_20180101_20260127.csv",
+      "size": 3173,
+      "sha256": null
+    }
+  ],
+  "hist-ee212e73cd9c064a8f5c": [
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_manifest_20180101_20260127.json",
+      "size": 1216,
+      "sha256": "bf7e0fce90adc4d4601941e1099ecf96e5ae5a6abb62db3b681b74c5cca5daae"
+    },
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_summary_20180101_20260127.csv",
+      "size": 961,
+      "sha256": "151dd2b7fa9976484982e32a686bb8dc4450dde170077345c3079d1368e60b08"
+    },
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_detail_20180101_20260127.csv",
+      "size": 241283,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_entry_status_20180101_20260127.csv",
+      "size": 248,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_rescued_detail_20180101_20260127.csv",
+      "size": 12136,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_yearly_20180101_20260127.csv",
+      "size": 4814,
+      "sha256": null
+    }
+  ],
+  "hist-9a31d0379e1326fd42a2": [
+    {
+      "path": "backtest/retail_dif_reentry/retail_dif_reentry_manifest_20180101_20260127.json",
+      "size": 1263,
+      "sha256": "a9afdbd0afac4b7836f56552a2c6239fcc2ba53ad5e81ddee91891468ba93ef4"
+    },
+    {
+      "path": "backtest/retail_dif_reentry/retail_dif_reentry_summary_20180101_20260127.csv",
+      "size": 963,
+      "sha256": "90967c51d2979a9095faf661e651520a320915382bda0dd7932746e0ec2ab116"
+    },
+    {
+      "path": "backtest/retail_dif_reentry/retail_dif_reentry_detail_20180101_20260127.csv",
+      "size": 236188,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_dif_reentry/retail_dif_reentry_entry_status_20180101_20260127.csv",
+      "size": 262,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_dif_reentry/retail_dif_reentry_rescued_detail_20180101_20260127.csv",
+      "size": 11545,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_dif_reentry/retail_dif_reentry_yearly_20180101_20260127.csv",
+      "size": 4856,
+      "sha256": null
+    }
+  ],
+  "hist-a0a5dd6e26df2efaff7f": [
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_manifest_20180101_20260127.json",
+      "size": 1926,
+      "sha256": "315621346620897ad508407ee95e94b2a21ba4a8d702ff218b64c90989424c53"
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_matrix_summary_20180101_20260127.csv",
+      "size": 2107,
+      "sha256": "f0b72d491bcbde7b6c2ed5873acb083057b4ba5f8ff65edf5430fde263bafe3a"
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_path_summary_20180101_20260127.csv",
+      "size": 2035,
+      "sha256": "1dcf38e5810c76ae11de727a75b715fd5730421a3f92d85cbb08dcf401166e43"
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_policy_summary_20180101_20260127.csv",
+      "size": 828,
+      "sha256": "e22d13e4b40e735171ec99ec140aae49a659a586669d39ac99cbc86fbd003275"
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_entry_status_20180101_20260127.csv",
+      "size": 1591,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_matrix_detail_20180101_20260127.csv",
+      "size": 310628,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_path_detail_20180101_20260127.csv",
+      "size": 67309,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_policy_detail_20180101_20260127.csv",
+      "size": 259559,
+      "sha256": null
+    },
+    {
+      "path": "backtest/retail_night_gap/retail_night_gap_policy_yearly_20180101_20260127.csv",
+      "size": 3945,
+      "sha256": null
+    }
+  ],
+  "hist-d48866ec86a7d9907603": [
+    {
+      "path": "backtest/retail_bounce_reentry/retail_bounce_reentry_5m_gallery.html",
+      "size": 2861564,
+      "sha256": null
+    }
+  ],
+  "hist-a1a420154cb06d335755": [
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_manifest_20160101_20260910.json",
+      "size": 795,
+      "sha256": "802114715b5e0a2693b5d9087859f616ff1e1c1495e4a6ca9ac2e7328830af29"
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_baseline_summary_20160101_20260910.csv",
+      "size": 330,
+      "sha256": "21b9094da97d49b9adede284fb2b5a63b5e524fec829cb1e9835d4d92ba95564"
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_data_quality_summary_20160101_20260910.csv",
+      "size": 150,
+      "sha256": "e79272b7ce5ff4bef951278e1201f868e1d166c57adaa20233113ebe047311fe"
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_direction_summary_20160101_20260910.csv",
+      "size": 755,
+      "sha256": "4f5a308fa9d8fa588415e333de0e2b2a94bfcc8cccd1c2ab310a0fc107112654"
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_environment_summary_20160101_20260910.csv",
+      "size": 4479,
+      "sha256": null
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_gap_bucket_summary_20160101_20260910.csv",
+      "size": 3314,
+      "sha256": null
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_threshold_summary_20160101_20260910.csv",
+      "size": 3686,
+      "sha256": "84a503d0af1fbc5d8bb2b5d364e9df7358a17c52396031a05b9340d120bd9f4c"
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_trailing_summary_20160101_20260910.csv",
+      "size": 5619,
+      "sha256": "70c1165c68e3db032c8494c660ee53de5d736d3bf296a3c6eb755556747220a5"
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_daily_path_detail_20160101_20260910.csv",
+      "size": 536110,
+      "sha256": null
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_threshold_first_hit_detail_20160101_20260910.csv",
+      "size": 3131161,
+      "sha256": null
+    },
+    {
+      "path": "backtest/signal_path_statistics/futures_signal_trailing_pullback_detail_20160101_20260910.csv",
+      "size": 5099767,
+      "sha256": null
+    }
+  ],
+  "hist-3e7dcbd16a1fe106d57d": [
+    {
+      "path": "backtest/futures_day_night_next_day_layered/day_night_layered_manifest_20180101_20261016.json",
+      "size": 848,
+      "sha256": "7768da706a0f8f64d3ff2537838be385151b4a2f7c10689618630a44897afcc1"
+    },
+    {
+      "path": "backtest/futures_day_night_next_day_layered/day_night_layered_summary_20180101_20261016.csv",
+      "size": 8427,
+      "sha256": "489f2d446737373eb6a0cf744b49ef6c01b2bba691ff55d6110f346a74d2e716"
+    },
+    {
+      "path": "backtest/futures_day_night_next_day_layered/day_night_bucket_matrix_20180101_20261016.csv",
+      "size": 21706,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_day_night_next_day_layered/day_night_layered_detail_20180101_20261016.csv",
+      "size": 780300,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_day_night_next_day_layered/day_night_layered_yearly_20180101_20261016.csv",
+      "size": 8455,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_day_night_next_day_layered/day_night_opposite_vs_same_tests_20180101_20261016.csv",
+      "size": 4639,
+      "sha256": "a24e3221f079f41725ec0a50561631e9e2c560043e44ab79839544fc6091da6e"
+    }
+  ],
+  "hist-620a865f48d234086647": [
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_manifest_20180101_20261016.json",
+      "size": 1334,
+      "sha256": "289b832fc83104cb4a4d8cb8578c34ee30b1310fd16eb6e2b1f64cbbabaac228"
+    },
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_by_anchor_position_20180101_20261016.csv",
+      "size": 4720,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_by_gap_20180101_20261016.csv",
+      "size": 7526,
+      "sha256": "f6fb7e203946b433ae9bfa306e94e5eed4ecb088a42cd07ac274d29ab333450f"
+    },
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_detail_20180101_20261016.csv",
+      "size": 747556,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_gap_matrix_20180101_20261016.csv",
+      "size": 7942,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_tests_20180101_20261016.csv",
+      "size": 4495,
+      "sha256": "60b70be4b9bf2a2ded22e771bfb5409cae8b754b3f71463640e589bb4d73168d"
+    },
+    {
+      "path": "backtest/futures_open_to_night_close_convergence/open_night_convergence_yearly_20180101_20261016.csv",
+      "size": 10180,
+      "sha256": null
+    }
+  ],
+  "hist-464a9d26ef3966ca6468": [
+    {
+      "path": "backtest/futures_raw_signal_strength_scan/raw_signal_strength_manifest_20180101_20261016.json",
+      "size": 4699,
+      "sha256": "e1f11c6e7ad5c1018ef25e2f79851c0b92ac56de713d0ef790fd8cfda0e81078"
+    },
+    {
+      "path": "backtest/futures_raw_signal_strength_scan/raw_signal_strength_by_bucket_20180101_20261016.csv",
+      "size": 36866,
+      "sha256": "b87ed575e2c7a8d421b2f6e99622f0e3a9567bfadb85c14042a83d05d5b8d07d"
+    },
+    {
+      "path": "backtest/futures_raw_signal_strength_scan/raw_signal_strength_candidates_20180101_20261016.csv",
+      "size": 20153,
+      "sha256": "6a74ef962e471d190ff87fa064bea451f6cfb1ee93a80fdecafe17498dfacf5c"
+    },
+    {
+      "path": "backtest/futures_raw_signal_strength_scan/raw_signal_strength_detail_20180101_20261016.csv",
+      "size": 10298463,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_raw_signal_strength_scan/raw_signal_strength_tests_20180101_20261016.csv",
+      "size": 130855,
+      "sha256": "609c3db5c944b36ce1a325ca46138740f889a4343896a10642aee4018d1e68f4"
+    },
+    {
+      "path": "backtest/futures_raw_signal_strength_scan/raw_signal_strength_yearly_20180101_20261016.csv",
+      "size": 277597,
+      "sha256": null
+    }
+  ],
+  "hist-9b3df1403412e7130332": [
+    {
+      "path": "backtest/futures_direction_signal_strength_scan/direction_signal_manifest_20180101_20261102.json",
+      "size": 5163,
+      "sha256": "ead3006ea082def049e5d171f2faa34154c2109a8240d4af5446dc76b9ec4260"
+    },
+    {
+      "path": "backtest/futures_direction_signal_strength_scan/direction_signal_ranking_20180101_20261102.csv",
+      "size": 14751,
+      "sha256": "4abad089b1618ace76109067ce12dc45226164cf3245790c93b4842b08cacfe9"
+    },
+    {
+      "path": "backtest/futures_direction_signal_strength_scan/direction_signal_buckets_20180101_20261102.csv",
+      "size": 44668,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_direction_signal_strength_scan/direction_signal_detail_20180101_20261102.csv",
+      "size": 16128798,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_direction_signal_strength_scan/direction_signal_tests_20180101_20261102.csv",
+      "size": 206990,
+      "sha256": "2e234dd58a7a3934216ba235f327e4e8099d61cfef0a72fd08cb3fd494f4bed6"
+    },
+    {
+      "path": "backtest/futures_direction_signal_strength_scan/direction_signal_yearly_20180101_20261102.csv",
+      "size": 330759,
+      "sha256": null
+    }
+  ],
+  "hist-646079c241202184d488": [
+    {
+      "path": "backtest/futures_main_position_direction_backtest/main_position_direction_manifest_20180101_latest.json",
+      "size": 1350,
+      "sha256": "546e14818bb7f19176d461439b7a9ef21c8a44322e912173d8ca0fb662d73348"
+    },
+    {
+      "path": "backtest/futures_main_position_direction_backtest/main_position_direction_detail_20180101_latest.csv",
+      "size": 315799,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_main_position_direction_backtest/main_position_direction_groups_20180101_latest.csv",
+      "size": 7874,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_main_position_direction_backtest/main_position_direction_models_20180101_latest.csv",
+      "size": 5268,
+      "sha256": "42e8b4095f671778d41a5be1934f5d17728d1a8e001f95d9acf0da835741cca8"
+    },
+    {
+      "path": "backtest/futures_main_position_direction_backtest/main_position_direction_predictions_20180101_latest.csv",
+      "size": 1770694,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_main_position_direction_backtest/main_position_direction_univariate_tests_20180101_latest.csv",
+      "size": 28805,
+      "sha256": "125ee8f3579ebd22946b5262d67597d68ec879e3edb063db0839c3898872de5f"
+    }
+  ],
+  "hist-ae92fcc2e97f65a16eec": [
+    {
+      "path": "backtest/futures_strategy_next_day_intraday_scan/intraday_scan_manifest_20180101_20261016.json",
+      "size": 1183,
+      "sha256": "76cac7960aecc4773dd74d7a9b3e59d64df451ca055175f74afedb0c5e43208d"
+    },
+    {
+      "path": "backtest/futures_strategy_next_day_intraday_scan/intraday_directional_performance_20180101_20261016.csv",
+      "size": 4554,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_strategy_next_day_intraday_scan/intraday_group_differences_20180101_20261016.csv",
+      "size": 56074,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_strategy_next_day_intraday_scan/intraday_group_shortlist_20180101_20261016.csv",
+      "size": 20778,
+      "sha256": "760748b88d9c594554b65b5d29ec914eeeee2543db7994653a42306038e8d2b4"
+    }
+  ],
+  "hist-4821906bdf2f34ebfc2c": [
+    {
+      "path": "backtest/futures_volatility_strength/volatility_strength_manifest_20180101_20261016.json",
+      "size": 1412,
+      "sha256": "e76bf255b4aafd69536befcbfda78400068e363c794527c323680bc4fabc727e"
+    },
+    {
+      "path": "backtest/futures_volatility_strength/volatility_strength_summary_20180101_20261016.csv",
+      "size": 8547,
+      "sha256": "6dd40649068cbe064e62e36e434bd74971e27442f1916cea06117e3712c96538"
+    },
+    {
+      "path": "backtest/futures_volatility_strength/volatility_strength_daily_20180101_20261016.csv",
+      "size": 633727,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_volatility_strength/volatility_strength_tests_20180101_20261016.csv",
+      "size": 1238,
+      "sha256": "9385d3f18586b4bebd5f1c16adadc2d188887bbd0fa4a37b3523698f0336a9e4"
+    },
+    {
+      "path": "backtest/futures_volatility_strength/volatility_strength_yearly_20180101_20261016.csv",
+      "size": 8976,
+      "sha256": null
+    }
+  ],
+  "hist-3981ea2bf59dcdbe45d2": [
+    {
+      "path": "backtest/futures_volatility_model/volatility_model_manifest_20180101_20261016.json",
+      "size": 896,
+      "sha256": "13251c382a90c00533f63035366f5452be7255aa17db607a6944aecbaf2af26a"
+    },
+    {
+      "path": "backtest/futures_volatility_model/volatility_model_metrics_20180101_20261016.csv",
+      "size": 5954,
+      "sha256": "c09757cbbe94b53acdb1dfa1d151b27883e2d1f463d333415e4a0011a8b8630e"
+    },
+    {
+      "path": "backtest/futures_volatility_model/volatility_model_coefficients_20180101_20261016.csv",
+      "size": 5641,
+      "sha256": null
+    },
+    {
+      "path": "backtest/futures_volatility_model/volatility_model_predictions_20180101_20261016.csv",
+      "size": 235800,
+      "sha256": null
+    }
+  ],
+  "hist-7e53ed0be6266f80529a": [
+    {
+      "path": "backtest/futures_daily_amplitude_pattern/daily_amplitude_pattern_20180101_20261105.csv",
+      "size": 1016411,
+      "sha256": "a383bd298fbba34ea98b28fee5639474dd537b1bc04edceaad5d7404b0436420"
+    }
+  ],
+  "hist-e711f03c64e07df0767d": [
+    {
+      "path": "analysis/futures_daily_amplitude_feature_scan/amplitude_feature_manifest_20180101_20261105.json",
+      "size": 7061,
+      "sha256": "8caa799a42c36ef82a29178acc4ff2929662413942529da9ee9a12c75bcc6139"
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_feature_scan/amplitude_feature_ranking_20180101_20261105.csv",
+      "size": 141252,
+      "sha256": "9cee77d99676fbd12af6751acfa9883a30a8e34e2f09cf5581bc32409487c195"
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_feature_scan/amplitude_feature_buckets_20180101_20261105.csv",
+      "size": 145011,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_feature_scan/amplitude_feature_detail_20180101_20261105.csv",
+      "size": 16046361,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_feature_scan/amplitude_feature_distribution_20180101_20261105.csv",
+      "size": 10069,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_feature_scan/amplitude_feature_yearly_20180101_20261105.csv",
+      "size": 352354,
+      "sha256": null
+    }
+  ],
+  "hist-10c90666feeec25630fa": [
+    {
+      "path": "analysis/futures_daily_amplitude_violent_combo_scan/violent_amplitude_combo_manifest_20180101_20261105.json",
+      "size": 4731,
+      "sha256": "b9f27d0d4ea7772e1ca315732f3bbb61da507f815083deedcab28dd8cf7dd991"
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_violent_combo_scan/violent_amplitude_combo_summary_20180101_20261105.csv",
+      "size": 12880,
+      "sha256": "7523106b81f5795c25126d7714c679a2093e21b48b3d7aa6e06e2b45b6e4d71e"
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_violent_combo_scan/violent_amplitude_combo_detail_20180101_20261105.csv",
+      "size": 4399726,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_violent_combo_scan/violent_amplitude_combo_yearly_20180101_20261105.csv",
+      "size": 34272,
+      "sha256": null
+    }
+  ],
+  "hist-c6865786f4ca87c58322": [
+    {
+      "path": "analysis/futures_daily_amplitude_foreign_flow_scan/violent_amplitude_foreign_flow_manifest_20180101_20261105.json",
+      "size": 2182,
+      "sha256": "38a6be6913f708cb7da6c1a3ed7a6c160d73b10669b8c4cef8fdd5a90292edd0"
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_foreign_flow_scan/violent_amplitude_foreign_flow_summary_20180101_20261105.csv",
+      "size": 5491,
+      "sha256": "73618b27c577f829128fd7da117ab0cb8d04253a2d2364509be8ed2a349df47d"
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_foreign_flow_scan/violent_amplitude_foreign_flow_detail_20180101_20261105.csv",
+      "size": 1793788,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_daily_amplitude_foreign_flow_scan/violent_amplitude_foreign_flow_yearly_20180101_20261105.csv",
+      "size": 11223,
+      "sha256": null
+    }
+  ],
+  "hist-da9b7dc6ab6fa673fe3e": [
+    {
+      "path": "analysis/futures_foreign_flow_direction_scan/foreign_flow_direction_manifest_20180101_20261105.json",
+      "size": 2848,
+      "sha256": "6c2e50c8747f61061804a242978848154081c158d5179978f57d05236642c60d"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_direction_scan/foreign_flow_direction_classifier_20180101_20261105.csv",
+      "size": 1551,
+      "sha256": "70388bb97cf141778fa54ce7f14ff5bd89b4d2b4f6c27abcbd5539989fae4303"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_direction_scan/foreign_flow_direction_summary_20180101_20261105.csv",
+      "size": 5289,
+      "sha256": "fd1d7b79cdd5c96d306299d51e9b687f3ffb24da104484bce78d07f60443cb42"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_direction_scan/foreign_flow_direction_buckets_20180101_20261105.csv",
+      "size": 2440,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_foreign_flow_direction_scan/foreign_flow_direction_detail_20180101_20261105.csv",
+      "size": 466550,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_foreign_flow_direction_scan/foreign_flow_direction_yearly_20180101_20261105.csv",
+      "size": 12309,
+      "sha256": null
+    }
+  ],
+  "hist-4f32aa0a73c43d020158": [
+    {
+      "path": "analysis/futures_foreign_flow_streak_direction_scan/foreign_flow_streak_direction_manifest_20180101_20261105.json",
+      "size": 7755,
+      "sha256": "574fe070afb79e4415b126d0ce11428ba6a574fc16c9f3216bdf9044300e5fa2"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_streak_direction_scan/foreign_flow_streak_direction_classifier_20180101_20261105.csv",
+      "size": 4425,
+      "sha256": "a966b432ba2af2ce8e8d8ad0194a0cd98b0b489dcf6525725a2776fd7d2898d2"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_streak_direction_scan/foreign_flow_streak_direction_summary_20180101_20261105.csv",
+      "size": 15639,
+      "sha256": "4d879fef3bc844b6f6edaf0dd596efb909a73853c43614ae60babc0796be214e"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_streak_direction_scan/foreign_flow_streak_direction_detail_20180101_20261105.csv",
+      "size": 402535,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_foreign_flow_streak_direction_scan/foreign_flow_streak_direction_yearly_20180101_20261105.csv",
+      "size": 45671,
+      "sha256": null
+    }
+  ],
+  "hist-4777d7342a1208954c6c": [
+    {
+      "path": "analysis/futures_foreign_flow_price_reaction_direction_scan/foreign_flow_price_reaction_direction_manifest_20180101_20261105.json",
+      "size": 7068,
+      "sha256": "d9b638775096a232bab29d129d38f0d4b811338a68a7be820081f85315330143"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_price_reaction_direction_scan/foreign_flow_price_reaction_direction_classifier_20180101_20261105.csv",
+      "size": 4374,
+      "sha256": "d091a2bb15ad7c7a5809ff4b17f2f4bacf3539422faaddef6b6803b7ccf4b31f"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_price_reaction_direction_scan/foreign_flow_price_reaction_direction_summary_20180101_20261105.csv",
+      "size": 15107,
+      "sha256": "2a9f11246e943b9879b73a9333ff6ab247d170555d59097be65e44c9bb41590f"
+    },
+    {
+      "path": "analysis/futures_foreign_flow_price_reaction_direction_scan/foreign_flow_price_reaction_direction_detail_20180101_20261105.csv",
+      "size": 411320,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_foreign_flow_price_reaction_direction_scan/foreign_flow_price_reaction_direction_yearly_20180101_20261105.csv",
+      "size": 42340,
+      "sha256": null
+    }
+  ],
+  "hist-a2286d396b480118cb57": [
+    {
+      "path": "analysis/futures_margin_maintenance_scan/margin_maintenance_manifest_20180101_latest.json",
+      "size": 2445,
+      "sha256": "2fd2922d47f96bfedf9a766a8750d02240149679f15a3c9ccf9dba0732169bd8"
+    },
+    {
+      "path": "analysis/futures_margin_maintenance_scan/margin_maintenance_buckets_20180101_latest.csv",
+      "size": 11462,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_margin_maintenance_scan/margin_maintenance_detail_20180101_latest.csv",
+      "size": 646096,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_margin_maintenance_scan/margin_maintenance_low_drop_combo_20180101_latest.csv",
+      "size": 2849,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_margin_maintenance_scan/margin_maintenance_tests_20180101_latest.csv",
+      "size": 1970,
+      "sha256": "7f4f162603dbc6ed26e22d0ed3d5adb34053b9b054d36876713a019ed59591c7"
+    },
+    {
+      "path": "analysis/futures_margin_maintenance_scan/margin_maintenance_yearly_20180101_latest.csv",
+      "size": 26850,
+      "sha256": null
+    }
+  ],
+  "hist-db1a808f4f8f740356eb": [
+    {
+      "path": "analysis/night_bucket/futures_night_bucket_manifest_20180101_20260910.json",
+      "size": 1100,
+      "sha256": "6dfbaa40b38a42f9ff87968355ffa1e19c642defbbd67952c137a93aafedeb2a"
+    },
+    {
+      "path": "analysis/night_bucket/futures_night_bucket_summary_20180101_20260910.csv",
+      "size": 25386,
+      "sha256": "1e8f86d4c7c1561ea174cdea1fe536ec9b32c05f73853c30d241e51e61878988"
+    },
+    {
+      "path": "analysis/night_bucket/futures_night_bucket_daily_20180101_20260910.csv",
+      "size": 821818,
+      "sha256": null
+    },
+    {
+      "path": "analysis/night_bucket/futures_night_bucket_yearly_20180101_20260910.csv",
+      "size": 211782,
+      "sha256": null
+    }
+  ],
+  "hist-18a4f9978dfa0b4a6651": [
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_manifest_20180101_20261110.json",
+      "size": 2710,
+      "sha256": "71b1f0e443c0585f8dd497533f10485b2b418b630e9f37c6fe05380c4f0b5fee"
+    },
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_combo_summary_20180101_20261110.csv",
+      "size": 41175,
+      "sha256": "c2f56978111d664f36f434f8f592ca4b7243b83cd48858abc1cb27d467e906f0"
+    },
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_detail_20180101_20261110.csv",
+      "size": 1329253,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_feature_ablation_20180101_20261110.csv",
+      "size": 1130,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_feature_correlation_20180101_20261110.csv",
+      "size": 1260,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_full_coefficients_20180101_20261110.csv",
+      "size": 6978,
+      "sha256": null
+    },
+    {
+      "path": "analysis/futures_volatility_combo_model/volatility_model_walk_forward_yearly_20180101_20261110.csv",
+      "size": 190823,
+      "sha256": null
+    }
+  ],
+  "hist-225ed8f39fda3209b415": [
+    {
+      "path": "analysis/futures_weekday_settlement_analysis/weekday_overall.csv",
+      "size": 891,
+      "sha256": "d6b76effab499ad8a8321a19e50a87fdc4385ec2a490a552a0577c839009a97d"
+    },
+    {
+      "path": "analysis/futures_weekday_settlement_analysis/wednesday_friday_comparison.csv",
+      "size": 543,
+      "sha256": "f08c327ac81225a435dfba8edcf3876d720ef5198164d5afcc09b4d8ecab05d7"
+    },
+    {
+      "path": "analysis/futures_weekday_settlement_analysis/weekday_by_year.csv",
+      "size": 5972,
+      "sha256": null
+    }
+  ]
+}

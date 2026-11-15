@@ -819,7 +819,7 @@ function updatePresetControls() {
     select.value = [...select.options].some(option => option.value === previous) ? previous : select.options[select.options.length - 1]?.value || '';
   }
   $('importPresetLevelsBtn').disabled = !ready || !select.value;
-  $('importPresetLevelsBtn').title = ready ? '匯入指定日期的9條水平點位' : '請先按重新整理載入台指期全日日K';
+  $('importPresetLevelsBtn').title = ready ? '匯入指定日期的15條水平點位' : '請先按重新整理載入台指期全日日K';
 }
 async function importPresetLevels() {
   const payload = state.payload, meta = payload?.meta;

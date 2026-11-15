@@ -15,6 +15,7 @@
     { id: "replay", href: "/replay", icon: "bi-play-circle", label: "台股行情回放", group: "tw" },
     { id: "paper-trade", href: "/paper-trade", icon: "bi-journal-check", label: "模擬交易績效", group: "tw" },
     { id: "yu-key-levels", href: "/yu-key-levels", icon: "bi-bullseye", label: "Yu 點位分析", group: "tw" },
+    { id: "research-lab", href: "/research-lab", icon: "bi-clipboard-data", label: "回測實驗", group: "tw" },
     { id: "paper-journal", href: "/paper-journal", icon: "bi-journal-text", label: "交易日記", group: "tw" },
     { id: "us-quick-view", href: "/us/quick-view", icon: "bi-grid-1x2", label: "快速閱覽", group: "us" },
     { id: "us-raw-data", href: "/us/raw-data", icon: "bi-table", label: "美股原始資料", group: "us" },
@@ -23,7 +24,7 @@
 
   const SUBGROUPS = [
     {id:"basic-analysis",label:"基礎分析",icon:"bi-bar-chart-line",children:["distribution","cycles","night-bucket"]},
-    {id:"strategy-sim",label:"策略模擬",icon:"bi-diagram-3",children:["replay","paper-trade","paper-journal","yu-key-levels"]},
+    {id:"strategy-sim",label:"策略模擬",icon:"bi-diagram-3",children:["replay","paper-trade","paper-journal","research-lab","yu-key-levels"]},
   ];
   const parentOf = id => SUBGROUPS.find(g=>g.children.includes(id));
   const navId = id => parentOf(id)?.id || id;

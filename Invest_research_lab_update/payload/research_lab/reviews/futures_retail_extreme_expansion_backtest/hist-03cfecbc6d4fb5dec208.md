@@ -1,0 +1,35 @@
+# 結果回顧｜散戶極空策略：分位門檻與進場距離擴張
+
+批次：`hist-03cfecbc6d4fb5dec208`  
+研究期間：2018-01-01 ～ 2026-11-02  
+執行時間：未記錄  
+參數來源：manifest 設定快照（以檔案實際記載為限）
+
+## 研究結果與判讀
+
+### retail_expansion_summary_20180101_20261008.csv
+
+來源：`output/backtest/retail_expansion/retail_expansion_summary_20180101_20261008.csv`
+
+原始表共 8 列；以下依原始欄位或選定指標整理，未把重疊策略或多組參數相加。
+- 全部列：8/8 組／列淨點數為正；最高 1,693（A_ENTRY_5_12R／A_ENTRY_DISTANCE），最低 387（B_RETAIL_Q10／B_RETAIL_THRESHOLD）。
+上述是原始表內的描述性排名，不是樣本外選模。應同看交易數、平均每筆、PF、最大回撤、成本與年度表；尤其參數重疊不可合併為獨立績效。
+
+| scenario | study | entry_count | signal_count | win_rate_pct | total_net_points | average_net_points | profit_factor | max_drawdown_points |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A_ENTRY_5_12R | A_ENTRY_DISTANCE | 76 | 185 | 61.8421 | 1,693 | 22.2763 | 2.3609 | -271 |
+| A_ENTRY_1_4R | A_ENTRY_DISTANCE | 77 | 185 | 55.8442 | 1,491 | 19.3636 | 1.8604 | -326 |
+| A_BASE_ENTRY_1_2R | A_ENTRY_DISTANCE | 64 | 185 | 64.0625 | 1,359 | 21.2344 | 2.4335 | -230 |
+| B_RETAIL_Q30 | B_RETAIL_THRESHOLD | 84 | 277 | 58.3333 | 851 | 10.131 | 1.4723 | -536 |
+| B_RETAIL_Q10 | B_RETAIL_THRESHOLD | 29 | 92 | 58.6207 | 387 | 13.3448 | 1.8958 | -253 |
+
+## 研究限制與後續
+
+- 上述數字來自本批次原始輸出，未重新執行回測或更改成交、成本與樣本口徑。
+- 同一實驗可能包含重疊日期、不同方向、網格參數或不同模型。不要直接將表格各列加總。
+- 優先檢查樣本量、交易成本、資料品質、探索／驗證分割與逐年一致性；統計關聯或樣本內最佳列不構成可交易策略。
+- 歷史批次沒有紀錄的時間、完整參數或程式版本維持未知。新批次可利用manifest重現參數，但資料庫日後更新可能改變結果。
+
+## 我的研究心得／下一步
+
+（可在 Dashboard 直接編輯、儲存。本段留給後續人工研究。）

@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ url_for('static', path='/app.css') }}?v=20261113-journal" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
-  <script src="{{ url_for('static', path='/navigation.js') }}?v=20261113-journal"></script>
+  <script src="{{ url_for('static', path='/navigation.js') }}?v=20261114-research-lab"></script>
 </head>
 <body data-page="kline">
   <header class="mobile-nav-bar"><button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="開啟選單"><i class="bi bi-list"></i></button><a class="mobile-brand" href="/"><span class="brand-mark"><i class="bi bi-graph-up-arrow"></i></span><span>Yu Invest</span></a></header>
@@ -146,6 +146,6 @@
 
   <div id="loadingOverlay" class="loading-overlay d-none"><div class="loading-card"><div class="spinner-border text-primary"></div><div id="loadingText">正在載入 K 線資料…</div></div></div>
   <script src="{{ url_for('static', path='/level_labels.js') }}?v=20260929-2"></script>
-  <script src="{{ url_for('static', path='/kline.js') }}?v=20261008-scale-tabs"></script>
+  <script src="{{ url_for('static', path='/kline.js') }}?v=20261115-preset-levels"></script>
 </body>
 </html>

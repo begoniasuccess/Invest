@@ -14,7 +14,22 @@ def get(journal_id):
     with p.connection() as conn,p.cursor(conn) as cur:
         return get_one(cur,journal_id)
 
-def search(account_id=None,run_id=None,trade_id=None,history_date=None,start=None,end=None,keyword=None,limit=50,offset=0,link_kind=None):
+def normalize_tags(tags):
+    if len(tags)>30: raise ValueError('每篇日記最多 30 個標籤')
+    result=[]; seen=set()
+    for tag in tags:
+        tag=tag.strip()
+        if not tag: continue
+        if len(tag)>50 or any(ord(c)<32 for c in tag): raise ValueError('標籤最多 50 字，不可包含控制字元')
+        key=tag.lower()
+        if key not in seen: result.append(tag); seen.add(key)
+    return result
+
+def list_tags():
+    with p.connection() as conn,p.cursor(conn) as cur:
+        return p.many(cur,"SELECT min(t.tag) AS tag, count(DISTINCT j.id) AS count FROM paper_trade.journals j CROSS JOIN LATERAL unnest(j.tags) AS t(tag) GROUP BY lower(t.tag) ORDER BY lower(t.tag)")
+
+def search(account_id=None,run_id=None,trade_id=None,history_date=None,start=None,end=None,keyword=None,limit=50,offset=0,link_kind=None,tag=None,sort='desc'):
     if start and end and start>end: raise ValueError('起始日期不能晚於結束日期')
     sql='SELECT j.* FROM paper_trade.journals j WHERE TRUE'; args=[]
     conditions=[]; linkargs=[]
@@ -33,12 +48,16 @@ def search(account_id=None,run_id=None,trade_id=None,history_date=None,start=Non
     if start: sql+=' AND j.journal_date >= %s';args.append(start)
     if end: sql+=' AND j.journal_date <= %s';args.append(end)
     if keyword: sql+=' AND strpos(lower(j.title || chr(10) || j.body),lower(%s))>0';args.append(keyword)
-    sql+=' ORDER BY j.journal_date DESC,j.id DESC LIMIT %s OFFSET %s';args.extend([limit+1,offset])
+    if tag: sql+=' AND EXISTS (SELECT 1 FROM unnest(j.tags) AS t(tag) WHERE lower(t.tag)=lower(%s))';args.append(tag.strip())
+    if sort not in ('asc','desc'): raise ValueError('無效排序方向')
+    direction='ASC' if sort=='asc' else 'DESC'
+    sql+=f' ORDER BY j.journal_date {direction},j.id {direction} LIMIT %s OFFSET %s';args.extend([limit+1,offset])
     with p.connection() as conn,p.cursor(conn) as cur:
         rows=p.many(cur,sql,tuple(args));return {'items':[{**r,'links':links(cur,r['id'])} for r in rows[:limit]],'has_more':len(rows)>limit}
 
 def save(data,journal_id=None):
     title=data['title'].strip()
+    tags=normalize_tags(data.get('tags',[]))
     if not title: raise ValueError('請輸入日記標題')
     with p.connection() as conn,p.cursor(conn) as cur:
         from dashboard.journal_media import media_names, resolve_file
@@ -48,12 +67,12 @@ def save(data,journal_id=None):
         old_body=''
         if journal_id is None:
             for name in media_names(data['body']): resolve_file(name)
-            row=p.one(cur,'INSERT INTO paper_trade.journals(title,body,journal_date) VALUES(%s,%s,%s) RETURNING id',(title,data['body'],data['journal_date']));journal_id=row['id']
+            row=p.one(cur,'INSERT INTO paper_trade.journals(title,body,journal_date,tags) VALUES(%s,%s,%s,%s) RETURNING id',(title,data['body'],data['journal_date'],tags));journal_id=row['id']
         else:
             row=p.require(p.one(cur,'SELECT id,updated_at,body FROM paper_trade.journals WHERE id=%s FOR UPDATE',(journal_id,)),'日記')
             if data.get('expected_updated_at') != row['updated_at']: raise ValueError('日記已在其他視窗修改，請重新開啟後再儲存')
             for name in media_names(data['body'])-media_names(row.get('body','')): resolve_file(name)
-            cur.execute('UPDATE paper_trade.journals SET title=%s,body=%s,journal_date=%s,updated_at=clock_timestamp() WHERE id=%s',(title,data['body'],data['journal_date'],journal_id))
+            cur.execute('UPDATE paper_trade.journals SET title=%s,body=%s,journal_date=%s,tags=%s,updated_at=clock_timestamp() WHERE id=%s',(title,data['body'],data['journal_date'],tags,journal_id))
         # All edits are atomic, including replacing links. FK validation prevents dangling targets.
         seen=set(); targets=[]
         for original in data['links']:

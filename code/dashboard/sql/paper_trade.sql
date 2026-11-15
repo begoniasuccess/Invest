@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS paper_trade.journals (
  created_at timestamptz NOT NULL DEFAULT now(),
  updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE paper_trade.journals ADD COLUMN IF NOT EXISTS tags text[] NOT NULL DEFAULT ARRAY[]::text[];
 CREATE TABLE IF NOT EXISTS paper_trade.journal_links (
  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
  journal_id bigint NOT NULL REFERENCES paper_trade.journals(id) ON DELETE CASCADE,
